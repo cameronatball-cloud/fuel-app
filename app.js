@@ -1,12 +1,12 @@
 import * as P from './planner.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v8';
+const APP_VERSION = 'v9';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 
 function load() {
-  const base = { tab: 'plan', activeWeek: null, weeks: {}, pantry: null, customRecipes: [], customIngredients: [], inbox: [], settings: { proteinTarget: 180, snackProtein: 24, budget: 50 } };
+  const base = { tab: 'plan', activeWeek: null, weeks: {}, customRecipes: [], customIngredients: [], inbox: [], settings: { proteinTarget: 180, snackProtein: 24, budget: 50 } };
   try { return { ...base, ...JSON.parse(localStorage.getItem(KEY) || '{}') }; } catch { return base; }
 }
 function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {} }
@@ -34,7 +34,7 @@ function sundayOf(date) { const d = new Date(Date.UTC(date.getFullYear(), date.g
 function addDays(isoDate, n) { const d = new Date(isoDate + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return iso(d); }
 function fmtDate(isoDate) { const d = new Date(isoDate + 'T00:00:00Z'); return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' }); }
 const W = () => S.weeks[S.activeWeek];
-function blankWeek() { return { portions: {}, grid: null, overflow: [], cookDay: 0, ticks: {}, days: [true, true, true, true, true, true, true], choices: {} }; }
+function blankWeek() { return { portions: {}, grid: null, overflow: [], cookDay: 0, ticks: {}, days: [true, true, true, true, true, true, true], choices: {}, pantry: {} }; }
 function setupWeeks() {
   const thisSun = sundayOf(new Date()), nextSun = addDays(thisSun, 7);
   // migrate v1 single-week state
@@ -43,7 +43,9 @@ function setupWeeks() {
   S.weeks[thisSun] ||= blankWeek(); S.weeks[nextSun] ||= blankWeek();
   if (!S.weeks[S.activeWeek]) S.activeWeek = thisSun;
   S.thisSun = thisSun; S.nextSun = nextSun;
-  for (const w of Object.values(S.weeks)) { w.days ||= [true, true, true, true, true, true, true]; w.choices ||= {}; if (!w.grid) relayout(w); }
+  // pantry used to be one global list; it now belongs to each week (a fresh week starts with nothing ticked)
+  if (S.pantry) { const p = S.pantry; if (p.peppers_frozen !== undefined) { p.pepper = p.peppers_frozen; delete p.peppers_frozen; } S.weeks[thisSun].pantry = { ...(S.weeks[thisSun].pantry || {}), ...p }; delete S.pantry; }
+  for (const w of Object.values(S.weeks)) { w.days ||= [true, true, true, true, true, true, true]; w.choices ||= {}; w.pantry ||= {}; if (!w.grid) relayout(w); }
   save();
 }
 function relayout(w = W()) {
@@ -71,8 +73,6 @@ async function boot() {
     document.getElementById('view').innerHTML = `<div class="bad-box">Couldn't load the recipe data. ${esc(e.message)}</div>`;
     return;
   }
-  if (!S.pantry) { S.pantry = {}; for (const it of ING()) if (it.staple) S.pantry[it.id] = true; }
-  if (S.pantry.peppers_frozen !== undefined) { S.pantry.pepper = S.pantry.peppers_frozen; delete S.pantry.peppers_frozen; }
   setupWeeks();
   document.getElementById('tabs').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { S.tab = b.dataset.tab; save(); render({ top: true }); } });
   const v = document.getElementById('view');
@@ -203,7 +203,7 @@ function renderShop() {
   const rawNeeds = P.aggregateNeeds(counts, recipes);
   const needsAll = P.aggregateNeeds(counts, recipes, resolve);
   // pantry keys may be the generic id (e.g. frozen_fruit) or the resolved one
-  const pantryFor = {}; for (const id of Object.keys(needsAll)) { const generic = Object.keys(rawNeeds).find((g) => resolve(g) === id); pantryFor[id] = S.pantry[id] !== undefined ? S.pantry[id] : (generic ? S.pantry[generic] : undefined); }
+  const pantryFor = {}; for (const id of Object.keys(needsAll)) { const generic = Object.keys(rawNeeds).find((g) => resolve(g) === id); pantryFor[id] = w.pantry[id] !== undefined ? w.pantry[id] : (generic ? w.pantry[generic] : undefined); }
   const needs = P.netPantry(needsAll, pantryFor);
   const usedBy = {};
   for (const [rid, n] of Object.entries(counts)) { const r = recById(rid); if (!r) continue; for (const x of r.ingredients) (usedBy[resolve(x.id)] ||= []).push(`${r.short || r.name} ×${n}`); }
@@ -246,7 +246,7 @@ function renderShop() {
   ${choiceHtml ? `<div class="card">${choiceHtml}</div>` : ''}
   <div class="card"><div class="row"><span class="grow"><b style="font-size:22px">${P.gbp(best.total)}</b> at ${P.SHOP_NAMES[best.shop]}</span><span class="muted small">budget ${P.gbp(budget)}</span></div>
     <div class="budget ${best.total > budget ? 'over' : ''}"><i style="width:${pct}%"></i></div>
-    ${haveRows ? `<p class="small"><b>${Object.keys(needsAll).filter((id) => pantryFor[id] !== undefined).length} ingredients are left off because they're ticked in Pantry</b> (see the bottom of this page, or Pantry → Untick all).</p>` : ''}
+    ${haveRows ? `<p class="small"><b>${Object.keys(needsAll).filter((id) => pantryFor[id] !== undefined).length} ingredients are left off because they're ticked in Pantry</b> (see the bottom of this page). A new week starts with nothing ticked.</p>` : ''}
     <p class="small muted">${best.total > budget ? `Over budget by ${P.gbp(best.total - budget)}. Drop a portion or two of the priciest meal.` : `${P.gbp(budget - best.total)} left for coffees.`} Prices checked ${oldest || 'n/a'}.</p></div>
   <h2>Price by shop</h2><div class="card">${totals}</div>
   <h2>Item by item</h2><div class="card">${items}<p class="small muted">Green is the cheapest for that item. Swipe sideways for more shops.</p></div>
@@ -323,11 +323,14 @@ function renderPantry() {
   const groups = {};
   for (const it of ING()) if (!it.hidden) (groups[it.category] ||= []).push(it);
   const order = ['protein', 'dairy', 'carb', 'veg', 'fruit', 'tin', 'sauce', 'spice', 'cupboard'];
-  const row = (it) => { const v = S.pantry[it.id]; const on = v === true || typeof v === 'number';
+  const w = W();
+  const row = (it) => { const v = w.pantry[it.id]; const on = v === true || typeof v === 'number';
     return `<div class="check"><input type="checkbox" data-pantry="${it.id}" ${on ? 'checked' : ''}><span class="grow">${esc(it.name)}${(it.packs || []).length ? '' : '<span class="sub">no price on file</span>'}</span>${on && !it.staple ? `<input class="qty" type="number" step="any" placeholder="plenty" data-pantry-qty="${it.id}" value="${typeof v === 'number' ? v : ''}"><span class="small muted">${it.unit === 'each' ? '' : it.unit}</span>` : ''}</div>`; };
   const html = order.filter((g) => groups[g]).map((g) => `<h2>${g}</h2><div class="card">${groups[g].map(row).join('')}</div>`).join('');
-  return `<h1>Pantry</h1><p class="small muted">Tick what you already have. Leave the amount blank for "plenty", or type how much (grams, ml or a count) and the shop list buys only the difference.</p>
-  <div class="row" style="margin-bottom:12px"><button class="btn grow" data-action="load-stock">Load my stock (${DATA.stockDate || 'last check'})</button><button class="btn ghost" data-action="clear-pantry">Untick all</button></div>${html}
+  const other = Object.keys(S.weeks).find((k) => k !== S.activeWeek);
+  const ticked = Object.keys(w.pantry).length;
+  return `<h1>Pantry</h1>${weekSwitch()}<p class="small muted">What's in the cupboard for <b>${weekLabel(S.activeWeek).toLowerCase()}</b>. Every week starts blank so the shop list shows everything; tick what you already have before you shop. Leave the amount blank for "plenty", or type how much and the list buys only the difference. ${ticked} ticked.</p>
+  <div class="row" style="margin-bottom:12px; flex-wrap:wrap"><button class="btn grow" data-action="load-stock">Load my stock (${DATA.stockDate || 'last check'})</button>${other ? `<button class="btn ghost" data-action="copy-pantry" data-from="${other}">Copy from ${weekLabel(other).toLowerCase()}</button>` : ''}<button class="btn ghost" data-action="clear-pantry">Untick all</button></div>${html}
   <h2>Settings</h2><div class="card">
     <label class="field">Protein target per day (g)<input type="number" data-setting="proteinTarget" value="${S.settings.proteinTarget}"></label>
     <label class="field">Daily snack protein counted (g), e.g. one scoop<input type="number" data-setting="snackProtein" value="${S.settings.snackProtein}"></label>
@@ -399,9 +402,10 @@ function onAction(e) {
   else if (a === 'cookday') { w.cookDay = +el.dataset.day; relayout(); render(); }
   else if (a === 'relayout') { relayout(); render(); }
   else if (a === 'dayx') { const i = +el.dataset.day; w.days[i] = !w.days[i]; relayout(w); render(); }
-  else if (a === 'need') { delete S.pantry[id]; save(); render(); }
-  else if (a === 'clear-pantry') { if (confirm('Untick everything in the pantry? The shop list will then include every ingredient for the week.')) { S.pantry = {}; save(); render(); } }
-  else if (a === 'load-stock') { if (!DATA.stock) { alert('No stock file loaded.'); return; } if (confirm(`Tick everything from the ${DATA.stockDate} stock check? Items you have already ticked are kept.`)) { for (const [id, v] of Object.entries(DATA.stock)) if (S.pantry[id] === undefined) S.pantry[id] = v; save(); render(); } }
+  else if (a === 'need') { delete w.pantry[id]; save(); render(); }
+  else if (a === 'clear-pantry') { if (confirm(`Untick everything for ${weekLabel(S.activeWeek).toLowerCase()}? The shop list will then include every ingredient.`)) { w.pantry = {}; save(); render(); } }
+  else if (a === 'copy-pantry') { const from = S.weeks[el.dataset.from]; if (from) { w.pantry = { ...from.pantry, ...w.pantry }; save(); render(); } }
+  else if (a === 'load-stock') { if (!DATA.stock) { alert('No stock file loaded.'); return; } if (confirm(`Tick everything from the ${DATA.stockDate} stock check? Items you have already ticked are kept.`)) { for (const [id, v] of Object.entries(DATA.stock)) if (w.pantry[id] === undefined) w.pantry[id] = v; save(); render(); } }
   else if (a === 'clear-week') { if (confirm(`Clear every meal from ${weekLabel(S.activeWeek).toLowerCase()}?`)) { w.portions = {}; w.ticks = {}; relayout(); render(); } }
   else if (a === 'cell') {
     const day = +el.dataset.day, slot = el.dataset.slot;
@@ -426,7 +430,7 @@ function onAction(e) {
   else if (a === 'rm-row') el.closest('.ing-row').remove();
   else if (a === 'new-ingredient') openSheet(newIngredientForm());
   else if (a === 'export') {
-    const txt = JSON.stringify({ weeks: S.weeks, activeWeek: S.activeWeek, pantry: S.pantry, customRecipes: S.customRecipes, customIngredients: S.customIngredients, settings: S.settings, inbox: S.inbox });
+    const txt = JSON.stringify({ weeks: S.weeks, activeWeek: S.activeWeek, customRecipes: S.customRecipes, customIngredients: S.customIngredients, settings: S.settings, inbox: S.inbox });
     (navigator.clipboard?.writeText(txt) || Promise.reject()).then(() => alert('Backup copied to the clipboard. Paste it somewhere safe.'), () => prompt('Copy this:', txt));
   } else if (a === 'import') {
     const txt = prompt('Paste your backup'); if (!txt) return;
@@ -445,8 +449,8 @@ function onChange(e) {
   else if (t.dataset.tick) { w.ticks[t.dataset.tick] = t.checked; save(); t.closest('.line').classList.toggle('done', t.checked); }
   else if (t.dataset.choice) { w.choices[t.dataset.choice] = t.value; save(); render(); }
   else if (t.dataset.settingBool) { S.settings[t.dataset.settingBool] = t.checked; save(); render(); }
-  else if (t.dataset.pantry) { if (t.checked) S.pantry[t.dataset.pantry] = true; else delete S.pantry[t.dataset.pantry]; save(); render(); }
-  else if (t.dataset.pantryQty !== undefined) { const v = parseFloat(t.value); S.pantry[t.dataset.pantryQty] = Number.isFinite(v) && v > 0 ? v : true; save(); }
+  else if (t.dataset.pantry) { if (t.checked) w.pantry[t.dataset.pantry] = true; else delete w.pantry[t.dataset.pantry]; save(); render(); }
+  else if (t.dataset.pantryQty !== undefined) { const v = parseFloat(t.value); w.pantry[t.dataset.pantryQty] = Number.isFinite(v) && v > 0 ? v : true; save(); }
   else if (t.dataset.setting) { S.settings[t.dataset.setting] = +t.value || 0; save(); }
 }
 function onInput(e) {
