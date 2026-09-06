@@ -58,17 +58,19 @@ async function boot() {
   }
   if (!S.pantry) { S.pantry = {}; for (const it of ING()) if (it.staple) S.pantry[it.id] = true; }
   setupWeeks();
-  document.getElementById('tabs').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { S.tab = b.dataset.tab; save(); render(); } });
+  document.getElementById('tabs').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { S.tab = b.dataset.tab; save(); render({ top: true }); } });
   const v = document.getElementById('view');
   v.addEventListener('click', onAction); v.addEventListener('change', onChange); v.addEventListener('input', onInput);
+  v.addEventListener('pointerdown', onDragStart);
   render();
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 }
 
-function render() {
+function render(opts = {}) {
+  const y = window.scrollY;
   document.querySelectorAll('#tabs button').forEach((b) => b.classList.toggle('active', b.dataset.tab === S.tab));
   document.getElementById('view').innerHTML = ({ plan: renderPlan, cook: renderCook, shop: renderShop, recipes: renderRecipes, pantry: renderPantry })[S.tab]();
-  window.scrollTo(0, 0);
+  window.scrollTo(0, opts.top ? 0 : y);
 }
 
 // ----- Plan -----
@@ -76,7 +78,7 @@ function mealMeta(r, ing) {
   const pp = P.proteinPerPortion(r, ing);
   const c = P.costPerPortion(r, ing);
   const cost = c.cost ? `~£${c.cost.toFixed(2)}` : '';
-  const flex = r.slots.length > 1 ? `<span class="badge">${r.slots.join(' or ')}</span>` : '';
+  const flex = '';
   const cold = r.cold ? '<span class="badge ok">cold ok</span>' : '';
   const fz = r.freezer ? '<span class="badge">freezes</span>' : (r.fridgeDays ? `<span class="badge warn">fridge ${r.fridgeDays}d</span>` : '<span class="badge">made fresh</span>');
   return `${pp}g protein${cost ? ` · ${cost} a portion` : ''} ${flex}${cold}${fz}`;
@@ -95,7 +97,7 @@ function renderPlan() {
       ${n ? `<div class="stepper"><button data-action="dec" data-id="${r.id}">−</button><b>${n}</b><button data-action="inc" data-id="${r.id}">+</button></div>` : ''}</div>`;
   };
   const group = (slot, title) => {
-    const list = recipes.filter((r) => r.slots[0] === slot && (!q || r.name.toLowerCase().includes(q)));
+    const list = recipes.filter((r) => (slot === 'breakfast' ? r.slots[0] === 'breakfast' : r.slots[0] !== 'breakfast') && (!q || r.name.toLowerCase().includes(q)));
     return list.length ? `<h2>${title}</h2><div class="card">${list.map(row).join('')}</div>` : '';
   };
   const overflow = (w.overflow || []).map((o) => `<div class="warn-box">${esc(recById(o.id)?.name)}: ${o.unplaced} portion${o.unplaced > 1 ? 's' : ''} won't fit in the week. Drop the count or move something.</div>`).join('');
@@ -105,7 +107,10 @@ function renderPlan() {
       if (!r) return `<button class="cell empty" data-action="cell" data-day="${i}" data-slot="${s}">+</button>`;
       const tp = P.tubPlan(r, w.grid, w.cookDay);
       const cls = tp.fresh ? '' : tp.freezer.includes(i) ? 'frozen' : tp.late.includes(i) ? 'late' : '';
-      return `<button class="cell ${cls}" style="${cellStyle(id)}" data-action="cell" data-day="${i}" data-slot="${s}">${esc(shortName(r))}</button>`;
+      const c = P.costPerPortion(r, ing);
+      const mark = cls === 'frozen' ? '❄ freezer' : cls === 'late' ? '⚠ fridge' : tp.fresh ? 'fresh' : 'fridge';
+      const markShort = cls === 'frozen' ? '❄' : cls === 'late' ? '⚠' : '';
+      return `<button class="cell ${cls}" style="${cellStyle(id)}" data-action="cell" data-day="${i}" data-slot="${s}" draggable="false"><span class="cname"><span class="full">${esc(r.name)}</span><span class="shortn">${esc(shortName(r))}</span></span><span class="cmeta"><span class="full">${P.proteinPerPortion(r, ing)}g protein</span><span class="shortn">${P.proteinPerPortion(r, ing)}g ${markShort}</span></span><span class="cmark full">${mark}</span></button>`;
     }).join('')).join('')}</div>`;
   const summary = chosen.length
     ? `<div class="chip-row">${chosen.map((id) => `<span class="chip meal" style="${cellStyle(id)}">${esc(shortName(recById(id)))} × ${w.portions[id]}</span>`).join('')}</div>`
@@ -116,14 +121,14 @@ function renderPlan() {
     <div class="bars" style="margin-top:26px">${bars}</div><div class="bars-labels">${P.DAYS.map((d) => `<div>${d}</div>`).join('')}</div>
     <p class="small muted">Target ${target}g a day including a ${S.settings.snackProtein}g snack. Amber days are under.</p></div>
   ${chosen.length ? `<div class="card">${gridHtml}
-    <p class="small muted" style="margin-top:10px">Tap a cell to swap or clear. ❄ from the freezer that day, thaw the night before. Amber outline: past its fridge life and can't be frozen.</p>
+    <p class="small muted" style="margin-top:10px">Drag a meal to move it; drop it on another to swap. Tap to pick from a list or clear. ❄ from the freezer that day, thaw the night before. ⚠ past its fridge life and can't be frozen.</p>
     <p class="small muted" style="margin:8px 0 2px">Cook day</p>
     <div class="day-pick">${P.DAYS.map((d, i) => `<button data-action="cookday" data-day="${i}" class="${w.cookDay === i ? 'on' : ''}">${d}</button>`).join('')}</div>
     <div class="row" style="margin-top:8px"><button class="btn ghost small" data-action="relayout">Re-lay out</button><button class="btn ghost small" data-action="clear-week">Clear week</button></div></div>` : ''}
   ${overflow}${lateWarnings(w)}
   <h2 style="margin-top:26px">Pick meals</h2>
   <input class="search" placeholder="Search meals" value="${esc(S.planSearch || '')}" data-plan-search>
-  ${group('breakfast', 'Breakfasts')}${group('lunch', 'Lunches')}${group('dinner', 'Dinners')}`;
+  ${group('breakfast', 'Breakfasts')}${group('mains', 'Mains (lunch or dinner)')}`;
 }
 function shortName(r) { if (!r) return ''; if (r.short) return r.short; const w = r.name.split(' '); let out = w[0]; if (w[1] && (out + ' ' + w[1]).length <= 11) out += ' ' + w[1]; return out; }
 function lateWarnings(w) {
@@ -301,6 +306,47 @@ document.getElementById('sheet').addEventListener('click', (e) => { if (e.target
 document.getElementById('sheet').addEventListener('submit', onSubmit);
 document.getElementById('sheet').addEventListener('change', (e) => { const chip = e.target.closest('.chip'); if (chip && e.target.type === 'checkbox') chip.classList.toggle('on', e.target.checked); });
 
+// ---------- drag and drop between grid cells ----------
+const drag = { src: null, ghost: null, over: null, active: false, x: 0, y: 0, moved: false };
+function onDragStart(e) {
+  const cell = e.target.closest('.cell'); if (!cell || cell.classList.contains('empty') || e.button > 0 || drag.src) return;
+  drag.src = cell; drag.x = e.clientX; drag.y = e.clientY; drag.active = false; drag.moved = false;
+  try { cell.setPointerCapture(e.pointerId); } catch {}
+  cell.addEventListener('pointermove', onDragMove); cell.addEventListener('pointerup', onDragEnd); cell.addEventListener('pointercancel', onDragEnd);
+}
+function onDragMove(e) {
+  if (!drag.src) return;
+  const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+  if (!drag.active) { if (Math.hypot(dx, dy) < 8) return; drag.active = true; drag.moved = true; startGhost(e); }
+  drag.ghost.style.transform = `translate(${e.clientX - drag.ghost.offsetWidth / 2}px, ${e.clientY - drag.ghost.offsetHeight / 2}px)`;
+  drag.ghost.style.display = 'none';
+  const under = document.elementFromPoint(e.clientX, e.clientY)?.closest('.cell');
+  drag.ghost.style.display = '';
+  if (drag.over && drag.over !== under) drag.over.classList.remove('over');
+  if (under && under !== drag.src) { under.classList.add('over'); drag.over = under; } else drag.over = null;
+  e.preventDefault();
+}
+function startGhost(e) {
+  document.querySelectorAll('.ghost').forEach((x) => x.remove());
+  const g = drag.src.cloneNode(true); g.classList.add('ghost'); g.style.width = drag.src.offsetWidth + 'px'; g.style.height = drag.src.offsetHeight + 'px';
+  document.body.appendChild(g); drag.ghost = g; drag.src.classList.add('lifted');
+}
+function onDragEnd(e) {
+  const src = drag.src; if (!src) return;
+  src.removeEventListener('pointermove', onDragMove); src.removeEventListener('pointerup', onDragEnd); src.removeEventListener('pointercancel', onDragEnd);
+  const target = drag.over; const wasActive = drag.active;
+  document.querySelectorAll('.ghost').forEach((x) => x.remove()); drag.over?.classList.remove('over'); src.classList.remove('lifted');
+  drag.src = null; drag.ghost = null; drag.over = null; drag.active = false;
+  if (!wasActive) return; // a plain tap: the click handler opens the sheet
+  suppressClick();
+  if (!target || e.type === 'pointercancel') return;
+  const w = W();
+  const a = { d: +src.dataset.day, s: src.dataset.slot }, b = { d: +target.dataset.day, s: target.dataset.slot };
+  const tmp = w.grid[a.d][a.s]; w.grid[a.d][a.s] = w.grid[b.d][b.s]; w.grid[b.d][b.s] = tmp;
+  portionsFromGrid(); render();
+}
+function suppressClick() { const stop = (ev) => { ev.stopPropagation(); ev.preventDefault(); }; document.addEventListener('click', stop, { capture: true, once: true }); setTimeout(() => document.removeEventListener('click', stop, { capture: true }), 400); }
+
 // ---------- events ----------
 function onAction(e) {
   const el = e.target.closest('[data-action]'); if (!el) return;
@@ -323,7 +369,7 @@ function onAction(e) {
     const day = +el.dataset.day, slot = el.dataset.slot, val = document.getElementById('cell-pick').value || null;
     w.grid[day][slot] = val; portionsFromGrid(); closeSheet(); render();
   } else if (a === 'open-recipe') { const r = recById(id); if (r) openSheet(recipeDetail(r)); }
-  else if (a === 'add-portion') { w.portions[id] = (w.portions[id] || 0) + 1; relayout(); closeSheet(); S.tab = 'plan'; render(); }
+  else if (a === 'add-portion') { w.portions[id] = (w.portions[id] || 0) + 1; relayout(); closeSheet(); S.tab = 'plan'; render({ top: true }); }
   else if (a === 'delete-recipe') { if (confirm('Delete this recipe?')) { S.customRecipes = S.customRecipes.filter((r) => r.id !== id); for (const wk of Object.values(S.weeks)) { delete wk.portions[id]; relayout(wk); } closeSheet(); render(); } }
   else if (a === 'add-recipe') { openSheet(recipeForm()); addIngRow(); }
   else if (a === 'add-link') openSheet(linkForm());
@@ -358,7 +404,7 @@ function onChange(e) {
 function onInput(e) {
   const t = e.target;
   if (t.dataset.search !== undefined) { S.search = t.value; refreshCard(renderRecipes); }
-  else if (t.dataset.planSearch !== undefined) { S.planSearch = t.value; const pos = window.scrollY; render(); const inp = document.querySelector('[data-plan-search]'); if (inp) { inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); } window.scrollTo(0, pos); }
+  else if (t.dataset.planSearch !== undefined) { S.planSearch = t.value; render(); const inp = document.querySelector('[data-plan-search]'); if (inp) { inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); } }
 }
 function refreshCard(fn) { const v = document.getElementById('view'); const card = v.querySelector('.card'); if (card) { const tmp = document.createElement('div'); tmp.innerHTML = fn(); card.innerHTML = tmp.querySelector('.card').innerHTML; } }
 function onSubmit(e) {

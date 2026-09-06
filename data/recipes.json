@@ -79,7 +79,8 @@
    "id": "bang_bang_salad",
    "name": "Bang bang crispy rice chicken salad",
    "slots": [
-    "lunch"
+    "lunch",
+    "dinner"
    ],
    "cold": true,
    "reheat": "none",
@@ -146,7 +147,8 @@
    "id": "soy_chicken_box",
    "name": "Soy sesame chicken rice box",
    "slots": [
-    "lunch"
+    "lunch",
+    "dinner"
    ],
    "cold": true,
    "reheat": "microwave",
@@ -204,7 +206,8 @@
    "id": "beef_noodle_salad",
    "name": "Spicy cucumber noodle salad with crispy beef",
    "slots": [
-    "lunch"
+    "lunch",
+    "dinner"
    ],
    "cold": true,
    "reheat": "none",
@@ -323,7 +326,8 @@
    "id": "pb_chicken_wrap",
    "name": "Peanut butter chicken wrap",
    "slots": [
-    "lunch"
+    "lunch",
+    "dinner"
    ],
    "cold": true,
    "reheat": "none",
@@ -424,7 +428,8 @@
    "id": "egg_fried_rice",
    "name": "Egg fried rice",
    "slots": [
-    "lunch"
+    "lunch",
+    "dinner"
    ],
    "cold": false,
    "reheat": "microwave",
@@ -476,8 +481,8 @@
    "id": "chilli",
    "name": "Chilli con carne",
    "slots": [
-    "dinner",
-    "lunch"
+    "lunch",
+    "dinner"
    ],
    "cold": false,
    "reheat": "microwave",
@@ -546,8 +551,8 @@
    "id": "bolognese",
    "name": "Bolognese and penne",
    "slots": [
-    "dinner",
-    "lunch"
+    "lunch",
+    "dinner"
    ],
    "cold": false,
    "reheat": "microwave",
@@ -603,6 +608,7 @@
    "id": "red_curry",
    "name": "Coconut chicken red curry",
    "slots": [
+    "lunch",
     "dinner"
    ],
    "cold": false,
@@ -666,6 +672,7 @@
    "id": "soy_honey_chicken",
    "name": "Soy garlic honey chicken with rice and broccoli",
    "slots": [
+    "lunch",
     "dinner"
    ],
    "cold": false,
@@ -723,6 +730,7 @@
    "id": "coconut_rice_chicken",
    "name": "One-pan soy chicken coconut rice",
    "slots": [
+    "lunch",
     "dinner"
    ],
    "cold": false,
@@ -781,6 +789,7 @@
    "id": "kbbq_chicken",
    "name": "KBBQ garlic chicken bowls",
    "slots": [
+    "lunch",
     "dinner"
    ],
    "cold": false,
@@ -848,6 +857,7 @@
    "id": "satay_chicken",
    "name": "Satay chicken skewers",
    "slots": [
+    "lunch",
     "dinner"
    ],
    "cold": false,
@@ -910,8 +920,8 @@
    "id": "buffalo_pasta",
    "name": "Buffalo chicken pasta",
    "slots": [
-    "dinner",
-    "lunch"
+    "lunch",
+    "dinner"
    ],
    "cold": false,
    "reheat": "microwave",
@@ -973,6 +983,7 @@
    "id": "fajitas",
    "name": "Chicken fajitas",
    "slots": [
+    "lunch",
     "dinner"
    ],
    "cold": false,
@@ -1021,6 +1032,7 @@
    "id": "chicken_sp_broccoli",
    "name": "Chicken, sweet potato and broccoli",
    "slots": [
+    "lunch",
     "dinner"
    ],
    "cold": false,
@@ -1071,6 +1083,7 @@
    "id": "beef_sweet_potato",
    "name": "Beef and sweet potato hash",
    "slots": [
+    "lunch",
     "dinner"
    ],
    "cold": false,
@@ -1122,6 +1135,7 @@
    "name": "Sambal satay chicken, coconut rice",
    "short": "Sambal",
    "slots": [
+    "lunch",
     "dinner"
    ],
    "cold": false,
@@ -1261,6 +1275,7 @@
    "name": "Crispy chicken & creamy pesto gnocchi",
    "short": "Gnocchi",
    "slots": [
+    "lunch",
     "dinner"
    ],
    "cold": false,
