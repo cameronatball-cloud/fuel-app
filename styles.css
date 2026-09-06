@@ -156,3 +156,10 @@ a { color: var(--accent); font-weight: 700; }
 .tbl.cmp { min-width: 560px; }
 .tbl.cmp th:first-child, .tbl.cmp td:first-child { position: sticky; left: 0; background: var(--panel); z-index: 1; min-width: 130px; }
 .tbl.cmp tr.best td:first-child { background: #f0fbe8; }
+
+.grid .hd { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.grid .hd .dayx { border: 0; background: #fff3d6; color: var(--muted); width: 22px; height: 22px; border-radius: 999px; font-size: 14px; line-height: 1; padding: 0; font-weight: 900; }
+.grid .hd.off span { text-decoration: line-through; opacity: .5; }
+.grid .hd.off .dayx { background: var(--lime); color: var(--lime-ink); }
+.cell.off { background: repeating-linear-gradient(135deg, #f6f1e4 0 6px, #fff 6px 12px); border: 0; }
+.check .qty { width: 84px; background: #fff; border: 2px solid var(--line); border-radius: 10px; padding: 6px 8px; font-size: 14px; }

@@ -50,10 +50,23 @@ export function aggregateNeeds(portions, recipes) {
   return needs;
 }
 
+// pantry[id] === true means "plenty"; a number means that much on hand (in the ingredient's unit).
 export function netPantry(needs, pantry) {
   const out = {};
-  for (const [id, q] of Object.entries(needs)) if (!pantry[id]) out[id] = q;
+  for (const [id, q] of Object.entries(needs)) {
+    const have = pantry[id];
+    if (have === true) continue;
+    const left = typeof have === 'number' ? q - have : q;
+    if (left > 1e-9) out[id] = round1(left);
+  }
   return out;
+}
+
+// Portions actually on the grid (what will be eaten), per recipe.
+export function gridCounts(grid) {
+  const counts = {};
+  for (const d of grid) for (const s of SLOTS) if (d[s]) counts[d[s]] = (counts[d[s]] || 0) + 1;
+  return counts;
 }
 
 export const packsFor = (need, size) => Math.max(1, Math.ceil(need / size - 1e-9));
@@ -135,9 +148,11 @@ export function cheapestSplit(needs, ingredients, shops = SHOPS, threshold = 1) 
 // where they break up the most repetition. 3. Each slot is filled day by day from the cook day:
 // a recipe that can't be frozen and would otherwise run out of fridge life is placed first;
 // after that, avoid repeating yesterday's meal and lead with whatever has most portions left.
-export function autoLayout(portions, recipes, cookDay = 0) {
+export function autoLayout(portions, recipes, cookDay = 0, days = [true, true, true, true, true, true, true]) {
   const rec = byId(recipes);
   const grid = DAYS.map(() => ({ breakfast: null, lunch: null, dinner: null }));
+  const targets = Array.from({ length: 7 }, (_, k) => (cookDay + k) % 7).filter((d) => days[d]);
+  const cap = targets.length;
   const entries = Object.entries(portions).filter(([rid, n]) => rec[rid] && n > 0).sort((a, b) => b[1] - a[1]);
   const counts = { breakfast: {}, lunch: {}, dinner: {} };
   const load = { breakfast: 0, lunch: 0, dinner: 0 };
@@ -148,7 +163,7 @@ export function autoLayout(portions, recipes, cookDay = 0) {
     if (rec[rid].slots.length === 1) continue;
     let unplaced = 0;
     for (let i = 0; i < n; i++) {
-      const open = rec[rid].slots.filter((s) => load[s] < 7);
+      const open = rec[rid].slots.filter((s) => load[s] < cap);
       if (!open.length) { unplaced++; continue; }
       const score = (s) => Math.max(0, ...Object.entries(counts[s]).filter(([r]) => r !== rid).map(([, c]) => c)) - (counts[s][rid] || 0);
       const slot = open.reduce((best, s) => (score(s) >= score(best) ? s : best), open[0]);
@@ -157,8 +172,8 @@ export function autoLayout(portions, recipes, cookDay = 0) {
     if (unplaced) overflow.push({ id: rid, unplaced });
   }
   for (const slot of SLOTS) {
-    const seq = sequence(counts[slot], rec);
-    seq.forEach((rid, k) => { grid[(cookDay + k) % 7][slot] = rid; });
+    const seq = sequence(counts[slot], rec, cap);
+    seq.forEach((rid, k) => { grid[targets[k]][slot] = rid; });
     const left = { ...counts[slot] };
     for (const rid of seq) left[rid] -= 1;
     for (const [rid, unplaced] of Object.entries(left)) {
@@ -171,13 +186,13 @@ export function autoLayout(portions, recipes, cookDay = 0) {
 }
 
 // Day-by-day pick for one slot. k = days after the cook day.
-export function sequence(countMap, rec) {
+export function sequence(countMap, rec, cap = 7) {
   const left = { ...countMap };
   const out = [];
   let prev = null;
   const isFresh = (rid) => rec[rid].cookMinutes === 0; // made on the day: no shelf-life constraint
   const deadline = (rid) => (rec[rid].freezer || isFresh(rid) ? Infinity : Math.max(0, rec[rid].fridgeDays - 1));
-  for (let k = 0; k < 7; k++) {
+  for (let k = 0; k < cap; k++) {
     let pool = Object.keys(left).filter((rid) => left[rid] > 0);
     if (!pool.length) break;
     // Must go now or it spoils: non-freezable recipes whose remaining portions need every day left in their window.
@@ -194,16 +209,18 @@ export function sequence(countMap, rec) {
   return out;
 }
 
-export function gridStats(grid, recipes, ingredients, snackProtein = 0) {
+export function gridStats(grid, recipes, ingredients, snackProtein = 0, days = [true, true, true, true, true, true, true]) {
   const rec = byId(recipes);
-  const perDay = grid.map((d) => {
+  const perDay = grid.map((d, i) => {
+    if (!days[i]) return 0;
     let p = snackProtein;
     for (const s of SLOTS) if (d[s] && rec[d[s]]) p += proteinPerPortion(rec[d[s]], ingredients);
     return Math.round(p);
   });
   const filled = grid.reduce((n, d) => n + SLOTS.filter((s) => d[s]).length, 0);
   const distinct = new Set(grid.flatMap((d) => SLOTS.map((s) => d[s]).filter(Boolean))).size;
-  return { perDay, filled, distinct, avg: Math.round(perDay.reduce((a, b) => a + b, 0) / 7) };
+  const active = days.filter(Boolean).length || 1;
+  return { perDay, filled, distinct, slots: active * 3, activeDays: active, avg: Math.round(perDay.reduce((a, b) => a + b, 0) / active) };
 }
 
 // ---------- storage ----------

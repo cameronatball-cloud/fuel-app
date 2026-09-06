@@ -24,7 +24,7 @@ function sundayOf(date) { const d = new Date(Date.UTC(date.getFullYear(), date.g
 function addDays(isoDate, n) { const d = new Date(isoDate + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return iso(d); }
 function fmtDate(isoDate) { const d = new Date(isoDate + 'T00:00:00Z'); return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' }); }
 const W = () => S.weeks[S.activeWeek];
-function blankWeek() { return { portions: {}, grid: null, overflow: [], cookDay: 0, ticks: {} }; }
+function blankWeek() { return { portions: {}, grid: null, overflow: [], cookDay: 0, ticks: {}, days: [true, true, true, true, true, true, true] }; }
 function setupWeeks() {
   const thisSun = sundayOf(new Date()), nextSun = addDays(thisSun, 7);
   // migrate v1 single-week state
@@ -33,10 +33,10 @@ function setupWeeks() {
   S.weeks[thisSun] ||= blankWeek(); S.weeks[nextSun] ||= blankWeek();
   if (!S.weeks[S.activeWeek]) S.activeWeek = thisSun;
   S.thisSun = thisSun; S.nextSun = nextSun;
-  for (const w of Object.values(S.weeks)) if (!w.grid) relayout(w);
+  for (const w of Object.values(S.weeks)) { w.days ||= [true, true, true, true, true, true, true]; if (!w.grid) relayout(w); }
   save();
 }
-function relayout(w = W()) { const { grid, overflow } = P.autoLayout(w.portions, REC(), w.cookDay); w.grid = grid; w.overflow = overflow; save(); }
+function relayout(w = W()) { const { grid, overflow } = P.autoLayout(w.portions, REC(), w.cookDay, w.days); w.grid = grid; w.overflow = overflow; save(); }
 function portionsFromGrid(w = W()) {
   const counts = {};
   for (const d of w.grid) for (const s of P.SLOTS) if (d[s]) counts[d[s]] = (counts[d[s]] || 0) + 1;
@@ -50,13 +50,14 @@ function weekSwitch() {
 // ---------- boot ----------
 async function boot() {
   try {
-    const [i, r] = await Promise.all([fetch('data/ingredients.json').then((x) => x.json()), fetch('data/recipes.json').then((x) => x.json())]);
-    DATA.ingredients = i.items; DATA.recipes = r.items; DATA.priceNote = i.checkedNote;
+    const [i, r, st] = await Promise.all([fetch('data/ingredients.json').then((x) => x.json()), fetch('data/recipes.json').then((x) => x.json()), fetch('data/stock.json').then((x) => x.json()).catch(() => null)]);
+    DATA.ingredients = i.items; DATA.recipes = r.items; DATA.priceNote = i.checkedNote; DATA.stock = st?.items || null; DATA.stockDate = st?.checked ? fmtDate(st.checked) : null;
   } catch (e) {
     document.getElementById('view').innerHTML = `<div class="bad-box">Couldn't load the recipe data. ${esc(e.message)}</div>`;
     return;
   }
   if (!S.pantry) { S.pantry = {}; for (const it of ING()) if (it.staple) S.pantry[it.id] = true; }
+  if (S.pantry.peppers_frozen !== undefined) { S.pantry.pepper = S.pantry.peppers_frozen; delete S.pantry.peppers_frozen; }
   setupWeeks();
   document.getElementById('tabs').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { S.tab = b.dataset.tab; save(); render({ top: true }); } });
   const v = document.getElementById('view');
@@ -85,7 +86,7 @@ function mealMeta(r, ing) {
 }
 function renderPlan() {
   const w = W(); const recipes = REC(), ing = ING();
-  const st = P.gridStats(w.grid, recipes, ing, S.settings.snackProtein);
+  const st = P.gridStats(w.grid, recipes, ing, S.settings.snackProtein, w.days);
   const target = S.settings.proteinTarget;
   const max = Math.max(target * 1.2, ...st.perDay);
   const bars = st.perDay.map((p) => `<div class="bar ${p < target ? 'low' : ''}"><b>${p}</b><i style="height:${Math.round((p / max) * 100)}%"></i></div>`).join('');
@@ -101,9 +102,10 @@ function renderPlan() {
     return list.length ? `<h2>${title}</h2><div class="card">${list.map(row).join('')}</div>` : '';
   };
   const overflow = (w.overflow || []).map((o) => `<div class="warn-box">${esc(recById(o.id)?.name)}: ${o.unplaced} portion${o.unplaced > 1 ? 's' : ''} won't fit in the week. Drop the count or move something.</div>`).join('');
-  const gridHtml = `<div class="grid"><div></div>${P.DAYS.map((d) => `<div class="hd">${d}</div>`).join('')}
+  const gridHtml = `<div class="grid"><div></div>${P.DAYS.map((d, i) => `<div class="hd ${w.days[i] ? '' : 'off'}"><span>${d}</span><button class="dayx" data-action="dayx" data-day="${i}" title="${w.days[i] ? 'Skip this day' : 'Put this day back'}">${w.days[i] ? '×' : '+'}</button></div>`).join('')}
     ${P.SLOTS.map((s) => `<div class="lbl">${({ breakfast: 'Bfast', lunch: 'Lunch', dinner: 'Dinner' })[s]}</div>` + w.grid.map((d, i) => {
       const id = d[s]; const r = id && recById(id);
+      if (!w.days[i]) return `<div class="cell off"></div>`;
       if (!r) return `<button class="cell empty" data-action="cell" data-day="${i}" data-slot="${s}">+</button>`;
       const tp = P.tubPlan(r, w.grid, w.cookDay);
       const cls = tp.fresh ? '' : tp.freezer.includes(i) ? 'frozen' : tp.late.includes(i) ? 'late' : '';
@@ -117,7 +119,7 @@ function renderPlan() {
     : `<p class="muted">Nothing picked yet. Tick meals below and they land in the grid.</p>`;
   return `<h1>Plan</h1>${weekSwitch()}
   <div class="card"><h3>${weekLabel(S.activeWeek)} <span class="muted small">from Sun ${fmtDate(S.activeWeek)}</span></h3>${summary}
-    <div class="stat-grid" style="margin-top:10px"><div class="stat"><b>${st.filled}<span>/21</span></b><span>meal slots filled</span></div><div class="stat"><b>${st.distinct}</b><span>different meals</span></div><div class="stat"><b>${st.avg}g</b><span>avg protein/day</span></div></div>
+    <div class="stat-grid" style="margin-top:10px"><div class="stat"><b>${st.filled}<span>/${st.slots}</span></b><span>meal slots filled</span></div><div class="stat"><b>${st.distinct}</b><span>different meals</span></div><div class="stat"><b>${st.avg}g</b><span>avg protein/day</span></div></div>
     <div class="bars" style="margin-top:26px">${bars}</div><div class="bars-labels">${P.DAYS.map((d) => `<div>${d}</div>`).join('')}</div>
     <p class="small muted">Target ${target}g a day including a ${S.settings.snackProtein}g snack. Amber days are under.</p></div>
   ${chosen.length ? `<div class="card">${gridHtml}
@@ -145,8 +147,9 @@ function defaultPortions(r) { return r.slots[0] === 'breakfast' ? 4 : 3; }
 // ----- Cook -----
 function renderCook() {
   const w = W(); const recipes = REC(), ing = ING();
-  const rs = P.runSheet(w.portions, recipes);
-  const fresh = Object.entries(w.portions).filter(([rid, n]) => n > 0 && recById(rid)?.cookMinutes === 0).map(([rid, n]) => ({ recipe: recById(rid), portions: n }));
+  const counts = P.gridCounts(w.grid);
+  const rs = P.runSheet(counts, recipes);
+  const fresh = Object.entries(counts).filter(([rid, n]) => n > 0 && recById(rid)?.cookMinutes === 0).map(([rid, n]) => ({ recipe: recById(rid), portions: n }));
   const head = `<h1>Cook</h1>${weekSwitch()}`;
   if (!rs.list.length && !fresh.length) return `${head}<div class="card"><p>Nothing picked for ${weekLabel(S.activeWeek).toLowerCase()} yet. Tick meals on the Plan tab.</p></div>`;
   const cookDay = P.DAYS[w.cookDay];
@@ -177,8 +180,11 @@ function renderCook() {
 // ----- Shop -----
 function renderShop() {
   const w = W(); const ing = ING(), recipes = REC();
-  const needsAll = P.aggregateNeeds(w.portions, recipes);
+  const counts = P.gridCounts(w.grid);
+  const needsAll = P.aggregateNeeds(counts, recipes);
   const needs = P.netPantry(needsAll, S.pantry);
+  const usedBy = {};
+  for (const [rid, n] of Object.entries(counts)) { const r = recById(rid); if (!r) continue; for (const x of r.ingredients) (usedBy[x.id] ||= []).push(`${r.short || r.name} ×${n}`); }
   const head = `<h1>Shop</h1>${weekSwitch()}`;
   if (!Object.keys(needsAll).length) return `${head}<div class="card"><p>Nothing picked for ${weekLabel(S.activeWeek).toLowerCase()} yet. Tick meals on the Plan tab.</p></div>`;
   const ranked = P.compareShops(needs, ing);
@@ -200,9 +206,11 @@ function renderShop() {
   const shopCard = (b, open) => {
     const lines = b.lines.map((l) => {
       const k = `${b.shop}:${l.id}`; const done = !!w.ticks[k];
-      return `<label class="line ${done ? 'done' : ''}"><input type="checkbox" data-tick="${k}" ${done ? 'checked' : ''}><span class="grow"><span class="name">${l.n > 1 ? `${l.n} × ` : ''}${esc(l.pack.name)}</span><span class="sub">need ${P.fmtQty(P.round1(l.need), l.unit)} of ${esc(l.name)}</span></span><span class="cost">${P.gbp(l.cost)}</span></label>`;
+      return `<label class="line ${done ? 'done' : ''}"><input type="checkbox" data-tick="${k}" ${done ? 'checked' : ''}><span class="grow"><span class="name">${l.n > 1 ? `${l.n} × ` : ''}${esc(l.pack.name)}</span><span class="sub">${esc((usedBy[l.id] || []).join(', '))}</span></span><span class="cost">${P.gbp(l.cost)}</span></label>`;
     }).join('');
-    const missing = b.missing.length ? `<div class="warn-box">No ${P.SHOP_NAMES[b.shop]} price on file for: ${b.missing.map((m) => esc(m.name)).join(', ')}. ${b.shop === 'lidl' ? 'Lidl publishes nothing online; a shelf photo fixes this.' : 'Tell Claude and it gets added.'}</div>` : '';
+    const notSold = b.missing.filter((m) => (ingById(m.id)?.unavailable || []).includes(b.shop)).map((m) => esc(m.name));
+    const unpriced = b.missing.filter((m) => !(ingById(m.id)?.unavailable || []).includes(b.shop)).map((m) => esc(m.name));
+    const missing = (notSold.length ? `<div class="warn-box">Not sold at ${P.SHOP_NAMES[b.shop]}: ${notSold.join(', ')}.</div>` : '') + (unpriced.length ? `<div class="warn-box">No ${P.SHOP_NAMES[b.shop]} price on file for: ${unpriced.join(', ')}. ${b.shop === 'lidl' ? 'Lidl publishes no prices online; a shelf photo fixes this.' : b.shop === 'aldi' ? "Aldi's site lists nothing; the Aldi prices here come from Tesco and Sainsbury's price-match labels." : 'Tell Claude and it gets added.'}</div>` : '');
     return `<details class="shop-card ${b === best ? 'best' : ''}" ${open ? 'open' : ''}><summary><span><b>${P.SHOP_NAMES[b.shop]}</b>${b === best ? ' <span class="badge ok">cheapest</span>' : ''}${b.missing.length ? ` <span class="badge warn">${b.missing.length} unpriced</span>` : ''}</span><span class="total">${P.gbp(b.total)}</span></summary>${missing}<div>${lines}</div></details>`;
   };
   const splitHtml = split ? `<div class="card"><h3>Two shops saves ${P.gbp(split.saving)}</h3><p class="small muted">${P.SHOP_NAMES[split.shops[0]]} + ${P.SHOP_NAMES[split.shops[1]]} = ${P.gbp(split.total)} against ${P.gbp(best.total)} at ${P.SHOP_NAMES[best.shop]}. Only worth it if you're passing both.</p>
@@ -289,8 +297,11 @@ function renderPantry() {
   const groups = {};
   for (const it of ING()) (groups[it.category] ||= []).push(it);
   const order = ['protein', 'dairy', 'carb', 'veg', 'fruit', 'tin', 'sauce', 'spice', 'cupboard'];
-  const html = order.filter((g) => groups[g]).map((g) => `<h2>${g}</h2><div class="card">${groups[g].map((it) => `<label class="check"><input type="checkbox" data-pantry="${it.id}" ${S.pantry[it.id] ? 'checked' : ''}><span>${esc(it.name)}${(it.packs || []).length ? '' : '<span class="sub">no price on file</span>'}</span></label>`).join('')}</div>`).join('');
-  return `<h1>Pantry</h1><p class="small muted">Tick what you already have. Ticked items are left off the shopping list. Staples come pre-ticked.</p>${html}
+  const row = (it) => { const v = S.pantry[it.id]; const on = v === true || typeof v === 'number';
+    return `<div class="check"><input type="checkbox" data-pantry="${it.id}" ${on ? 'checked' : ''}><span class="grow">${esc(it.name)}${(it.packs || []).length ? '' : '<span class="sub">no price on file</span>'}</span>${on && !it.staple ? `<input class="qty" type="number" step="any" placeholder="plenty" data-pantry-qty="${it.id}" value="${typeof v === 'number' ? v : ''}"><span class="small muted">${it.unit === 'each' ? '' : it.unit}</span>` : ''}</div>`; };
+  const html = order.filter((g) => groups[g]).map((g) => `<h2>${g}</h2><div class="card">${groups[g].map(row).join('')}</div>`).join('');
+  return `<h1>Pantry</h1><p class="small muted">Tick what you already have. Leave the amount blank for "plenty", or type how much (grams, ml or a count) and the shop list buys only the difference.</p>
+  <button class="btn block" data-action="load-stock" style="margin-bottom:12px">Load my stock from ${DATA.stockDate || 'the last photo check'}</button>${html}
   <h2>Settings</h2><div class="card">
     <label class="field">Protein target per day (g)<input type="number" data-setting="proteinTarget" value="${S.settings.proteinTarget}"></label>
     <label class="field">Daily snack protein counted (g), e.g. one scoop<input type="number" data-setting="snackProtein" value="${S.settings.snackProtein}"></label>
@@ -358,6 +369,8 @@ function onAction(e) {
   } else if (a === 'week') { S.activeWeek = el.dataset.week; save(); render(); }
   else if (a === 'cookday') { w.cookDay = +el.dataset.day; relayout(); render(); }
   else if (a === 'relayout') { relayout(); render(); }
+  else if (a === 'dayx') { const w = W(); const i = +el.dataset.day; w.days[i] = !w.days[i]; relayout(w); render(); }
+  else if (a === 'load-stock') { if (!DATA.stock) { alert('No stock file loaded.'); return; } if (confirm(`Tick everything from the ${DATA.stockDate} stock check? Items you have already ticked are kept.`)) { for (const [id, v] of Object.entries(DATA.stock)) if (S.pantry[id] === undefined) S.pantry[id] = v; save(); render(); } }
   else if (a === 'clear-week') { if (confirm(`Clear every meal from ${weekLabel(S.activeWeek).toLowerCase()}?`)) { w.portions = {}; w.ticks = {}; relayout(); render(); } }
   else if (a === 'cell') {
     const day = +el.dataset.day, slot = el.dataset.slot;
@@ -398,7 +411,8 @@ function onChange(e) {
     relayout(); render();
   }
   else if (t.dataset.tick) { w.ticks[t.dataset.tick] = t.checked; save(); t.closest('.line').classList.toggle('done', t.checked); }
-  else if (t.dataset.pantry) { if (t.checked) S.pantry[t.dataset.pantry] = true; else delete S.pantry[t.dataset.pantry]; save(); }
+  else if (t.dataset.pantry) { if (t.checked) S.pantry[t.dataset.pantry] = true; else delete S.pantry[t.dataset.pantry]; save(); render(); }
+  else if (t.dataset.pantryQty !== undefined) { const v = parseFloat(t.value); S.pantry[t.dataset.pantryQty] = Number.isFinite(v) && v > 0 ? v : true; save(); }
   else if (t.dataset.setting) { S.settings[t.dataset.setting] = +t.value || 0; save(); }
 }
 function onInput(e) {

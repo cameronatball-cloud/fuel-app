@@ -642,8 +642,8 @@
      "qty": 0.25
     },
     {
-     "id": "peppers_frozen",
-     "qty": 60
+     "id": "pepper",
+     "qty": 0.5
     },
     {
      "id": "honey",
@@ -958,8 +958,8 @@
      "qty": 10
     },
     {
-     "id": "peppers_frozen",
-     "qty": 60
+     "id": "pepper",
+     "qty": 0.5
     },
     {
      "id": "stock_cube",
@@ -1009,8 +1009,8 @@
      "qty": 10
     },
     {
-     "id": "peppers_frozen",
-     "qty": 100
+     "id": "pepper",
+     "qty": 1.0
     },
     {
      "id": "cheddar",
@@ -1106,8 +1106,8 @@
      "qty": 300
     },
     {
-     "id": "peppers_frozen",
-     "qty": 60
+     "id": "pepper",
+     "qty": 0.5
     },
     {
      "id": "paprika",

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { costPerPortion, aggregateNeeds, netPantry, packsFor, basketAt, compareShops, cheapestSplit, autoLayout, gridStats, tubPlan, proteinPerPortion, runSheet } from '../planner.js';
+import { gridCounts, costPerPortion, aggregateNeeds, netPantry, packsFor, basketAt, compareShops, cheapestSplit, autoLayout, gridStats, tubPlan, proteinPerPortion, runSheet } from '../planner.js';
 
 const ingredients = [
   { id: 'chicken', name: 'Chicken breast', unit: 'g', protein: 22.5, packs: [
@@ -34,6 +34,8 @@ test('aggregate and net pantry', () => {
   const needs = aggregateNeeds({ curry: 4, salad: 3 }, recipes);
   assert.deepEqual(needs, { chicken: 4 * 175 + 3 * 150, rice: 4 * 75 + 3 * 60, soy: 30 });
   assert.deepEqual(netPantry(needs, { rice: true }), { chicken: 1150, soy: 30 });
+  // a number in the pantry is netted off; enough on hand removes the line entirely
+  assert.deepEqual(netPantry(needs, { rice: 200, chicken: 2000 }), { rice: 280, soy: 30 });
 });
 
 test('packs round up, never zero', () => {
@@ -134,4 +136,15 @@ test('costPerPortion uses cheapest unit price and lists unpriced', () => {
   const c = costPerPortion(recipes[1], ingredients); // 150g chicken @ 6.69/kg, 60g rice @ 1.5/kg (aldi), soy unpriced
   assert.equal(c.cost, Math.round((150 * 0.00669 + 60 * 0.0015) * 100) / 100);
   assert.deepEqual(c.unpriced, ['Soy']);
+});
+
+test('autoLayout skips disabled days and gridCounts reflects what is placed', () => {
+  const days = [false, true, true, true, true, true, true]; // Sunday off
+  const { grid, overflow } = autoLayout({ curry: 7, eggs: 7 }, recipes, 0, days);
+  assert.equal(grid[0].dinner, null); assert.equal(grid[0].breakfast, null);
+  assert.equal(grid.filter((d) => d.dinner === 'curry').length, 6);
+  assert.deepEqual(overflow.sort((a, b) => a.id.localeCompare(b.id)), [{ id: 'curry', unplaced: 1 }, { id: 'eggs', unplaced: 1 }]);
+  assert.deepEqual(gridCounts(grid), { eggs: 6, curry: 6 });
+  const s = gridStats(grid, recipes, ingredients, 0, days);
+  assert.equal(s.slots, 18); assert.equal(s.activeDays, 6); assert.equal(s.perDay[0], 0);
 });
