@@ -130,3 +130,22 @@ hr { border: 0; border-top: 1px solid #f3ecdc; margin: 14px 0; }
 .day-pick button { flex: 1; background: var(--panel-2); border: 0; border-radius: 10px; padding: 8px 0; font-size: 12px; color: var(--muted); font-weight: 800; }
 .day-pick button.on { background: var(--coral); color: #fff; }
 a { color: var(--accent); font-weight: 700; }
+/* pick list, week switch, comparison tables */
+.week-switch { margin: -4px 0 12px; }
+.week-switch .chip { padding: 8px 14px; }
+.chip.meal { border: 0; font-weight: 800; }
+.recipe-row.pick .tick { width: 26px; height: 26px; accent-color: var(--accent); flex: none; }
+.recipe-row.pick.on { background: #fff7fa; border-radius: 12px; padding-left: 6px; padding-right: 6px; }
+.recipe-row.pick .stepper button { width: 36px; }
+.tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tbl th { text-align: left; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; padding: 6px 6px 6px 0; border-bottom: 2px solid var(--line); }
+.tbl td { padding: 8px 6px 8px 0; border-bottom: 1px solid #f3ecdc; vertical-align: top; }
+.tbl tr:last-child td { border-bottom: 0; }
+.tbl .r { text-align: right; white-space: nowrap; }
+.tbl tr.best td { background: #f0fbe8; }
+.tbl td.min { color: #15803d; font-weight: 900; background: #ecfdf3; }
+.tbl .sub { display: block; font-size: 11px; color: var(--muted); }
+.scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 -6px; padding: 0 6px; }
+.tbl.cmp { min-width: 560px; }
+.tbl.cmp th:first-child, .tbl.cmp td:first-child { position: sticky; left: 0; background: var(--panel); z-index: 1; min-width: 130px; }
+.tbl.cmp tr.best td:first-child { background: #f0fbe8; }

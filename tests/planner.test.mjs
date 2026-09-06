@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { aggregateNeeds, netPantry, packsFor, basketAt, compareShops, cheapestSplit, autoLayout, gridStats, tubPlan, proteinPerPortion, runSheet } from '../planner.js';
+import { costPerPortion, aggregateNeeds, netPantry, packsFor, basketAt, compareShops, cheapestSplit, autoLayout, gridStats, tubPlan, proteinPerPortion, runSheet } from '../planner.js';
 
 const ingredients = [
   { id: 'chicken', name: 'Chicken breast', unit: 'g', protein: 22.5, packs: [
@@ -128,4 +128,10 @@ test('runSheet orders longest cook first and skips no-cook recipes', () => {
   const r = runSheet({ eggs: 7, salad: 3, curry: 4 }, recipes);
   assert.deepEqual(r.list.map((x) => x.recipe.id), ['curry', 'salad']);
   assert.equal(r.minutes, 65);
+});
+
+test('costPerPortion uses cheapest unit price and lists unpriced', () => {
+  const c = costPerPortion(recipes[1], ingredients); // 150g chicken @ 6.69/kg, 60g rice @ 1.5/kg (aldi), soy unpriced
+  assert.equal(c.cost, Math.round((150 * 0.00669 + 60 * 0.0015) * 100) / 100);
+  assert.deepEqual(c.unpriced, ['Soy']);
 });

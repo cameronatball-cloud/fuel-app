@@ -19,6 +19,25 @@ export function proteinPerPortion(recipe, ingredients) {
   return Math.round(p);
 }
 
+// Cheapest per-unit price across all packs at any shop; null if unpriced.
+export function unitPrice(item) {
+  let best = null;
+  for (const p of item.packs || []) { const u = p.price / p.size; if (best === null || u < best) best = u; }
+  return best;
+}
+
+// Estimated ingredient cost of one portion at the cheapest listed prices. `unpriced` lists ingredients with no price.
+export function costPerPortion(recipe, ingredients) {
+  const ing = byId(ingredients);
+  let cost = 0; const unpriced = [];
+  for (const { id, qty } of recipe.ingredients) {
+    const it = ing[id]; if (!it) continue;
+    const u = unitPrice(it);
+    if (u === null) unpriced.push(it.name); else cost += u * qty;
+  }
+  return { cost: round2(cost), unpriced };
+}
+
 // ---------- needs ----------
 export function aggregateNeeds(portions, recipes) {
   const rec = byId(recipes);

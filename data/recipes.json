@@ -76,96 +76,6 @@
    "short": "Skyr"
   },
   {
-   "id": "overnight_oats",
-   "name": "Protein overnight oats",
-   "slots": [
-    "breakfast"
-   ],
-   "cold": true,
-   "reheat": "none",
-   "fridgeDays": 4,
-   "freezer": false,
-   "cookMinutes": 10,
-   "equipment": [],
-   "source": "basic",
-   "ingredients": [
-    {
-     "id": "oats",
-     "qty": 60
-    },
-    {
-     "id": "skyr",
-     "qty": 150
-    },
-    {
-     "id": "protein_powder",
-     "qty": 30
-    },
-    {
-     "id": "milk",
-     "qty": 100
-    },
-    {
-     "id": "frozen_fruit",
-     "qty": 80
-    },
-    {
-     "id": "honey",
-     "qty": 8
-    }
-   ],
-   "method": [
-    "Per tub: 60g oats, 150g skyr, a scoop of powder, 100ml milk, a handful of frozen fruit, a squeeze of honey. Stir, lid, fridge.",
-    "Make up to 4 tubs on Sunday; they're best from day 1 to day 4."
-   ],
-   "notes": "Batchable breakfast. Eat cold, no microwave needed.",
-   "short": "Oats"
-  },
-  {
-   "id": "omelette",
-   "name": "Cheese and onion omelette",
-   "slots": [
-    "breakfast",
-    "lunch"
-   ],
-   "cold": false,
-   "reheat": "none",
-   "fridgeDays": 0,
-   "freezer": false,
-   "cookMinutes": 0,
-   "equipment": [
-    "hob"
-   ],
-   "source": "basic",
-   "ingredients": [
-    {
-     "id": "egg",
-     "qty": 4
-    },
-    {
-     "id": "cheddar",
-     "qty": 40
-    },
-    {
-     "id": "onion",
-     "qty": 0.5
-    },
-    {
-     "id": "peppers_frozen",
-     "qty": 60
-    },
-    {
-     "id": "butter",
-     "qty": 8
-    }
-   ],
-   "method": [
-    "Soften half an onion and a handful of frozen peppers in butter, pour over 4 beaten eggs, cheese on top, fold when set."
-   ],
-   "notes": "Cook fresh, 10 minutes.",
-   "short": "Omelette"
-  },
-  {
    "id": "bang_bang_salad",
    "name": "Bang bang crispy rice chicken salad",
    "slots": [
@@ -584,10 +494,6 @@
      "qty": 125
     },
     {
-     "id": "onion",
-     "qty": 0.3
-    },
-    {
      "id": "kidney_beans",
      "qty": 60
     },
@@ -629,7 +535,7 @@
     }
    ],
    "method": [
-    "Brown the mince in a dry pan, add the diced onion and garlic paste, then cumin, paprika and chilli powder for a minute.",
+    "Brown the mince in a dry pan, add garlic paste, then cumin, paprika and chilli powder for a minute.",
     "Add chopped tomatoes, purée, drained beans, crumbled stock cube and a splash of water. Simmer 25 minutes with the lid off until thick.",
     "Cook the rice separately. Tub rice on one side, chilli on the other. Cheese on top when eating."
    ],
@@ -656,10 +562,6 @@
     {
      "id": "beef_mince_5",
      "qty": 165
-    },
-    {
-     "id": "onion",
-     "qty": 0.3
     },
     {
      "id": "chopped_tomatoes",
@@ -691,7 +593,7 @@
     }
    ],
    "method": [
-    "Brown the mince, add onion and garlic paste, then tomatoes, purée, stock cube and paprika. Simmer 30 minutes.",
+    "Brown the mince, add garlic paste, then tomatoes, purée, stock cube and paprika. Simmer 30 minutes.",
     "Boil the penne, drain, stir through the sauce so it doesn't dry out in the tub. Cheese on top when eating."
    ],
    "notes": "Freezes for 3 months. Bulk it with 100g frozen mixed veg per portion if you want more volume.",
@@ -726,10 +628,6 @@
      "qty": 100
     },
     {
-     "id": "onion",
-     "qty": 0.25
-    },
-    {
      "id": "ginger_garlic_paste",
      "qty": 6
     },
@@ -756,7 +654,7 @@
    ],
    "method": [
     "Sear the diced chicken in a hot pan 3 minutes, set aside.",
-    "Soften onion, add ginger-garlic paste, then the curry paste; fry 1 minute.",
+    "Fry the ginger-garlic paste, then the curry paste; fry 1 minute.",
     "Stir in a third of the coconut milk until it bubbles, then the rest plus stock (cube in 100ml water per 4 portions), honey and soy (standing in for fish sauce and sugar).",
     "Chicken and peppers back in; simmer 10 minutes uncovered.",
     "Rice cooked separately. Tub rice and curry side by side."
@@ -948,7 +846,7 @@
   },
   {
    "id": "satay_chicken",
-   "name": "Satay chicken with rice",
+   "name": "Satay chicken skewers",
    "slots": [
     "dinner"
    ],
@@ -1005,7 +903,7 @@
     "Coat chunks of chicken in a quarter of the sauce, air-fry 200°C 14 minutes or pan-fry.",
     "Warm the rest of the sauce in a pan. Tub rice, chicken, sauce over. Cucumber in a pot."
    ],
-   "notes": "Both satay reels merged; lime and fish sauce dropped for cost.",
+   "notes": "From the cook.withcourtney reel. Lime and fish sauce dropped for cost; skewers optional.",
    "short": "Satay"
   },
   {
@@ -1050,10 +948,6 @@
      "qty": 10
     },
     {
-     "id": "onion",
-     "qty": 0.25
-    },
-    {
      "id": "peppers_frozen",
      "qty": 60
     },
@@ -1068,7 +962,7 @@
    ],
    "method": [
     "Blend cottage cheese with sriracha, garlic paste and a splash of stock until smooth.",
-    "Fry the chicken with paprika, set aside. Soften onion and peppers, add purée for a minute, then the blended sauce.",
+    "Fry the chicken with paprika, set aside. Soften the peppers, add purée for a minute, then the blended sauce.",
     "Add the dry penne and enough stock to cover; lid on, simmer until the pasta is cooked, topping up stock as needed.",
     "Chicken back in. Tub."
    ],
@@ -1108,10 +1002,6 @@
      "qty": 100
     },
     {
-     "id": "onion",
-     "qty": 0.5
-    },
-    {
      "id": "cheddar",
      "qty": 30
     },
@@ -1121,7 +1011,7 @@
     }
    ],
    "method": [
-    "Slice chicken, toss in seasoning, fry hard with the onion and peppers.",
+    "Slice chicken, toss in seasoning, fry hard with the peppers.",
     "Tub the filling. Wraps stay in the packet; cheese and a spoon of skyr when serving."
    ],
    "notes": "Filling freezes. Assemble the wraps fresh: 2 minutes.",
@@ -1203,10 +1093,6 @@
      "qty": 300
     },
     {
-     "id": "onion",
-     "qty": 0.3
-    },
-    {
      "id": "peppers_frozen",
      "qty": 60
     },
@@ -1225,11 +1111,229 @@
    ],
    "method": [
     "Cube and air-fry the sweet potato 200°C 20 minutes.",
-    "Brown the mince with onion, peppers, garlic paste, paprika and cumin.",
+    "Brown the mince with peppers, garlic paste, paprika and cumin.",
     "Fold the potato through. Tub."
    ],
    "notes": "Freezes. Fried egg on top when eating at home.",
    "short": "Beef hash"
+  },
+  {
+   "id": "sambal_satay",
+   "name": "Sambal satay chicken, coconut rice",
+   "short": "Sambal",
+   "slots": [
+    "dinner"
+   ],
+   "cold": false,
+   "reheat": "microwave",
+   "fridgeDays": 3,
+   "freezer": true,
+   "cookMinutes": 45,
+   "equipment": [
+    "hob"
+   ],
+   "source": "https://www.instagram.com/reel/DannyNlxRNK/",
+   "ingredients": [
+    {
+     "id": "chicken_thigh",
+     "qty": 175
+    },
+    {
+     "id": "garlic_paste",
+     "qty": 6
+    },
+    {
+     "id": "ginger_garlic_paste",
+     "qty": 4
+    },
+    {
+     "id": "turmeric",
+     "qty": 1
+    },
+    {
+     "id": "sriracha",
+     "qty": 12
+    },
+    {
+     "id": "soy_sauce",
+     "qty": 15
+    },
+    {
+     "id": "honey",
+     "qty": 5
+    },
+    {
+     "id": "lemon",
+     "qty": 0.25
+    },
+    {
+     "id": "peanut_butter",
+     "qty": 25
+    },
+    {
+     "id": "coconut_milk",
+     "qty": 120
+    },
+    {
+     "id": "basmati",
+     "qty": 75
+    },
+    {
+     "id": "cucumber",
+     "qty": 0.25
+    }
+   ],
+   "method": [
+    "Marinate the thighs in garlic paste, ginger-garlic paste, turmeric, half the sriracha, soy, honey and a squeeze of lemon (sriracha and lemon stand in for sambal and lime). Longer is better; overnight if you can.",
+    "Coconut rice: rinse the rice, cook it in coconut milk topped up with water (1 cup rice : 1.5 cups fluid), lid on, low, 12–15 min, then rest 10 min.",
+    "Satay sauce: warm peanut butter, a splash of coconut milk, the rest of the sriracha, a little soy and honey until smooth and pourable.",
+    "Sear the thighs 3–4 min a side, then lower the heat until cooked through. Slice.",
+    "Tub rice, chicken, sauce over. Cucumber in a pot."
+   ],
+   "notes": "From the foodie_mette reel. Lemongrass and lime dropped for cost."
+  },
+  {
+   "id": "green_goddess",
+   "name": "Green goddess chicken & potato salad",
+   "short": "Goddess",
+   "slots": [
+    "lunch",
+    "dinner"
+   ],
+   "cold": true,
+   "reheat": "none",
+   "fridgeDays": 2,
+   "freezer": false,
+   "cookMinutes": 40,
+   "equipment": [
+    "hob"
+   ],
+   "source": "https://www.instagram.com/reel/DbiA7T3zbpo/",
+   "ingredients": [
+    {
+     "id": "chicken_breast",
+     "qty": 150
+    },
+    {
+     "id": "baby_potatoes",
+     "qty": 250
+    },
+    {
+     "id": "skyr",
+     "qty": 60
+    },
+    {
+     "id": "avocado",
+     "qty": 0.5
+    },
+    {
+     "id": "parsley",
+     "qty": 15
+    },
+    {
+     "id": "lemon",
+     "qty": 0.5
+    },
+    {
+     "id": "garlic_paste",
+     "qty": 4
+    },
+    {
+     "id": "nduja",
+     "qty": 25
+    },
+    {
+     "id": "olive_oil",
+     "qty": 8
+    }
+   ],
+   "method": [
+    "Poach the chicken: cover with salted cold water, bring to a gentle simmer, turn off the heat, lid on, leave 15 min. Rest, then pull apart.",
+    "Boil the baby potatoes 12–15 min until tender, drain, let them steam dry.",
+    "Green goddess: blend parsley, avocado, skyr, garlic paste and lemon juice with a splash of water until smooth. Season well.",
+    "Crisp the 'nduja in a dry pan until it breaks down and the fat renders.",
+    "Toss warm potatoes and chicken through the dressing. Tub. 'Nduja and its oil over the top when serving."
+   ],
+   "notes": "From the erickbadgr reel, cheapened: tarragon, chives and anchovies dropped, skyr for Greek yoghurt. The 'nduja is most of the cost; leave it out and it's a £2 lunch."
+  },
+  {
+   "id": "pesto_gnocchi",
+   "name": "Crispy chicken & creamy pesto gnocchi",
+   "short": "Gnocchi",
+   "slots": [
+    "dinner"
+   ],
+   "cold": false,
+   "reheat": "microwave",
+   "fridgeDays": 3,
+   "freezer": false,
+   "cookMinutes": 45,
+   "equipment": [
+    "hob"
+   ],
+   "source": "https://www.instagram.com/reel/DYVLHwvJfDy/",
+   "ingredients": [
+    {
+     "id": "chicken_breast",
+     "qty": 175
+    },
+    {
+     "id": "flour",
+     "qty": 20
+    },
+    {
+     "id": "egg",
+     "qty": 0.5
+    },
+    {
+     "id": "breadcrumbs",
+     "qty": 40
+    },
+    {
+     "id": "parmesan",
+     "qty": 40
+    },
+    {
+     "id": "parsley",
+     "qty": 5
+    },
+    {
+     "id": "gnocchi",
+     "qty": 175
+    },
+    {
+     "id": "butter",
+     "qty": 8
+    },
+    {
+     "id": "olive_oil",
+     "qty": 8
+    },
+    {
+     "id": "garlic_paste",
+     "qty": 5
+    },
+    {
+     "id": "double_cream",
+     "qty": 80
+    },
+    {
+     "id": "pesto",
+     "qty": 25
+    },
+    {
+     "id": "lemon",
+     "qty": 0.25
+    }
+   ],
+   "method": [
+    "Bash the chicken thin. Three bowls: flour, beaten egg, breadcrumbs mixed with half the parmesan and the parsley. Coat each piece.",
+    "Fry in oil over medium-high until golden both sides and cooked through. Rest, slice.",
+    "Boil the gnocchi per the pack; keep a mug of the water.",
+    "Melt butter with a little oil, fry the garlic paste 30 seconds, add the cream and let it thicken. Stir in pesto and a splash of gnocchi water.",
+    "Toss the gnocchi through, off the heat add lemon juice, pepper and the rest of the parmesan. Tub with the chicken on top."
+   ],
+   "notes": "From the poggiolieats reel. The dearest dinner on the list and the least lean; a treat, not a staple."
   }
  ]
 }
