@@ -1,7 +1,7 @@
 import * as P from './planner.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v9';
+const APP_VERSION = 'v10';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 
@@ -67,8 +67,8 @@ function weekSwitch() {
 // ---------- boot ----------
 async function boot() {
   try {
-    const [i, r, st] = await Promise.all([fetch('data/ingredients.json').then((x) => x.json()), fetch('data/recipes.json').then((x) => x.json()), fetch('data/stock.json').then((x) => x.json()).catch(() => null)]);
-    DATA.ingredients = i.items; DATA.recipes = r.items; DATA.priceNote = i.checkedNote; DATA.stock = st?.items || null; DATA.stockDate = st?.checked ? fmtDate(st.checked) : null; DATA.priceDate = (i.items.flatMap((x) => x.packs || []).map((p) => p.checked).sort().pop()) || '';
+    const [i, r] = await Promise.all([fetch('data/ingredients.json').then((x) => x.json()), fetch('data/recipes.json').then((x) => x.json())]);
+    DATA.ingredients = i.items; DATA.recipes = r.items; DATA.priceNote = i.checkedNote; DATA.priceDate = (i.items.flatMap((x) => x.packs || []).map((p) => p.checked).sort().pop()) || '';
   } catch (e) {
     document.getElementById('view').innerHTML = `<div class="bad-box">Couldn't load the recipe data. ${esc(e.message)}</div>`;
     return;
@@ -78,6 +78,7 @@ async function boot() {
   const v = document.getElementById('view');
   v.addEventListener('click', onAction); v.addEventListener('change', onChange); v.addEventListener('input', onInput);
   v.addEventListener('pointerdown', onDragStart);
+  v.addEventListener('contextmenu', (e) => { if (e.target.closest('.cell')) e.preventDefault(); });
   render();
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 }
@@ -90,9 +91,10 @@ function render(opts = {}) {
 }
 
 // ----- Plan -----
-function mealMeta(r, ing) {
-  const pp = P.proteinPerPortion(r, ing);
-  const c = P.costPerPortion(r, ing);
+const META = new Map();
+function metaFor(r) { let m = META.get(r.id); if (!m) { const ing = ING(); m = { pp: P.proteinPerPortion(r, ing), c: P.costPerPortion(r, ing) }; META.set(r.id, m); } return m; }
+function mealMeta(r) {
+  const { pp, c } = metaFor(r);
   const cost = c.cost ? `~£${c.cost.toFixed(2)}` : '';
   const flex = '';
   const cold = r.cold ? '<span class="badge ok">cold ok</span>' : '';
@@ -112,7 +114,7 @@ function renderPlan() {
     const n = w.portions[r.id] || 0;
     const room = P.roomFor(r, free);
     const full = room <= 0;
-    return `<div class="recipe-row pick ${n ? 'on' : ''} ${full && !n ? 'full' : ''}"><input type="checkbox" class="tick" data-pick="${r.id}" ${n ? 'checked' : ''} ${full && !n ? 'disabled' : ''} aria-label="Include ${esc(r.name)}"><div class="grow"><div class="name">${esc(r.name)}</div><div class="meta">${mealMeta(r, ing)}${full && !n ? ' <span class="badge">week full</span>' : ''}</div></div>
+    return `<div class="recipe-row pick ${n ? 'on' : ''} ${full && !n ? 'full' : ''}"><input type="checkbox" class="tick" data-pick="${r.id}" ${n ? 'checked' : ''} ${full && !n ? 'disabled' : ''} aria-label="Include ${esc(r.name)}"><div class="grow"><div class="name">${esc(r.name)}</div><div class="meta">${mealMeta(r)}${full && !n ? ' <span class="badge">week full</span>' : ''}</div></div>
       ${n ? `<div class="stepper"><button data-action="dec" data-id="${r.id}">−</button><b>${n}</b><button data-action="inc" data-id="${r.id}" ${full ? 'disabled' : ''}>+</button></div>` : ''}</div>`;
   };
   const group = (slot, title) => {
@@ -127,10 +129,9 @@ function renderPlan() {
       if (!r) return `<button class="cell empty" data-action="cell" data-day="${i}" data-slot="${s}">+</button>`;
       const tp = P.tubPlan(r, w.grid, w.cookDay);
       const cls = tp.fresh ? '' : tp.freezer.includes(i) ? 'frozen' : tp.late.includes(i) ? 'late' : '';
-      const c = P.costPerPortion(r, ing);
       const mark = cls === 'frozen' ? '❄ freezer' : cls === 'late' ? '⚠ fridge' : tp.fresh ? 'fresh' : 'fridge';
       const markShort = cls === 'frozen' ? '❄' : cls === 'late' ? '⚠' : '';
-      return `<button class="cell ${cls}" style="${cellStyle(id)}" data-action="cell" data-day="${i}" data-slot="${s}" draggable="false"><span class="cname"><span class="full">${esc(r.name)}</span><span class="shortn">${esc(shortName(r))}</span></span><span class="cmeta"><span class="full">${P.proteinPerPortion(r, ing)}g protein</span><span class="shortn">${P.proteinPerPortion(r, ing)}g ${markShort}</span></span><span class="cmark full">${mark}</span></button>`;
+      return `<button class="cell ${cls}" style="${cellStyle(id)}" data-action="cell" data-day="${i}" data-slot="${s}" draggable="false"><span class="cname"><span class="full">${esc(r.name)}</span><span class="shortn">${esc(shortName(r))}</span></span><span class="cmeta"><span class="full">${metaFor(r).pp}g protein</span><span class="shortn">${metaFor(r).pp}g ${markShort}</span></span><span class="cmark full">${mark}</span></button>`;
     }).join('')).join('')}</div>`;
   const summary = chosen.length
     ? `<div class="chip-row">${chosen.map((id) => `<span class="chip meal" style="${cellStyle(id)}">${esc(shortName(recById(id)))} × ${w.portions[id]}</span>`).join('')}</div>`
@@ -141,7 +142,7 @@ function renderPlan() {
     <div class="bars" style="margin-top:26px">${bars}</div><div class="bars-labels">${P.DAYS.map((d) => `<div>${d}</div>`).join('')}</div>
     <p class="small muted">Target ${target}g a day including a ${S.settings.snackProtein}g snack. Amber days are under.</p></div>
   ${chosen.length ? `<div class="card">${gridHtml}
-    <p class="small muted" style="margin-top:10px">Drag a meal to move it; drop it on another to swap. Tap to pick from a list or clear. ❄ from the freezer that day, thaw the night before. ⚠ past its fridge life and can't be frozen.</p>
+    <p class="small muted" style="margin-top:10px">Press and hold a meal to pick it up, then tap where it goes (two meals swap). Tap to pick from a list or clear. ❄ from the freezer that day, thaw the night before. ⚠ past its fridge life and can't be frozen.</p>
     <p class="small muted" style="margin:8px 0 2px">Cook day</p>
     <div class="day-pick">${P.DAYS.map((d, i) => `<button data-action="cookday" data-day="${i}" class="${w.cookDay === i ? 'on' : ''}">${d}</button>`).join('')}</div>
     <div class="row" style="margin-top:8px"><button class="btn ghost small" data-action="relayout">Re-lay out</button><button class="btn ghost small" data-action="clear-week">Clear week</button></div></div>` : ''}
@@ -261,7 +262,7 @@ function renderShop() {
 function renderRecipes() {
   const q = (S.search || '').toLowerCase();
   const ing = ING();
-  const list = REC().filter((r) => !q || r.name.toLowerCase().includes(q)).map((r) => `<div class="recipe-row" data-action="open-recipe" data-id="${r.id}"><div class="grow"><div class="name">${esc(r.name)}</div><div class="meta">${mealMeta(r, ing)}${S.customRecipes.some((c) => c.id === r.id) ? ' <span class="badge">yours</span>' : ''}</div></div><span class="muted">›</span></div>`).join('');
+  const list = REC().filter((r) => !q || r.name.toLowerCase().includes(q)).map((r) => `<div class="recipe-row" data-action="open-recipe" data-id="${r.id}"><div class="grow"><div class="name">${esc(r.name)}</div><div class="meta">${mealMeta(r)}${S.customRecipes.some((c) => c.id === r.id) ? ' <span class="badge">yours</span>' : ''}</div></div><span class="muted">›</span></div>`).join('');
   const inbox = (S.inbox || []);
   const inboxHtml = inbox.length ? `<div class="card"><h3>Waiting for Claude <span class="badge warn">${inbox.length}</span></h3>
     <ul class="clean">${inbox.map((x, i) => `<li class="row"><span class="grow small" style="word-break:break-all">${esc(x.url)}${x.note ? `<span class="sub muted">${esc(x.note)}</span>` : ''}</span><button class="btn ghost small" data-action="inbox-rm" data-i="${i}">×</button></li>`).join('')}</ul>
@@ -330,7 +331,7 @@ function renderPantry() {
   const other = Object.keys(S.weeks).find((k) => k !== S.activeWeek);
   const ticked = Object.keys(w.pantry).length;
   return `<h1>Pantry</h1>${weekSwitch()}<p class="small muted">What's in the cupboard for <b>${weekLabel(S.activeWeek).toLowerCase()}</b>. Every week starts blank so the shop list shows everything; tick what you already have before you shop. Leave the amount blank for "plenty", or type how much and the list buys only the difference. ${ticked} ticked.</p>
-  <div class="row" style="margin-bottom:12px; flex-wrap:wrap"><button class="btn grow" data-action="load-stock">Load my stock (${DATA.stockDate || 'last check'})</button>${other ? `<button class="btn ghost" data-action="copy-pantry" data-from="${other}">Copy from ${weekLabel(other).toLowerCase()}</button>` : ''}<button class="btn ghost" data-action="clear-pantry">Untick all</button></div>${html}
+  <div class="row" style="margin-bottom:12px; flex-wrap:wrap">${other ? `<button class="btn ghost" data-action="copy-pantry" data-from="${other}">Copy from ${weekLabel(other).toLowerCase()}</button>` : ''}<button class="btn ghost" data-action="clear-pantry">Untick all</button></div>${html}
   <h2>Settings</h2><div class="card">
     <label class="field">Protein target per day (g)<input type="number" data-setting="proteinTarget" value="${S.settings.proteinTarget}"></label>
     <label class="field">Daily snack protein counted (g), e.g. one scoop<input type="number" data-setting="snackProtein" value="${S.settings.snackProtein}"></label>
@@ -349,17 +350,41 @@ document.getElementById('sheet').addEventListener('submit', onSubmit);
 document.getElementById('sheet').addEventListener('change', (e) => { const chip = e.target.closest('.chip'); if (chip && e.target.type === 'checkbox') chip.classList.toggle('on', e.target.checked); });
 
 // ---------- drag and drop between grid cells ----------
-const drag = { src: null, ghost: null, over: null, active: false, x: 0, y: 0, moved: false };
+const drag = { src: null, ghost: null, over: null, active: false, x: 0, y: 0, timer: null };
+let picked = null; // { d, s } after a press-and-hold on touch
+function cellAt(d, s) { return document.querySelector(`.cell[data-day="${d}"][data-slot="${s}"]`); }
+function pickUp(cell) {
+  picked = { d: +cell.dataset.day, s: cell.dataset.slot };
+  document.querySelectorAll('.cell.lifted').forEach((c) => c.classList.remove('lifted'));
+  cell.classList.add('lifted');
+  navigator.vibrate?.(15);
+  showHint('Tap another cell to swap, or tap this one to cancel.');
+}
+function dropPicked(target) {
+  const from = picked; picked = null; hideHint();
+  document.querySelectorAll('.cell.lifted').forEach((c) => c.classList.remove('lifted'));
+  if (!target || target.classList.contains('off')) return;
+  const to = { d: +target.dataset.day, s: target.dataset.slot };
+  if (to.d === from.d && to.s === from.s) return;
+  const w = W();
+  const tmp = w.grid[from.d][from.s]; w.grid[from.d][from.s] = w.grid[to.d][to.s]; w.grid[to.d][to.s] = tmp;
+  portionsFromGrid(); render();
+}
+function showHint(text) { let h = document.getElementById('hint'); if (!h) { h = document.createElement('div'); h.id = 'hint'; document.body.appendChild(h); } h.textContent = text; h.classList.add('on'); }
+function hideHint() { document.getElementById('hint')?.classList.remove('on'); }
 function onDragStart(e) {
-  const cell = e.target.closest('.cell'); if (!cell || cell.classList.contains('empty') || e.button > 0 || drag.src) return;
-  drag.src = cell; drag.x = e.clientX; drag.y = e.clientY; drag.active = false; drag.moved = false;
-  try { cell.setPointerCapture(e.pointerId); } catch {}
+  const cell = e.target.closest('.cell'); if (!cell || cell.classList.contains('empty') || cell.classList.contains('off') || e.button > 0 || drag.src) return;
+  if (picked) return; // a tap while holding something is handled by the click handler
+  drag.src = cell; drag.x = e.clientX; drag.y = e.clientY; drag.active = false;
+  if (e.pointerType === 'mouse') { try { cell.setPointerCapture(e.pointerId); } catch {} }
+  else { clearTimeout(drag.timer); drag.timer = setTimeout(() => { if (drag.src === cell && !drag.active) { pickUp(cell); drag.src = null; suppressClick(); } }, 350); }
   cell.addEventListener('pointermove', onDragMove); cell.addEventListener('pointerup', onDragEnd); cell.addEventListener('pointercancel', onDragEnd);
 }
 function onDragMove(e) {
   if (!drag.src) return;
   const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
-  if (!drag.active) { if (Math.hypot(dx, dy) < 8) return; drag.active = true; drag.moved = true; startGhost(e); }
+  if (e.pointerType !== 'mouse') { if (Math.hypot(dx, dy) > 10) { clearTimeout(drag.timer); cleanupDrag(drag.src); } return; } // finger moved: it's a scroll
+  if (!drag.active) { if (Math.hypot(dx, dy) < 8) return; drag.active = true; startGhost(e); }
   drag.ghost.style.transform = `translate(${e.clientX - drag.ghost.offsetWidth / 2}px, ${e.clientY - drag.ghost.offsetHeight / 2}px)`;
   drag.ghost.style.display = 'none';
   const under = document.elementFromPoint(e.clientX, e.clientY)?.closest('.cell');
@@ -373,12 +398,16 @@ function startGhost(e) {
   const g = drag.src.cloneNode(true); g.classList.add('ghost'); g.style.width = drag.src.offsetWidth + 'px'; g.style.height = drag.src.offsetHeight + 'px';
   document.body.appendChild(g); drag.ghost = g; drag.src.classList.add('lifted');
 }
-function onDragEnd(e) {
-  const src = drag.src; if (!src) return;
+function cleanupDrag(src) {
   src.removeEventListener('pointermove', onDragMove); src.removeEventListener('pointerup', onDragEnd); src.removeEventListener('pointercancel', onDragEnd);
-  const target = drag.over; const wasActive = drag.active;
-  document.querySelectorAll('.ghost').forEach((x) => x.remove()); drag.over?.classList.remove('over'); src.classList.remove('lifted');
+  document.querySelectorAll('.ghost').forEach((x) => x.remove()); drag.over?.classList.remove('over'); if (!picked) src.classList.remove('lifted');
   drag.src = null; drag.ghost = null; drag.over = null; drag.active = false;
+}
+function onDragEnd(e) {
+  clearTimeout(drag.timer);
+  const src = drag.src; if (!src) return;
+  const target = drag.over; const wasActive = drag.active;
+  cleanupDrag(src);
   if (!wasActive) return; // a plain tap: the click handler opens the sheet
   suppressClick();
   if (!target || e.type === 'pointercancel') return;
@@ -391,7 +420,9 @@ function suppressClick() { const stop = (ev) => { ev.stopPropagation(); ev.preve
 
 // ---------- events ----------
 function onAction(e) {
-  const el = e.target.closest('[data-action]'); if (!el) return;
+  const el = e.target.closest('[data-action]');
+  if (picked && !(el && el.dataset.action === 'cell')) { dropPicked(null); }
+  if (!el) return;
   const a = el.dataset.action, id = el.dataset.id; const w = W();
   if (a === 'inc' || a === 'dec') {
     if (a === 'inc' && P.roomFor(recById(id), P.freeSlots(w.grid, w.days)) <= 0) return;
@@ -405,8 +436,8 @@ function onAction(e) {
   else if (a === 'need') { delete w.pantry[id]; save(); render(); }
   else if (a === 'clear-pantry') { if (confirm(`Untick everything for ${weekLabel(S.activeWeek).toLowerCase()}? The shop list will then include every ingredient.`)) { w.pantry = {}; save(); render(); } }
   else if (a === 'copy-pantry') { const from = S.weeks[el.dataset.from]; if (from) { w.pantry = { ...from.pantry, ...w.pantry }; save(); render(); } }
-  else if (a === 'load-stock') { if (!DATA.stock) { alert('No stock file loaded.'); return; } if (confirm(`Tick everything from the ${DATA.stockDate} stock check? Items you have already ticked are kept.`)) { for (const [id, v] of Object.entries(DATA.stock)) if (w.pantry[id] === undefined) w.pantry[id] = v; save(); render(); } }
   else if (a === 'clear-week') { if (confirm(`Clear every meal from ${weekLabel(S.activeWeek).toLowerCase()}?`)) { w.portions = {}; w.ticks = {}; relayout(); render(); } }
+  else if (a === 'cell' && picked) { dropPicked(el); }
   else if (a === 'cell') {
     const day = +el.dataset.day, slot = el.dataset.slot;
     const planned = Object.keys(w.portions).map(recById).filter(Boolean);
@@ -449,7 +480,12 @@ function onChange(e) {
   else if (t.dataset.tick) { w.ticks[t.dataset.tick] = t.checked; save(); t.closest('.line').classList.toggle('done', t.checked); }
   else if (t.dataset.choice) { w.choices[t.dataset.choice] = t.value; save(); render(); }
   else if (t.dataset.settingBool) { S.settings[t.dataset.settingBool] = t.checked; save(); render(); }
-  else if (t.dataset.pantry) { if (t.checked) w.pantry[t.dataset.pantry] = true; else delete w.pantry[t.dataset.pantry]; save(); render(); }
+  else if (t.dataset.pantry) {
+    const id = t.dataset.pantry; if (t.checked) w.pantry[id] = true; else delete w.pantry[id]; save();
+    const it = ingById(id); const rowEl = t.closest('.check'); const q = rowEl.querySelector('[data-pantry-qty]');
+    if (t.checked && !it.staple && !q) rowEl.insertAdjacentHTML('beforeend', `<input class="qty" type="number" step="any" placeholder="plenty" data-pantry-qty="${id}"><span class="small muted">${it.unit === 'each' ? '' : it.unit}</span>`);
+    if (!t.checked) { q?.nextElementSibling?.remove(); q?.remove(); }
+  }
   else if (t.dataset.pantryQty !== undefined) { const v = parseFloat(t.value); w.pantry[t.dataset.pantryQty] = Number.isFinite(v) && v > 0 ? v : true; save(); }
   else if (t.dataset.setting) { S.settings[t.dataset.setting] = +t.value || 0; save(); }
 }
@@ -478,7 +514,7 @@ function onSubmit(e) {
     if (!ings.length) { alert('Add at least one ingredient.'); return; }
     const method = String(fd.get('method')).split('\n').map((s) => s.trim()).filter(Boolean);
     const r = { id, name, slots, cold: !!fd.get('cold'), reheat: fd.get('reheat'), fridgeDays: +fd.get('fridgeDays') || 0, freezer: !!fd.get('freezer'), cookMinutes: +fd.get('cookMinutes') || 0, equipment: [], source: fd.get('source') || 'yours', ingredients: ings, method, notes: '' };
-    S.customRecipes = S.customRecipes.filter((x) => x.id !== id).concat([r]); save(); closeSheet(); render();
+    S.customRecipes = S.customRecipes.filter((x) => x.id !== id).concat([r]); META.clear(); save(); closeSheet(); render();
   }
 }
 
