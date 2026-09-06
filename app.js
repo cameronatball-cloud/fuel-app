@@ -13,6 +13,15 @@ function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {}
 const ING = () => DATA.ingredients.concat(S.customIngredients);
 const REC = () => DATA.recipes.concat(S.customRecipes);
 const ingById = (id) => ING().find((i) => i.id === id);
+// What actually gets bought for an ingredient id: the week's fruit pick, thighs instead of breast.
+function resolveFor(w) {
+  return (id) => {
+    if (id === 'chicken_breast' && S.settings.preferThigh) return 'chicken_thigh';
+    const it = ingById(id);
+    if (it?.choices?.length) return (w.choices && w.choices[id]) || it.choices[0];
+    return id;
+  };
+}
 const recById = (id) => REC().find((r) => r.id === id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const hue = (id) => { let h = 0; for (const c of id) h = (h * 31 + c.charCodeAt(0)) % 360; return h; };
@@ -24,7 +33,7 @@ function sundayOf(date) { const d = new Date(Date.UTC(date.getFullYear(), date.g
 function addDays(isoDate, n) { const d = new Date(isoDate + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return iso(d); }
 function fmtDate(isoDate) { const d = new Date(isoDate + 'T00:00:00Z'); return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' }); }
 const W = () => S.weeks[S.activeWeek];
-function blankWeek() { return { portions: {}, grid: null, overflow: [], cookDay: 0, ticks: {}, days: [true, true, true, true, true, true, true] }; }
+function blankWeek() { return { portions: {}, grid: null, overflow: [], cookDay: 0, ticks: {}, days: [true, true, true, true, true, true, true], choices: {} }; }
 function setupWeeks() {
   const thisSun = sundayOf(new Date()), nextSun = addDays(thisSun, 7);
   // migrate v1 single-week state
@@ -33,10 +42,15 @@ function setupWeeks() {
   S.weeks[thisSun] ||= blankWeek(); S.weeks[nextSun] ||= blankWeek();
   if (!S.weeks[S.activeWeek]) S.activeWeek = thisSun;
   S.thisSun = thisSun; S.nextSun = nextSun;
-  for (const w of Object.values(S.weeks)) { w.days ||= [true, true, true, true, true, true, true]; if (!w.grid) relayout(w); }
+  for (const w of Object.values(S.weeks)) { w.days ||= [true, true, true, true, true, true, true]; w.choices ||= {}; if (!w.grid) relayout(w); }
   save();
 }
-function relayout(w = W()) { const { grid, overflow } = P.autoLayout(w.portions, REC(), w.cookDay, w.days); w.grid = grid; w.overflow = overflow; save(); }
+function relayout(w = W()) {
+  let { grid, overflow } = P.autoLayout(w.portions, REC(), w.cookDay, w.days);
+  // The week can't hold more than its slots: trim portions to what fits rather than carrying phantom extras.
+  if (overflow.length) { w.portions = P.gridCounts(grid); ({ grid, overflow } = P.autoLayout(w.portions, REC(), w.cookDay, w.days)); }
+  w.grid = grid; w.overflow = overflow; save();
+}
 function portionsFromGrid(w = W()) {
   const counts = {};
   for (const d of w.grid) for (const s of P.SLOTS) if (d[s]) counts[d[s]] = (counts[d[s]] || 0) + 1;
@@ -92,10 +106,13 @@ function renderPlan() {
   const bars = st.perDay.map((p) => `<div class="bar ${p < target ? 'low' : ''}"><b>${p}</b><i style="height:${Math.round((p / max) * 100)}%"></i></div>`).join('');
   const q = (S.planSearch || '').toLowerCase();
   const chosen = Object.keys(w.portions).filter((id) => w.portions[id] > 0);
+  const free = P.freeSlots(w.grid, w.days);
   const row = (r) => {
     const n = w.portions[r.id] || 0;
-    return `<div class="recipe-row pick ${n ? 'on' : ''}"><input type="checkbox" class="tick" data-pick="${r.id}" ${n ? 'checked' : ''} aria-label="Include ${esc(r.name)}"><div class="grow"><div class="name">${esc(r.name)}</div><div class="meta">${mealMeta(r, ing)}</div></div>
-      ${n ? `<div class="stepper"><button data-action="dec" data-id="${r.id}">−</button><b>${n}</b><button data-action="inc" data-id="${r.id}">+</button></div>` : ''}</div>`;
+    const room = P.roomFor(r, free);
+    const full = room <= 0;
+    return `<div class="recipe-row pick ${n ? 'on' : ''} ${full && !n ? 'full' : ''}"><input type="checkbox" class="tick" data-pick="${r.id}" ${n ? 'checked' : ''} ${full && !n ? 'disabled' : ''} aria-label="Include ${esc(r.name)}"><div class="grow"><div class="name">${esc(r.name)}</div><div class="meta">${mealMeta(r, ing)}${full && !n ? ' <span class="badge">week full</span>' : ''}</div></div>
+      ${n ? `<div class="stepper"><button data-action="dec" data-id="${r.id}">−</button><b>${n}</b><button data-action="inc" data-id="${r.id}" ${full ? 'disabled' : ''}>+</button></div>` : ''}</div>`;
   };
   const group = (slot, title) => {
     const list = recipes.filter((r) => (slot === 'breakfast' ? r.slots[0] === 'breakfast' : r.slots[0] !== 'breakfast') && (!q || r.name.toLowerCase().includes(q)));
@@ -181,10 +198,16 @@ function renderCook() {
 function renderShop() {
   const w = W(); const ing = ING(), recipes = REC();
   const counts = P.gridCounts(w.grid);
-  const needsAll = P.aggregateNeeds(counts, recipes);
-  const needs = P.netPantry(needsAll, S.pantry);
+  const resolve = resolveFor(w);
+  const rawNeeds = P.aggregateNeeds(counts, recipes);
+  const needsAll = P.aggregateNeeds(counts, recipes, resolve);
+  // pantry keys may be the generic id (e.g. frozen_fruit) or the resolved one
+  const pantryFor = {}; for (const id of Object.keys(needsAll)) { const generic = Object.keys(rawNeeds).find((g) => resolve(g) === id); pantryFor[id] = S.pantry[id] !== undefined ? S.pantry[id] : (generic ? S.pantry[generic] : undefined); }
+  const needs = P.netPantry(needsAll, pantryFor);
   const usedBy = {};
-  for (const [rid, n] of Object.entries(counts)) { const r = recById(rid); if (!r) continue; for (const x of r.ingredients) (usedBy[x.id] ||= []).push(`${r.short || r.name} ×${n}`); }
+  for (const [rid, n] of Object.entries(counts)) { const r = recById(rid); if (!r) continue; for (const x of r.ingredients) (usedBy[resolve(x.id)] ||= []).push(`${r.short || r.name} ×${n}`); }
+  const choiceHtml = Object.keys(rawNeeds).map(ingById).filter((it) => it?.choices?.length).map((it) => `<label class="field">${esc(it.name)}<select data-choice="${it.id}">${it.choices.map((c) => `<option value="${c}" ${resolve(it.id) === c ? 'selected' : ''}>${esc(ingById(c)?.name || c)}</option>`).join('')}</select></label>`).join('');
+  const fullWeek = P.compareShops(needsAll, ing)[0];
   const head = `<h1>Shop</h1>${weekSwitch()}`;
   if (!Object.keys(needsAll).length) return `${head}<div class="card"><p>Nothing picked for ${weekLabel(S.activeWeek).toLowerCase()} yet. Tick meals on the Plan tab.</p></div>`;
   const ranked = P.compareShops(needs, ing);
@@ -216,9 +239,10 @@ function renderShop() {
   const splitHtml = split ? `<div class="card"><h3>Two shops saves ${P.gbp(split.saving)}</h3><p class="small muted">${P.SHOP_NAMES[split.shops[0]]} + ${P.SHOP_NAMES[split.shops[1]]} = ${P.gbp(split.total)} against ${P.gbp(best.total)} at ${P.SHOP_NAMES[best.shop]}. Only worth it if you're passing both.</p>
     ${split.baskets.map((b) => `<p class="small"><b>${P.SHOP_NAMES[b.shop]}</b> ${P.gbp(b.total)}: ${b.lines.map((l) => esc(l.name)).join(', ')}</p>`).join('')}</div>` : '';
   const unpricedAll = ids.filter((id) => !(ingById(id)?.packs || []).length).map((id) => ingById(id)?.name);
-  const have = Object.keys(needsAll).filter((id) => S.pantry[id]).map((id) => esc(ingById(id)?.name || id));
+  const haveRows = Object.keys(needsAll).filter((id) => pantryFor[id] !== undefined).map((id) => { const it = ingById(id); const v = pantryFor[id]; return `<div class="line"><span class="grow"><span class="name">${esc(it?.name || id)}</span><span class="sub">${v === true ? 'plenty in' : `${P.fmtQty(v, it.unit)} in, need ${P.fmtQty(P.round1(needsAll[id]), it.unit)}`} · ${esc((usedBy[id] || []).join(', '))}</span></span><button class="btn ghost small" data-action="need" data-id="${id}">Need it</button></div>`; }).join('');
   const oldest = ranked.map((b) => b.oldest).filter(Boolean).sort()[0];
   return `${head}
+  ${choiceHtml ? `<div class="card">${choiceHtml}</div>` : ''}
   <div class="card"><div class="row"><span class="grow"><b style="font-size:22px">${P.gbp(best.total)}</b> at ${P.SHOP_NAMES[best.shop]}</span><span class="muted small">budget ${P.gbp(budget)}</span></div>
     <div class="budget ${best.total > budget ? 'over' : ''}"><i style="width:${pct}%"></i></div>
     <p class="small muted">${best.total > budget ? `Over budget by ${P.gbp(best.total - budget)}. Drop a portion or two of the priciest meal.` : `${P.gbp(budget - best.total)} left for coffees.`} Prices checked ${oldest || 'n/a'}.</p></div>
@@ -227,7 +251,7 @@ function renderShop() {
   ${splitHtml}
   <h2>Tick-off list</h2><div class="shop-rank">${ranked.map((b, i) => shopCard(b, i === 0)).join('')}</div>
   ${unpricedAll.length ? `<div class="card" style="margin-top:10px"><h3>No price anywhere yet</h3><p class="small muted">${unpricedAll.map(esc).join(', ')}. Left out of the totals until priced.</p></div>` : ''}
-  ${have.length ? `<div class="card flat"><p class="small muted">Already in the pantry, not on the list: ${have.join(', ')}.</p></div>` : ''}
+  ${haveRows ? `<h2>Already in your pantry</h2><div class="card"><p class="small muted">Left off the list because it's ticked in Pantry. Tap "Need it" to put it back on. Buying everything would be ${P.gbp(fullWeek.total)} at ${P.SHOP_NAMES[fullWeek.shop]}.</p>${haveRows}</div>` : ''}
   <p class="small muted">${esc(DATA.priceNote || '')}</p>`;
 }
 
@@ -295,7 +319,7 @@ function newIngredientForm() {
 // ----- Pantry -----
 function renderPantry() {
   const groups = {};
-  for (const it of ING()) (groups[it.category] ||= []).push(it);
+  for (const it of ING()) if (!it.hidden) (groups[it.category] ||= []).push(it);
   const order = ['protein', 'dairy', 'carb', 'veg', 'fruit', 'tin', 'sauce', 'spice', 'cupboard'];
   const row = (it) => { const v = S.pantry[it.id]; const on = v === true || typeof v === 'number';
     return `<div class="check"><input type="checkbox" data-pantry="${it.id}" ${on ? 'checked' : ''}><span class="grow">${esc(it.name)}${(it.packs || []).length ? '' : '<span class="sub">no price on file</span>'}</span>${on && !it.staple ? `<input class="qty" type="number" step="any" placeholder="plenty" data-pantry-qty="${it.id}" value="${typeof v === 'number' ? v : ''}"><span class="small muted">${it.unit === 'each' ? '' : it.unit}</span>` : ''}</div>`; };
@@ -305,7 +329,8 @@ function renderPantry() {
   <h2>Settings</h2><div class="card">
     <label class="field">Protein target per day (g)<input type="number" data-setting="proteinTarget" value="${S.settings.proteinTarget}"></label>
     <label class="field">Daily snack protein counted (g), e.g. one scoop<input type="number" data-setting="snackProtein" value="${S.settings.snackProtein}"></label>
-    <label class="field">Weekly food budget (£)<input type="number" data-setting="budget" value="${S.settings.budget}"></label></div>
+    <label class="field">Weekly food budget (£)<input type="number" data-setting="budget" value="${S.settings.budget}"></label>
+    <label class="check"><input type="checkbox" data-setting-bool="preferThigh" ${S.settings.preferThigh ? 'checked' : ''}><span>Buy boneless thigh fillets instead of breast<span class="sub">Swaps every breast line on the shop list for thigh fillets. Breast is currently the cheaper per kilo at all four shops.</span></span></label></div>
   <h2>Backup</h2><div class="card"><div class="row"><button class="btn ghost grow" data-action="export">Copy backup</button><button class="btn ghost grow" data-action="import">Paste backup</button></div>
   <button class="btn danger block" data-action="reset" style="margin-top:10px">Reset everything</button></div>`;
 }
@@ -363,13 +388,15 @@ function onAction(e) {
   const el = e.target.closest('[data-action]'); if (!el) return;
   const a = el.dataset.action, id = el.dataset.id; const w = W();
   if (a === 'inc' || a === 'dec') {
+    if (a === 'inc' && P.roomFor(recById(id), P.freeSlots(w.grid, w.days)) <= 0) return;
     w.portions[id] = Math.max(0, (w.portions[id] || 0) + (a === 'inc' ? 1 : -1));
     if (!w.portions[id]) delete w.portions[id];
     relayout(); render();
   } else if (a === 'week') { S.activeWeek = el.dataset.week; save(); render(); }
   else if (a === 'cookday') { w.cookDay = +el.dataset.day; relayout(); render(); }
   else if (a === 'relayout') { relayout(); render(); }
-  else if (a === 'dayx') { const w = W(); const i = +el.dataset.day; w.days[i] = !w.days[i]; relayout(w); render(); }
+  else if (a === 'dayx') { const i = +el.dataset.day; w.days[i] = !w.days[i]; relayout(w); render(); }
+  else if (a === 'need') { delete S.pantry[id]; save(); render(); }
   else if (a === 'load-stock') { if (!DATA.stock) { alert('No stock file loaded.'); return; } if (confirm(`Tick everything from the ${DATA.stockDate} stock check? Items you have already ticked are kept.`)) { for (const [id, v] of Object.entries(DATA.stock)) if (S.pantry[id] === undefined) S.pantry[id] = v; save(); render(); } }
   else if (a === 'clear-week') { if (confirm(`Clear every meal from ${weekLabel(S.activeWeek).toLowerCase()}?`)) { w.portions = {}; w.ticks = {}; relayout(); render(); } }
   else if (a === 'cell') {
@@ -407,10 +434,13 @@ function onChange(e) {
   const t = e.target; const w = W();
   if (t.dataset.pick) {
     const r = recById(t.dataset.pick);
-    if (t.checked) w.portions[r.id] = defaultPortions(r); else delete w.portions[r.id];
+    const room = P.roomFor(r, P.freeSlots(w.grid, w.days));
+    if (t.checked) { if (room <= 0) { t.checked = false; return; } w.portions[r.id] = Math.min(defaultPortions(r), room); } else delete w.portions[r.id];
     relayout(); render();
   }
   else if (t.dataset.tick) { w.ticks[t.dataset.tick] = t.checked; save(); t.closest('.line').classList.toggle('done', t.checked); }
+  else if (t.dataset.choice) { w.choices[t.dataset.choice] = t.value; save(); render(); }
+  else if (t.dataset.settingBool) { S.settings[t.dataset.settingBool] = t.checked; save(); render(); }
   else if (t.dataset.pantry) { if (t.checked) S.pantry[t.dataset.pantry] = true; else delete S.pantry[t.dataset.pantry]; save(); render(); }
   else if (t.dataset.pantryQty !== undefined) { const v = parseFloat(t.value); S.pantry[t.dataset.pantryQty] = Number.isFinite(v) && v > 0 ? v : true; save(); }
   else if (t.dataset.setting) { S.settings[t.dataset.setting] = +t.value || 0; save(); }

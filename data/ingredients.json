@@ -25,32 +25,10 @@
      "via": "tesco"
     },
     {
-     "shop": "tesco",
-     "name": "Butchers Choice Chicken Fillet 1.2kg (frozen)",
-     "size": 1200.0,
-     "price": 5.1,
-     "checked": "2026-09-06"
-    },
-    {
-     "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to Butchers Choice Chicken Fillet 1.2kg (frozen))",
-     "size": 1200.0,
-     "price": 5.1,
-     "checked": "2026-09-06",
-     "via": "tesco"
-    },
-    {
      "shop": "asda",
      "name": "ASDA Tender Chicken Breast Fillets 1.6kg",
      "size": 1600.0,
      "price": 10.65,
-     "checked": "2026-09-06"
-    },
-    {
-     "shop": "asda",
-     "name": "Chicken Breast Fillets 1.2kg (frozen)",
-     "size": 1200.0,
-     "price": 6.24,
      "checked": "2026-09-06"
     },
     {
@@ -1163,42 +1141,18 @@
   },
   {
    "id": "frozen_fruit",
-   "name": "Frozen mixed berries",
+   "name": "Frozen fruit for skyr bowls (your pick)",
    "unit": "g",
    "protein": 0.7,
    "category": "fruit",
    "store": "freezer",
-   "packs": [
-    {
-     "shop": "tesco",
-     "name": "Tesco Perfectly Imperfect Frozen Mixed Berries 1kg",
-     "size": 1000.0,
-     "price": 2.99,
-     "checked": "2026-09-06"
-    },
-    {
-     "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to Perfectly Imperfect Frozen Mixed Berries 1kg)",
-     "size": 1000.0,
-     "price": 2.99,
-     "checked": "2026-09-06",
-     "via": "tesco"
-    },
-    {
-     "shop": "asda",
-     "name": "ASDA Summer Fruits 500g",
-     "size": 500.0,
-     "price": 2.96,
-     "checked": "2026-09-06"
-    },
-    {
-     "shop": "sainsburys",
-     "name": "Sainsbury's Frozen Summer Fruits 450g",
-     "size": 450.0,
-     "price": 3.5,
-     "checked": "2026-09-06"
-    }
-   ]
+   "choices": [
+    "frozen_mango",
+    "frozen_blueberries",
+    "frozen_raspberries",
+    "frozen_strawberries"
+   ],
+   "packs": []
   },
   {
    "id": "chopped_tomatoes",
@@ -2147,76 +2101,6 @@
    ]
   },
   {
-   "id": "gnocchi",
-   "name": "Gnocchi",
-   "unit": "g",
-   "protein": 3,
-   "category": "carb",
-   "store": "cupboard",
-   "packs": [
-    {
-     "shop": "tesco",
-     "name": "Tesco Gnocchi 500g",
-     "size": 500.0,
-     "price": 2.0,
-     "checked": "2026-09-06"
-    },
-    {
-     "shop": "asda",
-     "name": "ASDA Gnocchi 500g",
-     "size": 500.0,
-     "price": 1.96,
-     "checked": "2026-09-06"
-    },
-    {
-     "shop": "sainsburys",
-     "name": "Sainsbury's Potato Gnocchi 500g",
-     "size": 500.0,
-     "price": 1.5,
-     "checked": "2026-09-06"
-    }
-   ]
-  },
-  {
-   "id": "double_cream",
-   "name": "Double cream",
-   "unit": "ml",
-   "protein": 1.6,
-   "category": "dairy",
-   "store": "fridge",
-   "packs": [
-    {
-     "shop": "tesco",
-     "name": "Creamfields Double Cream 300ml",
-     "size": 300.0,
-     "price": 1.29,
-     "checked": "2026-09-06"
-    },
-    {
-     "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to Creamfields Double Cream 300ml)",
-     "size": 300.0,
-     "price": 1.29,
-     "checked": "2026-09-06",
-     "via": "tesco"
-    },
-    {
-     "shop": "asda",
-     "name": "ASDA Fresh Double Cream 300ml",
-     "size": 300.0,
-     "price": 1.7,
-     "checked": "2026-09-06"
-    },
-    {
-     "shop": "sainsburys",
-     "name": "Sainsbury's Double Cream 300ml",
-     "size": 300.0,
-     "price": 1.7,
-     "checked": "2026-09-06"
-    }
-   ]
-  },
-  {
    "id": "parmesan",
    "name": "Grated parmesan / grana padano",
    "unit": "g",
@@ -2537,6 +2421,123 @@
     }
    ],
    "aka": "peppers_frozen"
+  },
+  {
+   "id": "frozen_mango",
+   "name": "Frozen mango chunks",
+   "unit": "g",
+   "protein": 0.6,
+   "category": "fruit",
+   "store": "freezer",
+   "hidden": true,
+   "packs": [
+    {
+     "shop": "tesco",
+     "name": "Tesco Frozen Mango Chunks 500g",
+     "size": 500,
+     "price": 3.0,
+     "checked": "2026-09-06"
+    },
+    {
+     "shop": "asda",
+     "name": "ASDA Mango Chunks 500g",
+     "size": 500,
+     "price": 2.96,
+     "checked": "2026-09-06"
+    },
+    {
+     "shop": "sainsburys",
+     "name": "Sainsbury's Frozen Mango Chunks 450g",
+     "size": 450,
+     "price": 3.5,
+     "checked": "2026-09-06"
+    }
+   ]
+  },
+  {
+   "id": "frozen_blueberries",
+   "name": "Frozen blueberries",
+   "unit": "g",
+   "protein": 0.7,
+   "category": "fruit",
+   "store": "freezer",
+   "hidden": true,
+   "packs": [
+    {
+     "shop": "tesco",
+     "name": "Tesco Blueberries (frozen) 350g",
+     "size": 350,
+     "price": 3.0,
+     "checked": "2026-09-06"
+    },
+    {
+     "shop": "asda",
+     "name": "ASDA Blueberries (frozen) 350g",
+     "size": 350,
+     "price": 2.96,
+     "checked": "2026-09-06"
+    },
+    {
+     "shop": "sainsburys",
+     "name": "Sainsbury's Frozen Blueberries 360g",
+     "size": 360,
+     "price": 3.5,
+     "checked": "2026-09-06"
+    }
+   ]
+  },
+  {
+   "id": "frozen_raspberries",
+   "name": "Frozen raspberries",
+   "unit": "g",
+   "protein": 1.2,
+   "category": "fruit",
+   "store": "freezer",
+   "hidden": true,
+   "unavailable": [
+    "tesco"
+   ],
+   "packs": [
+    {
+     "shop": "asda",
+     "name": "ASDA Raspberries (frozen) 300g",
+     "size": 300,
+     "price": 2.96,
+     "checked": "2026-09-06"
+    },
+    {
+     "shop": "sainsburys",
+     "name": "Sainsbury's Frozen Raspberries 315g",
+     "size": 315,
+     "price": 3.5,
+     "checked": "2026-09-06"
+    }
+   ]
+  },
+  {
+   "id": "frozen_strawberries",
+   "name": "Frozen strawberries",
+   "unit": "g",
+   "protein": 0.7,
+   "category": "fruit",
+   "store": "freezer",
+   "hidden": true,
+   "packs": [
+    {
+     "shop": "tesco",
+     "name": "Tesco Frozen Whole Strawberries 350g",
+     "size": 350,
+     "price": 3.0,
+     "checked": "2026-09-06"
+    },
+    {
+     "shop": "asda",
+     "name": "ASDA Strawberries (frozen) 350g",
+     "size": 350,
+     "price": 2.96,
+     "checked": "2026-09-06"
+    }
+   ]
   }
  ]
 }

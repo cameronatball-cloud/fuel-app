@@ -163,3 +163,7 @@ a { color: var(--accent); font-weight: 700; }
 .grid .hd.off .dayx { background: var(--lime); color: var(--lime-ink); }
 .cell.off { background: repeating-linear-gradient(135deg, #f6f1e4 0 6px, #fff 6px 12px); border: 0; }
 .check .qty { width: 84px; background: #fff; border: 2px solid var(--line); border-radius: 10px; padding: 6px 8px; font-size: 14px; }
+
+.recipe-row.pick.full { opacity: .45; }
+.recipe-row.pick.full .tick { cursor: not-allowed; }
+.stepper button:disabled { opacity: .35; }

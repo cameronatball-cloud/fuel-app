@@ -1272,8 +1272,8 @@
   },
   {
    "id": "pesto_gnocchi",
-   "name": "Crispy chicken & creamy pesto gnocchi",
-   "short": "Gnocchi",
+   "name": "Crispy chicken & creamy pesto pasta",
+   "short": "Pesto pasta",
    "slots": [
     "lunch",
     "dinner"
@@ -1281,7 +1281,7 @@
    "cold": false,
    "reheat": "microwave",
    "fridgeDays": 3,
-   "freezer": false,
+   "freezer": true,
    "cookMinutes": 45,
    "equipment": [
     "hob"
@@ -1306,31 +1306,27 @@
     },
     {
      "id": "parmesan",
-     "qty": 40
+     "qty": 20
     },
     {
      "id": "parsley",
      "qty": 5
     },
     {
-     "id": "gnocchi",
-     "qty": 175
+     "id": "penne",
+     "qty": 90
     },
     {
-     "id": "butter",
-     "qty": 8
-    },
-    {
-     "id": "olive_oil",
-     "qty": 8
+     "id": "cottage_cheese",
+     "qty": 100
     },
     {
      "id": "garlic_paste",
      "qty": 5
     },
     {
-     "id": "double_cream",
-     "qty": 80
+     "id": "olive_oil",
+     "qty": 8
     },
     {
      "id": "pesto",
@@ -1343,12 +1339,12 @@
    ],
    "method": [
     "Bash the chicken thin. Three bowls: flour, beaten egg, breadcrumbs mixed with half the parmesan and the parsley. Coat each piece.",
-    "Fry in oil over medium-high until golden both sides and cooked through. Rest, slice.",
-    "Boil the gnocchi per the pack; keep a mug of the water.",
-    "Melt butter with a little oil, fry the garlic paste 30 seconds, add the cream and let it thicken. Stir in pesto and a splash of gnocchi water.",
-    "Toss the gnocchi through, off the heat add lemon juice, pepper and the rest of the parmesan. Tub with the chicken on top."
+    "Fry in a little oil over medium-high until golden both sides and cooked through. Rest, slice.",
+    "Boil the penne; keep a mug of the pasta water.",
+    "Sauce: blend the cottage cheese (or skyr) with the pesto, garlic paste and a splash of pasta water until smooth. Warm it gently in the pasta pan; don't boil or it splits.",
+    "Toss the penne through, off the heat add lemon juice, pepper and the rest of the parmesan. Tub with the chicken on top."
    ],
-   "notes": "From the poggiolieats reel. The dearest dinner on the list and the least lean; a treat, not a staple."
+   "notes": "Cream and gnocchi swapped for cottage cheese and penne at Cameron's request: same creamy hit, a third of the cost, and it freezes."
   }
  ]
 }

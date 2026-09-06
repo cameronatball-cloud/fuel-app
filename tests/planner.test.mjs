@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { gridCounts, costPerPortion, aggregateNeeds, netPantry, packsFor, basketAt, compareShops, cheapestSplit, autoLayout, gridStats, tubPlan, proteinPerPortion, runSheet } from '../planner.js';
+import { freeSlots, roomFor, gridCounts, costPerPortion, aggregateNeeds, netPantry, packsFor, basketAt, compareShops, cheapestSplit, autoLayout, gridStats, tubPlan, proteinPerPortion, runSheet } from '../planner.js';
 
 const ingredients = [
   { id: 'chicken', name: 'Chicken breast', unit: 'g', protein: 22.5, packs: [
@@ -147,4 +147,14 @@ test('autoLayout skips disabled days and gridCounts reflects what is placed', ()
   assert.deepEqual(gridCounts(grid), { eggs: 6, curry: 6 });
   const s = gridStats(grid, recipes, ingredients, 0, days);
   assert.equal(s.slots, 18); assert.equal(s.activeDays, 6); assert.equal(s.perDay[0], 0);
+});
+
+test('aggregateNeeds resolves choices and freeSlots/roomFor gate adding', () => {
+  const needs = aggregateNeeds({ curry: 2 }, recipes, (id) => (id === 'chicken' ? 'thigh' : id));
+  assert.deepEqual(needs, { thigh: 350, rice: 150 });
+  const { grid } = autoLayout({ curry: 7, eggs: 7 }, recipes, 0);
+  const free = freeSlots(grid);
+  assert.deepEqual(free, { breakfast: 0, lunch: 7, dinner: 0 });
+  assert.equal(roomFor(recipes[0], free), 0); // dinner-only curry: no room
+  assert.equal(roomFor(recipes[3], free), 7); // wrap can go at lunch
 });

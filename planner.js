@@ -39,16 +39,25 @@ export function costPerPortion(recipe, ingredients) {
 }
 
 // ---------- needs ----------
-export function aggregateNeeds(portions, recipes) {
+// `resolve` maps an ingredient id to what will actually be bought (a chosen fruit, thighs for breast).
+export function aggregateNeeds(portions, recipes, resolve = (id) => id) {
   const rec = byId(recipes);
   const needs = {};
   for (const [rid, n] of Object.entries(portions)) {
     const r = rec[rid];
     if (!r || n <= 0) continue;
-    for (const { id, qty } of r.ingredients) needs[id] = (needs[id] || 0) + qty * n;
+    for (const { id, qty } of r.ingredients) { const t = resolve(id); needs[t] = (needs[t] || 0) + qty * n; }
   }
   return needs;
 }
+
+// Empty cells per slot on enabled days.
+export function freeSlots(grid, days = [true, true, true, true, true, true, true]) {
+  const free = { breakfast: 0, lunch: 0, dinner: 0 };
+  grid.forEach((d, i) => { if (days[i]) for (const s of SLOTS) if (!d[s]) free[s] += 1; });
+  return free;
+}
+export const roomFor = (recipe, free) => recipe.slots.reduce((n, s) => n + free[s], 0);
 
 // pantry[id] === true means "plenty"; a number means that much on hand (in the ingredient's unit).
 export function netPantry(needs, pantry) {
