@@ -1,0 +1,131 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { aggregateNeeds, netPantry, packsFor, basketAt, compareShops, cheapestSplit, autoLayout, gridStats, tubPlan, proteinPerPortion, runSheet } from '../planner.js';
+
+const ingredients = [
+  { id: 'chicken', name: 'Chicken breast', unit: 'g', protein: 22.5, packs: [
+    { shop: 'tesco', size: 1000, price: 6.69, checked: '2026-09-06' },
+    { shop: 'asda', size: 1000, price: 6.86, checked: '2026-09-01' },
+  ] },
+  { id: 'rice', name: 'Basmati', unit: 'g', protein: 8, packs: [
+    { shop: 'tesco', size: 2000, price: 3.6, checked: '2026-09-06' },
+    { shop: 'asda', size: 2000, price: 3.6, checked: '2026-09-06' },
+    { shop: 'aldi', size: 1000, price: 1.5, checked: '2026-09-06' },
+  ] },
+  { id: 'egg', name: 'Egg', unit: 'each', protein: 6.3, packs: [
+    { shop: 'tesco', size: 15, price: 2.49, checked: '2026-09-06' },
+    { shop: 'any', size: 6, price: 1.5, checked: '2026-09-06' },
+  ] },
+  { id: 'soy', name: 'Soy', unit: 'ml', protein: 8, packs: [] },
+];
+const recipes = [
+  { id: 'curry', name: 'Curry', slots: ['dinner'], fridgeDays: 3, freezer: true, cookMinutes: 40, ingredients: [{ id: 'chicken', qty: 175 }, { id: 'rice', qty: 75 }] },
+  { id: 'salad', name: 'Salad', slots: ['lunch'], fridgeDays: 3, freezer: false, cookMinutes: 25, ingredients: [{ id: 'chicken', qty: 150 }, { id: 'rice', qty: 60 }, { id: 'soy', qty: 10 }] },
+  { id: 'eggs', name: 'Eggs', slots: ['breakfast'], fridgeDays: 1, freezer: false, cookMinutes: 0, ingredients: [{ id: 'egg', qty: 3 }] },
+  { id: 'wrap', name: 'Wrap', slots: ['lunch', 'dinner'], fridgeDays: 2, freezer: false, cookMinutes: 10, ingredients: [{ id: 'chicken', qty: 120 }] },
+];
+
+test('protein per portion', () => {
+  assert.equal(proteinPerPortion(recipes[0], ingredients), Math.round(175 * 0.225 + 75 * 0.08));
+  assert.equal(proteinPerPortion(recipes[2], ingredients), 19);
+});
+
+test('aggregate and net pantry', () => {
+  const needs = aggregateNeeds({ curry: 4, salad: 3 }, recipes);
+  assert.deepEqual(needs, { chicken: 4 * 175 + 3 * 150, rice: 4 * 75 + 3 * 60, soy: 30 });
+  assert.deepEqual(netPantry(needs, { rice: true }), { chicken: 1150, soy: 30 });
+});
+
+test('packs round up, never zero', () => {
+  assert.equal(packsFor(1150, 1000), 2);
+  assert.equal(packsFor(1000, 1000), 1);
+  assert.equal(packsFor(1, 1000), 1);
+});
+
+test('basket picks cheapest pack including branded any-shop packs', () => {
+  const b = basketAt('tesco', { egg: 15, chicken: 1150, soy: 10 }, ingredients);
+  const egg = b.lines.find((l) => l.id === 'egg');
+  assert.equal(egg.n, 1); assert.equal(egg.cost, 2.49); // 15-pack beats 3×6-pack at 4.50
+  const chicken = b.lines.find((l) => l.id === 'chicken');
+  assert.equal(chicken.n, 2); assert.equal(chicken.cost, 13.38);
+  assert.deepEqual(b.missing.map((m) => m.id), ['soy']);
+  assert.equal(b.total, 15.87);
+  assert.equal(b.oldest, '2026-09-06');
+});
+
+test('compareShops ranks full coverage first then price', () => {
+  const ranked = compareShops({ rice: 1000, egg: 6 }, ingredients, ['tesco', 'asda', 'aldi']);
+  // aldi: rice 1.5 + eggs any 1.5 = 3.0; tesco: 3.6 + 1.5 = 5.1; asda: 3.6+1.5
+  assert.equal(ranked[0].shop, 'aldi');
+  assert.equal(ranked[0].total, 3.0);
+});
+
+test('cheapestSplit only reported when it saves the threshold', () => {
+  // chicken cheaper at tesco (6.69), rice cheaper at aldi (1.5 vs 3.6 for 1000g)
+  const split = cheapestSplit({ chicken: 1000, rice: 1000 }, ingredients, ['tesco', 'aldi'], 1);
+  assert.ok(split, 'split should exist');
+  assert.equal(split.total, 8.19);
+  assert.equal(split.saving, 2.1);
+  const none = cheapestSplit({ chicken: 1000 }, ingredients, ['tesco', 'asda'], 1);
+  assert.equal(none, null);
+});
+
+test('autoLayout respects slot types and places short-life recipes first', () => {
+  const { grid, overflow } = autoLayout({ curry: 4, wrap: 3, salad: 3, eggs: 7 }, recipes);
+  assert.deepEqual(overflow, []);
+  const dinners = grid.map((d) => d.dinner);
+  const all = grid.flatMap((d) => [d.lunch, d.dinner]);
+  assert.equal(dinners.filter((x) => x === 'curry').length, 4);
+  assert.equal(all.filter((x) => x === 'wrap').length, 3); // wrap may sit at lunch or dinner
+  // wraps keep 2 days and can't be frozen: every wrap lands on Sun or Mon
+  grid.forEach((d, i) => { if (d.lunch === 'wrap' || d.dinner === 'wrap') assert.ok(i <= 1, `wrap on day ${i}`); });
+  assert.equal(grid.every((d) => d.breakfast === 'eggs'), true);
+  assert.equal(grid.filter((d) => d.lunch === 'salad').length, 3);
+});
+
+test('autoLayout reports overflow when a slot type is full', () => {
+  const { overflow } = autoLayout({ curry: 9 }, recipes);
+  assert.deepEqual(overflow, [{ id: 'curry', unplaced: 2 }]);
+});
+
+test('autoLayout front-loads fridge-only recipes and keeps freezer ones for later', () => {
+  const recs = [
+    { id: 'bang', slots: ['lunch'], fridgeDays: 3, freezer: false, cookMinutes: 45, ingredients: [] },
+    { id: 'box', slots: ['lunch'], fridgeDays: 3, freezer: true, cookMinutes: 35, ingredients: [] },
+  ];
+  const { grid } = autoLayout({ bang: 3, box: 3 }, recs, 0);
+  assert.deepEqual(grid.map((d) => d.lunch), ['bang', 'bang', 'bang', 'box', 'box', 'box', null]);
+  const four = autoLayout({ bang: 4, box: 3 }, recs, 0).grid.map((d) => d.lunch);
+  assert.equal(four.slice(0, 3).every((x) => x === 'bang'), true);
+  assert.equal(four.filter((x) => x === 'bang').length, 4); // one is unavoidably late, but only one
+  // cook day shifts the sequence
+  const shifted = autoLayout({ bang: 2 }, recs, 3).grid.map((d) => d.lunch);
+  assert.deepEqual(shifted, [null, null, null, 'bang', 'bang', null, null]);
+});
+
+test('gridStats sums protein per day', () => {
+  const { grid } = autoLayout({ curry: 7, eggs: 7 }, recipes);
+  const s = gridStats(grid, recipes, ingredients, 24);
+  assert.equal(s.filled, 14);
+  assert.equal(s.distinct, 2);
+  assert.equal(s.perDay[0], 24 + 45 + 19);
+});
+
+test('tubPlan splits fridge/freezer around cook day and flags unfreezable late portions', () => {
+  const grid = Array.from({ length: 7 }, () => ({ breakfast: null, lunch: null, dinner: null }));
+  [0, 1, 3, 5].forEach((d) => (grid[d].dinner = 'curry'));
+  const t = tubPlan(recipes[0], grid, 0);
+  assert.deepEqual(t.fridge, [0, 1]);
+  assert.deepEqual(t.freezer, [3, 5]);
+  assert.equal(t.eatBy, 'Tue');
+  [0, 2, 4].forEach((d) => (grid[d].lunch = 'salad'));
+  const s = tubPlan(recipes[1], grid, 0);
+  assert.deepEqual(s.fridge, [0, 2]);
+  assert.deepEqual(s.late, [4]);
+});
+
+test('runSheet orders longest cook first and skips no-cook recipes', () => {
+  const r = runSheet({ eggs: 7, salad: 3, curry: 4 }, recipes);
+  assert.deepEqual(r.list.map((x) => x.recipe.id), ['curry', 'salad']);
+  assert.equal(r.minutes, 65);
+});

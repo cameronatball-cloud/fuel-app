@@ -1,0 +1,149 @@
+{
+  "checkedNote": "Prices from trolley.co.uk listings on the date shown. Aldi lines appear only where Trolley lists Aldi's own brands. Lidl publishes no prices online, so Lidl is blank until a shelf price is supplied. 'any' = branded item at the lowest listed price, assumed on sale at every shop.",
+  "items": [
+    { "id": "chicken_breast", "name": "Chicken breast fillets", "unit": "g", "protein": 22.5, "category": "protein", "store": "freezer", "packs": [
+      { "shop": "tesco", "name": "Tesco British Chicken Breast Fillets 1kg", "size": 1000, "price": 6.69, "checked": "2026-09-06" },
+      { "shop": "sainsburys", "name": "Sainsbury's British Chicken Breast Fillets 1kg", "size": 1000, "price": 6.69, "checked": "2026-09-06" },
+      { "shop": "asda", "name": "ASDA Chicken Breast Fillets 1kg", "size": 1000, "price": 6.86, "checked": "2026-09-06" } ] },
+    { "id": "chicken_thigh", "name": "Chicken thigh fillets (skinless, boneless)", "unit": "g", "protein": 19, "category": "protein", "store": "freezer", "packs": [
+      { "shop": "tesco", "name": "Tesco British Chicken Thigh Fillets 1kg", "size": 1000, "price": 7.25, "checked": "2026-09-06" },
+      { "shop": "sainsburys", "name": "Sainsbury's British Chicken Thigh Fillets 1kg", "size": 1000, "price": 6.95, "checked": "2026-09-06" },
+      { "shop": "asda", "name": "ASDA Boneless Chicken Thigh Fillets 1kg", "size": 1000, "price": 6.84, "checked": "2026-09-06" } ] },
+    { "id": "beef_mince_5", "name": "Lean beef mince 5%", "unit": "g", "protein": 21, "category": "protein", "store": "fridge", "packs": [
+      { "shop": "tesco", "name": "Tesco Lean Beef Steak Mince 5% 500g", "size": 500, "price": 5.05, "checked": "2026-09-06" },
+      { "shop": "tesco", "name": "Tesco Lean Beef Steak Mince 5% 750g", "size": 750, "price": 7.09, "checked": "2026-09-06" },
+      { "shop": "sainsburys", "name": "Sainsbury's 5% Fat Beef Mince 500g", "size": 500, "price": 5.05, "checked": "2026-09-06" },
+      { "shop": "asda", "name": "ASDA 5% Fat Beef Mince 500g", "size": 500, "price": 5.15, "checked": "2026-09-06" } ] },
+    { "id": "tuna", "name": "Tuna chunks in spring water (145g tin)", "unit": "each", "protein": 25, "category": "protein", "store": "cupboard", "packs": [
+      { "shop": "tesco", "name": "Tesco Tuna Chunks in Spring Water 145g", "size": 1, "price": 0.65, "checked": "2026-09-06" },
+      { "shop": "sainsburys", "name": "Sainsbury's Tuna Chunks in Spring Water 145g", "size": 1, "price": 0.65, "checked": "2026-09-06" },
+      { "shop": "asda", "name": "ASDA Tuna Chunks in Spring Water 4×145g", "size": 4, "price": 2.49, "checked": "2026-09-06" },
+      { "shop": "aldi", "name": "The Fishmonger Tuna Chunks in Spring Water 145g", "size": 1, "price": 0.65, "checked": "2026-09-06" } ] },
+    { "id": "egg", "name": "Eggs", "unit": "each", "protein": 6.3, "category": "protein", "store": "fridge", "packs": [
+      { "shop": "tesco", "name": "Tesco 15 Mixed Weight Eggs", "size": 15, "price": 2.49, "checked": "2026-09-06" },
+      { "shop": "sainsburys", "name": "Stamford Street Co. 10 Mixed Size Eggs", "size": 10, "price": 1.90, "checked": "2026-09-06" },
+      { "shop": "aldi", "name": "Merevale 15 Mixed Weight Free Range Eggs", "size": 15, "price": 2.85, "checked": "2026-09-06" } ] },
+    { "id": "skyr", "name": "Skyr natural 0%", "unit": "g", "protein": 10.6, "category": "dairy", "store": "fridge", "packs": [
+      { "shop": "any", "name": "Arla Skyr Natural 1kg", "size": 1000, "price": 3.20, "checked": "2026-09-06" },
+      { "shop": "any", "name": "Danone Skyr 0% Natural 480g", "size": 480, "price": 2.40, "checked": "2026-09-06" } ] },
+    { "id": "cottage_cheese", "name": "Cottage cheese low fat", "unit": "g", "protein": 11, "category": "dairy", "store": "fridge", "packs": [
+      { "shop": "tesco", "name": "Creamfields Low Fat Cottage Cheese 300g", "size": 300, "price": 0.85, "checked": "2026-09-06" },
+      { "shop": "asda", "name": "Just Essentials Cottage Cheese 300g", "size": 300, "price": 0.87, "checked": "2026-09-06" },
+      { "shop": "sainsburys", "name": "Sainsbury's Cottage Cheese 300g", "size": 300, "price": 1.60, "checked": "2026-09-06" },
+      { "shop": "aldi", "name": "Emporium Cottage Cheese 300g", "size": 300, "price": 1.39, "checked": "2026-09-06" } ] },
+    { "id": "cheddar", "name": "Mature cheddar", "unit": "g", "protein": 25, "category": "dairy", "store": "fridge", "packs": [
+      { "shop": "tesco", "name": "Creamfields Mature Cheddar 400g", "size": 400, "price": 2.45, "checked": "2026-09-06" },
+      { "shop": "sainsburys", "name": "Stamford Street Co. Mature Cheddar 400g", "size": 400, "price": 2.45, "checked": "2026-09-06" },
+      { "shop": "asda", "name": "ASDA British Mature Cheddar 400g", "size": 400, "price": 3.17, "checked": "2026-09-06" } ] },
+    { "id": "protein_powder", "name": "Whey protein powder", "unit": "g", "protein": 78, "category": "protein", "store": "cupboard", "staple": true, "packs": [] },
+    { "id": "milk", "name": "Semi-skimmed milk", "unit": "ml", "protein": 3.5, "category": "dairy", "store": "fridge", "packs": [
+      { "shop": "asda", "name": "ASDA Semi Skimmed Milk 2 pints", "size": 1136, "price": 1.20, "checked": "2026-09-06" },
+      { "shop": "tesco", "name": "Tesco Semi Skimmed Milk 4 pints", "size": 2272, "price": 1.65, "checked": "2026-09-06" } ] },
+    { "id": "butter", "name": "Butter", "unit": "g", "protein": 0.5, "category": "dairy", "store": "fridge", "staple": true, "packs": [] },
+
+    { "id": "basmati", "name": "Basmati rice (dry)", "unit": "g", "protein": 8, "category": "carb", "store": "cupboard", "staple": true, "packs": [
+      { "shop": "tesco", "name": "Tesco Basmati Rice 2kg", "size": 2000, "price": 3.60, "checked": "2026-09-06" },
+      { "shop": "sainsburys", "name": "Sainsbury's Basmati Rice 2kg", "size": 2000, "price": 3.58, "checked": "2026-09-06" },
+      { "shop": "asda", "name": "ASDA Basmati White Rice 2kg", "size": 2000, "price": 3.60, "checked": "2026-09-06" } ] },
+    { "id": "penne", "name": "Penne (dry)", "unit": "g", "protein": 12.5, "category": "carb", "store": "cupboard", "packs": [
+      { "shop": "tesco", "name": "Hearty Food Co. Penne 500g", "size": 500, "price": 0.41, "checked": "2026-09-06" },
+      { "shop": "sainsburys", "name": "Stamford Street Co. Penne 500g", "size": 500, "price": 0.41, "checked": "2026-09-06" },
+      { "shop": "asda", "name": "ASDA Penne 500g", "size": 500, "price": 0.71, "checked": "2026-09-06" },
+      { "shop": "aldi", "name": "Cucina Penne 500g", "size": 500, "price": 0.69, "checked": "2026-09-06" } ] },
+    { "id": "rice_noodles", "name": "Rice noodles (dry)", "unit": "g", "protein": 11, "category": "carb", "store": "cupboard", "packs": [
+      { "shop": "tesco", "name": "Tesco Rice Noodles 300g", "size": 300, "price": 1.15, "checked": "2026-09-06" },
+      { "shop": "sainsburys", "name": "Sainsbury's Rice Noodles 250g", "size": 250, "price": 1.00, "checked": "2026-09-06" } ] },
+    { "id": "oats", "name": "Porridge oats", "unit": "g", "protein": 11, "category": "carb", "store": "cupboard", "packs": [
+      { "shop": "sainsburys", "name": "Sainsbury's Scottish Porridge Oats 1kg", "size": 1000, "price": 1.35, "checked": "2026-09-06" } ] },
+    { "id": "bread", "name": "Wholemeal bread (slices)", "unit": "each", "protein": 3.7, "category": "carb", "store": "freezer", "packs": [
+      { "shop": "tesco", "name": "H.W. Nevill's Wholemeal 800g (~20 slices)", "size": 20, "price": 0.55, "checked": "2026-09-06" },
+      { "shop": "sainsburys", "name": "Stamford Street Co. Wholemeal 800g (~20 slices)", "size": 20, "price": 0.55, "checked": "2026-09-06" },
+      { "shop": "asda", "name": "Just Essentials Wholemeal 800g (~20 slices)", "size": 20, "price": 0.55, "checked": "2026-09-06" } ] },
+    { "id": "wrap", "name": "Tortilla wraps", "unit": "each", "protein": 5, "category": "carb", "store": "cupboard", "packs": [
+      { "shop": "tesco", "name": "H.W. Nevills Tortilla Wraps ×8", "size": 8, "price": 0.99, "checked": "2026-09-06" },
+      { "shop": "sainsburys", "name": "Stamford Street Co. Tortilla Wraps ×8", "size": 8, "price": 0.99, "checked": "2026-09-06" } ] },
+    { "id": "sweet_potato", "name": "Sweet potato", "unit": "g", "protein": 1.6, "category": "carb", "store": "cupboard", "packs": [
+      { "shop": "tesco", "name": "Tesco Sweet Potatoes 1kg", "size": 1000, "price": 1.19, "checked": "2026-09-06" },
+      { "shop": "asda", "name": "ASDA Sweet Potatoes 1kg", "size": 1000, "price": 1.24, "checked": "2026-09-06" },
+      { "shop": "sainsburys", "name": "Sainsbury's Sweet Potatoes 1.25kg", "size": 1250, "price": 1.49, "checked": "2026-09-06" } ] },
+
+    { "id": "onion", "name": "Brown onion", "unit": "each", "protein": 1.5, "category": "veg", "store": "cupboard", "packs": [
+      { "shop": "tesco", "name": "Tesco Brown Onions 1kg (~7)", "size": 7, "price": 0.95, "checked": "2026-09-06" },
+      { "shop": "sainsburys", "name": "Sainsbury's Onions 1kg (~7)", "size": 7, "price": 0.95, "checked": "2026-09-06" },
+      { "shop": "asda", "name": "ASDA Brown Onions 1kg (~7)", "size": 7, "price": 0.98, "checked": "2026-09-06" } ] },
+    { "id": "peppers_frozen", "name": "Frozen sliced peppers", "unit": "g", "protein": 1, "category": "veg", "store": "freezer", "packs": [
+      { "shop": "tesco", "name": "Tesco Sliced Mixed Frozen Peppers 500g", "size": 500, "price": 0.99, "checked": "2026-09-06" },
+      { "shop": "sainsburys", "name": "Sainsbury's Sliced Mixed Peppers 500g", "size": 500, "price": 0.99, "checked": "2026-09-06" } ] },
+    { "id": "mixed_veg", "name": "Frozen mixed vegetables", "unit": "g", "protein": 3, "category": "veg", "store": "freezer", "packs": [
+      { "shop": "tesco", "name": "Grower's Harvest Mixed Vegetables 1kg", "size": 1000, "price": 0.99, "checked": "2026-09-06" },
+      { "shop": "sainsburys", "name": "Stamford Street Co. Mixed Vegetables 1kg", "size": 1000, "price": 0.99, "checked": "2026-09-06" },
+      { "shop": "asda", "name": "ASDA Mixed Vegetables 1kg", "size": 1000, "price": 1.50, "checked": "2026-09-06" },
+      { "shop": "aldi", "name": "Four Seasons Mixed Vegetables 1kg", "size": 1000, "price": 0.99, "checked": "2026-09-06" } ] },
+    { "id": "broccoli", "name": "Frozen broccoli florets", "unit": "g", "protein": 3, "category": "veg", "store": "freezer", "packs": [
+      { "shop": "tesco", "name": "Tesco Frozen Broccoli Florets 900g", "size": 900, "price": 1.07, "checked": "2026-09-06" },
+      { "shop": "sainsburys", "name": "Sainsbury's Broccoli Florets 900g", "size": 900, "price": 1.16, "checked": "2026-09-06" },
+      { "shop": "asda", "name": "ASDA Broccoli Florets 1kg", "size": 1000, "price": 1.44, "checked": "2026-09-06" } ] },
+    { "id": "cucumber", "name": "Cucumber", "unit": "each", "protein": 2.5, "category": "veg", "store": "fridge", "packs": [
+      { "shop": "tesco", "name": "Tesco Whole Cucumber", "size": 1, "price": 0.99, "checked": "2026-09-06" },
+      { "shop": "sainsburys", "name": "Sainsbury's Small Whole Cucumber", "size": 1, "price": 0.70, "checked": "2026-09-06" },
+      { "shop": "aldi", "name": "Nature's Pick Cucumber", "size": 1, "price": 0.99, "checked": "2026-09-06" } ] },
+    { "id": "avocado", "name": "Avocado", "unit": "each", "protein": 3, "category": "veg", "store": "fridge", "packs": [
+      { "shop": "tesco", "name": "Tesco Ripe & Ready Avocado", "size": 1, "price": 0.69, "checked": "2026-09-06" },
+      { "shop": "sainsburys", "name": "Sainsbury's Large Ripe & Ready Avocado", "size": 1, "price": 0.95, "checked": "2026-09-06" } ] },
+    { "id": "banana", "name": "Banana", "unit": "each", "protein": 1.3, "category": "fruit", "store": "cupboard", "packs": [
+      { "shop": "tesco", "name": "Tesco Bananas ×5", "size": 5, "price": 0.78, "checked": "2026-09-06" },
+      { "shop": "sainsburys", "name": "Sainsbury's Fairtrade Bananas ×5", "size": 5, "price": 0.78, "checked": "2026-09-06" } ] },
+    { "id": "frozen_fruit", "name": "Frozen mixed berries", "unit": "g", "protein": 0.7, "category": "fruit", "store": "freezer", "packs": [
+      { "shop": "tesco", "name": "Perfectly Imperfect Frozen Mixed Berries 1kg", "size": 1000, "price": 2.99, "checked": "2026-09-06" } ] },
+    { "id": "chopped_tomatoes", "name": "Chopped tomatoes (tin)", "unit": "g", "protein": 1, "category": "tin", "store": "cupboard", "packs": [
+      { "shop": "tesco", "name": "Grower's Harvest Chopped Tomatoes 400g", "size": 400, "price": 0.43, "checked": "2026-09-06" },
+      { "shop": "sainsburys", "name": "Stamford Street Co. Chopped Tomatoes 400g", "size": 400, "price": 0.43, "checked": "2026-09-06" },
+      { "shop": "any", "name": "KTC Chopped Tomatoes 400g", "size": 400, "price": 0.65, "checked": "2026-09-06" } ] },
+    { "id": "kidney_beans", "name": "Red kidney beans (drained weight)", "unit": "g", "protein": 7, "category": "tin", "store": "cupboard", "packs": [
+      { "shop": "tesco", "name": "Grower's Harvest Red Kidney Beans 400g (240g drained)", "size": 240, "price": 0.33, "checked": "2026-09-06" },
+      { "shop": "asda", "name": "Just Essentials Red Kidney Beans 400g (240g drained)", "size": 240, "price": 0.33, "checked": "2026-09-06" },
+      { "shop": "sainsburys", "name": "Sainsbury's Red Kidney Beans 400g (240g drained)", "size": 240, "price": 0.39, "checked": "2026-09-06" },
+      { "shop": "aldi", "name": "Everyday Essentials Red Kidney Beans 400g (240g drained)", "size": 240, "price": 0.35, "checked": "2026-09-06" } ] },
+    { "id": "coconut_milk", "name": "Coconut milk", "unit": "ml", "protein": 1.5, "category": "tin", "store": "cupboard", "packs": [
+      { "shop": "tesco", "name": "Tesco Coconut Milk 400ml", "size": 400, "price": 0.75, "checked": "2026-09-06" },
+      { "shop": "sainsburys", "name": "Sainsbury's Coconut Milk 400ml", "size": 400, "price": 0.75, "checked": "2026-09-06" },
+      { "shop": "asda", "name": "ASDA Coconut Milk 400ml", "size": 400, "price": 0.85, "checked": "2026-09-06" } ] },
+    { "id": "curry_paste", "name": "Thai red curry paste", "unit": "g", "protein": 2, "category": "sauce", "store": "fridge", "packs": [
+      { "shop": "any", "name": "Thai Dragon Red Curry Paste 400g", "size": 400, "price": 2.10, "checked": "2026-09-06" },
+      { "shop": "tesco", "name": "Tesco Red Thai Curry Paste 180g", "size": 180, "price": 2.25, "checked": "2026-09-06" },
+      { "shop": "any", "name": "Blue Dragon Thai Red Curry Paste 170g", "size": 170, "price": 2.30, "checked": "2026-09-06" } ] },
+    { "id": "peanut_butter", "name": "Peanut butter", "unit": "g", "protein": 25, "category": "sauce", "store": "cupboard", "packs": [
+      { "shop": "sainsburys", "name": "Stamford Street Co. Crunchy Peanut Butter 340g", "size": 340, "price": 0.95, "checked": "2026-09-06" },
+      { "shop": "tesco", "name": "Stockwell & Co Crunchy Peanut Butter 340g", "size": 340, "price": 1.00, "checked": "2026-09-06" },
+      { "shop": "tesco", "name": "Tesco Crunchy Peanut Butter 700g", "size": 700, "price": 2.00, "checked": "2026-09-06" } ] },
+    { "id": "sweet_chilli", "name": "Sweet chilli sauce", "unit": "ml", "protein": 0.5, "category": "sauce", "store": "cupboard", "packs": [
+      { "shop": "any", "name": "Crucials Sweet Chilli Sauce 500ml", "size": 500, "price": 1.30, "checked": "2026-09-06" },
+      { "shop": "tesco", "name": "Tesco Sweet Chilli Dipping Sauce 290g", "size": 290, "price": 2.35, "checked": "2026-09-06" } ] },
+    { "id": "light_mayo", "name": "Light mayonnaise", "unit": "ml", "protein": 1, "category": "sauce", "store": "fridge", "packs": [
+      { "shop": "tesco", "name": "Tesco Light Mayonnaise 500ml", "size": 500, "price": 0.89, "checked": "2026-09-06" },
+      { "shop": "asda", "name": "ASDA Classic Light Mayonnaise 500ml", "size": 500, "price": 0.96, "checked": "2026-09-06" },
+      { "shop": "sainsburys", "name": "Sainsbury's Light Mayonnaise 500ml", "size": 500, "price": 1.00, "checked": "2026-09-06" },
+      { "shop": "aldi", "name": "Bramwells Light Mayonnaise", "size": 500, "price": 0.95, "checked": "2026-09-06" } ] },
+    { "id": "soy_sauce", "name": "Light soy sauce", "unit": "ml", "protein": 8, "category": "sauce", "store": "cupboard", "staple": true, "packs": [
+      { "shop": "tesco", "name": "Tesco Light Soy Sauce 150ml", "size": 150, "price": 0.55, "checked": "2026-09-06" },
+      { "shop": "sainsburys", "name": "Sainsbury's Light Soy Sauce 150ml", "size": 150, "price": 0.55, "checked": "2026-09-06" },
+      { "shop": "asda", "name": "ASDA Light Soy Sauce 150ml", "size": 150, "price": 0.57, "checked": "2026-09-06" },
+      { "shop": "aldi", "name": "Asia Specialities Light Soy Sauce", "size": 150, "price": 0.55, "checked": "2026-09-06" },
+      { "shop": "any", "name": "Lee Kum Kee Premium Light Soy 500ml", "size": 500, "price": 2.00, "checked": "2026-09-06" } ] },
+    { "id": "sesame_oil", "name": "Sesame oil", "unit": "ml", "protein": 0, "category": "sauce", "store": "cupboard", "staple": true, "packs": [] },
+    { "id": "sriracha", "name": "Sriracha", "unit": "ml", "protein": 1, "category": "sauce", "store": "cupboard", "staple": true, "packs": [] },
+    { "id": "honey", "name": "Honey", "unit": "g", "protein": 0.3, "category": "sauce", "store": "cupboard", "staple": true, "packs": [] },
+    { "id": "garlic_paste", "name": "Garlic paste", "unit": "g", "protein": 4, "category": "sauce", "store": "fridge", "staple": true, "packs": [] },
+    { "id": "ginger_garlic_paste", "name": "Ginger & garlic paste", "unit": "g", "protein": 3, "category": "sauce", "store": "fridge", "staple": true, "packs": [] },
+    { "id": "tomato_puree", "name": "Tomato purée", "unit": "g", "protein": 4, "category": "sauce", "store": "fridge", "staple": true, "packs": [] },
+    { "id": "stock_cube", "name": "Chicken stock cube", "unit": "each", "protein": 0.5, "category": "cupboard", "store": "cupboard", "staple": true, "packs": [] },
+    { "id": "olive_oil", "name": "Olive oil", "unit": "ml", "protein": 0, "category": "cupboard", "store": "cupboard", "staple": true, "packs": [] },
+    { "id": "cumin", "name": "Ground cumin", "unit": "g", "protein": 0, "category": "spice", "store": "cupboard", "staple": true, "packs": [] },
+    { "id": "paprika", "name": "Paprika", "unit": "g", "protein": 0, "category": "spice", "store": "cupboard", "staple": true, "packs": [] },
+    { "id": "chilli_powder", "name": "Hot chilli powder", "unit": "g", "protein": 0, "category": "spice", "store": "cupboard", "staple": true, "packs": [] },
+    { "id": "curry_powder", "name": "Mild madras curry powder", "unit": "g", "protein": 0, "category": "spice", "store": "cupboard", "staple": true, "packs": [] },
+    { "id": "turmeric", "name": "Ground turmeric", "unit": "g", "protein": 0, "category": "spice", "store": "cupboard", "staple": true, "packs": [] },
+    { "id": "fajita_seasoning", "name": "Fajita seasoning", "unit": "g", "protein": 0, "category": "spice", "store": "cupboard", "packs": [] },
+    { "id": "corn_tortilla", "name": "Corn tortillas (from enchilada kit)", "unit": "each", "protein": 2, "category": "carb", "store": "cupboard", "packs": [] }
+  ]
+}
