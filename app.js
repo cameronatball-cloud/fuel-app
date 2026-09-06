@@ -1,6 +1,7 @@
 import * as P from './planner.js';
 
 const KEY = 'fuel:v1';
+const APP_VERSION = 'v8';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 
@@ -65,7 +66,7 @@ function weekSwitch() {
 async function boot() {
   try {
     const [i, r, st] = await Promise.all([fetch('data/ingredients.json').then((x) => x.json()), fetch('data/recipes.json').then((x) => x.json()), fetch('data/stock.json').then((x) => x.json()).catch(() => null)]);
-    DATA.ingredients = i.items; DATA.recipes = r.items; DATA.priceNote = i.checkedNote; DATA.stock = st?.items || null; DATA.stockDate = st?.checked ? fmtDate(st.checked) : null;
+    DATA.ingredients = i.items; DATA.recipes = r.items; DATA.priceNote = i.checkedNote; DATA.stock = st?.items || null; DATA.stockDate = st?.checked ? fmtDate(st.checked) : null; DATA.priceDate = (i.items.flatMap((x) => x.packs || []).map((p) => p.checked).sort().pop()) || '';
   } catch (e) {
     document.getElementById('view').innerHTML = `<div class="bad-box">Couldn't load the recipe data. ${esc(e.message)}</div>`;
     return;
@@ -245,6 +246,7 @@ function renderShop() {
   ${choiceHtml ? `<div class="card">${choiceHtml}</div>` : ''}
   <div class="card"><div class="row"><span class="grow"><b style="font-size:22px">${P.gbp(best.total)}</b> at ${P.SHOP_NAMES[best.shop]}</span><span class="muted small">budget ${P.gbp(budget)}</span></div>
     <div class="budget ${best.total > budget ? 'over' : ''}"><i style="width:${pct}%"></i></div>
+    ${haveRows ? `<p class="small"><b>${Object.keys(needsAll).filter((id) => pantryFor[id] !== undefined).length} ingredients are left off because they're ticked in Pantry</b> (see the bottom of this page, or Pantry → Untick all).</p>` : ''}
     <p class="small muted">${best.total > budget ? `Over budget by ${P.gbp(best.total - budget)}. Drop a portion or two of the priciest meal.` : `${P.gbp(budget - best.total)} left for coffees.`} Prices checked ${oldest || 'n/a'}.</p></div>
   <h2>Price by shop</h2><div class="card">${totals}</div>
   <h2>Item by item</h2><div class="card">${items}<p class="small muted">Green is the cheapest for that item. Swipe sideways for more shops.</p></div>
@@ -325,14 +327,15 @@ function renderPantry() {
     return `<div class="check"><input type="checkbox" data-pantry="${it.id}" ${on ? 'checked' : ''}><span class="grow">${esc(it.name)}${(it.packs || []).length ? '' : '<span class="sub">no price on file</span>'}</span>${on && !it.staple ? `<input class="qty" type="number" step="any" placeholder="plenty" data-pantry-qty="${it.id}" value="${typeof v === 'number' ? v : ''}"><span class="small muted">${it.unit === 'each' ? '' : it.unit}</span>` : ''}</div>`; };
   const html = order.filter((g) => groups[g]).map((g) => `<h2>${g}</h2><div class="card">${groups[g].map(row).join('')}</div>`).join('');
   return `<h1>Pantry</h1><p class="small muted">Tick what you already have. Leave the amount blank for "plenty", or type how much (grams, ml or a count) and the shop list buys only the difference.</p>
-  <button class="btn block" data-action="load-stock" style="margin-bottom:12px">Load my stock from ${DATA.stockDate || 'the last photo check'}</button>${html}
+  <div class="row" style="margin-bottom:12px"><button class="btn grow" data-action="load-stock">Load my stock (${DATA.stockDate || 'last check'})</button><button class="btn ghost" data-action="clear-pantry">Untick all</button></div>${html}
   <h2>Settings</h2><div class="card">
     <label class="field">Protein target per day (g)<input type="number" data-setting="proteinTarget" value="${S.settings.proteinTarget}"></label>
     <label class="field">Daily snack protein counted (g), e.g. one scoop<input type="number" data-setting="snackProtein" value="${S.settings.snackProtein}"></label>
     <label class="field">Weekly food budget (£)<input type="number" data-setting="budget" value="${S.settings.budget}"></label>
     <label class="check"><input type="checkbox" data-setting-bool="preferThigh" ${S.settings.preferThigh ? 'checked' : ''}><span>Buy boneless thigh fillets instead of breast<span class="sub">Swaps every breast line on the shop list for thigh fillets. Breast is currently the cheaper per kilo at all four shops.</span></span></label></div>
   <h2>Backup</h2><div class="card"><div class="row"><button class="btn ghost grow" data-action="export">Copy backup</button><button class="btn ghost grow" data-action="import">Paste backup</button></div>
-  <button class="btn danger block" data-action="reset" style="margin-top:10px">Reset everything</button></div>`;
+  <button class="btn danger block" data-action="reset" style="margin-top:10px">Reset everything</button></div>
+  <p class="small muted" style="text-align:center">Fuel ${APP_VERSION} · prices checked ${DATA.priceDate || ''}</p>`;
 }
 
 // ---------- sheet ----------
@@ -397,6 +400,7 @@ function onAction(e) {
   else if (a === 'relayout') { relayout(); render(); }
   else if (a === 'dayx') { const i = +el.dataset.day; w.days[i] = !w.days[i]; relayout(w); render(); }
   else if (a === 'need') { delete S.pantry[id]; save(); render(); }
+  else if (a === 'clear-pantry') { if (confirm('Untick everything in the pantry? The shop list will then include every ingredient for the week.')) { S.pantry = {}; save(); render(); } }
   else if (a === 'load-stock') { if (!DATA.stock) { alert('No stock file loaded.'); return; } if (confirm(`Tick everything from the ${DATA.stockDate} stock check? Items you have already ticked are kept.`)) { for (const [id, v] of Object.entries(DATA.stock)) if (S.pantry[id] === undefined) S.pantry[id] = v; save(); render(); } }
   else if (a === 'clear-week') { if (confirm(`Clear every meal from ${weekLabel(S.activeWeek).toLowerCase()}?`)) { w.portions = {}; w.ticks = {}; relayout(); render(); } }
   else if (a === 'cell') {
