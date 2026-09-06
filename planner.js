@@ -218,7 +218,7 @@ export function scaleIngredients(recipe, portions, ingredients) {
   const ing = byId(ingredients);
   return recipe.ingredients.map(({ id, qty }) => {
     const it = ing[id] || { name: id, unit: 'g' };
-    return { id, name: it.name, unit: it.unit, qty: round1(qty * portions) };
+    return { id, name: it.name, unit: it.unit, qty: it.unit === 'each' ? Math.ceil(qty * portions * 2) / 2 : round1(qty * portions) };
   });
 }
 

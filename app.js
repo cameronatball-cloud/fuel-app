@@ -16,7 +16,7 @@ const ingById = (id) => ING().find((i) => i.id === id);
 const recById = (id) => REC().find((r) => r.id === id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const hue = (id) => { let h = 0; for (const c of id) h = (h * 31 + c.charCodeAt(0)) % 360; return h; };
-const cellStyle = (id) => `background:hsl(${hue(id)} 45% 24%);`;
+const cellStyle = (id) => `background:hsl(${hue(id)} 90% 82%);color:hsl(${hue(id)} 70% 22%);`;
 
 // ---------- boot ----------
 async function boot() {
@@ -84,7 +84,7 @@ function renderPlan() {
       if (!r) return `<button class="cell empty" data-action="cell" data-day="${i}" data-slot="${s}">+</button>`;
       const tp = P.tubPlan(r, S.grid, S.cookDay);
       const cls = tp.fresh ? '' : tp.freezer.includes(i) ? 'frozen' : tp.late.includes(i) ? 'late' : '';
-      return `<button class="cell ${cls}" style="${cellStyle(id)}" data-action="cell" data-day="${i}" data-slot="${s}">${esc(shortName(r.name))}</button>`;
+      return `<button class="cell ${cls}" style="${cellStyle(id)}" data-action="cell" data-day="${i}" data-slot="${s}">${esc(shortName(r))}</button>`;
     }).join('')).join('')}</div>`;
   return `<h1>This week</h1>
   <div class="card"><div class="stat-grid"><div class="stat"><b>${st.filled}<span style="font-size:13px;color:var(--muted)">/21</span></b><span>meal slots filled</span></div><div class="stat"><b>${st.distinct}</b><span>different meals</span></div><div class="stat"><b>${st.avg}g</b><span>avg protein/day</span></div></div>
@@ -101,7 +101,7 @@ function renderPlan() {
   <h2>Lunches</h2><div class="card">${bySlot('lunch').map(row).join('')}</div>
   <h2>Dinners</h2><div class="card">${bySlot('dinner').map(row).join('')}</div>`;
 }
-function shortName(n) { return n.length > 26 ? n.slice(0, 24) + '…' : n; }
+function shortName(r) { if (r.short) return r.short; const w = r.name.split(' '); let out = w[0]; if (w[1] && (out + ' ' + w[1]).length <= 11) out += ' ' + w[1]; return out; }
 function lateWarnings() {
   const out = [];
   for (const [rid, n] of Object.entries(S.portions)) {
@@ -119,7 +119,7 @@ function renderCook() {
   const fresh = Object.entries(S.portions).filter(([rid, n]) => n > 0 && recById(rid)?.cookMinutes === 0).map(([rid, n]) => ({ recipe: recById(rid), portions: n }));
   if (!rs.list.length && !fresh.length) return `<h1>Cook</h1><div class="card"><p>Nothing planned yet. Add portions on the Plan tab.</p></div>`;
   const cookDay = P.DAYS[S.cookDay];
-  const sheet = rs.list.map((x, i) => `<li><b>${i + 1}. ${esc(x.recipe.name)}</b> × ${x.portions} <span class="muted small">· ${x.recipe.cookMinutes} min · ${x.recipe.equipment.join(', ')}</span></li>`).join('');
+  const sheet = rs.list.map((x) => `<li><b>${esc(x.recipe.name)}</b> × ${x.portions} <span class="muted small">· ${x.recipe.cookMinutes} min · ${x.recipe.equipment.join(', ')}</span></li>`).join('');
   const freshList = fresh.map((x) => `<li><b>${esc(x.recipe.name)}</b> × ${x.portions} <span class="muted small">· made fresh, ${x.recipe.slots[0]}</span></li>`).join('');
   const cards = rs.list.map(({ recipe: r, portions: n }) => {
     const scaled = P.scaleIngredients(r, n, ing);
