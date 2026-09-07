@@ -1,7 +1,7 @@
 import * as P from './planner.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v11';
+const APP_VERSION = 'v12';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 

@@ -2538,6 +2538,122 @@
      "checked": "2026-09-06"
     }
    ]
+  },
+  {
+   "id": "chicken_mince",
+   "name": "Chicken mince 5%",
+   "unit": "g",
+   "protein": 20,
+   "category": "protein",
+   "store": "fridge",
+   "packs": [
+    {
+     "shop": "tesco",
+     "name": "Tesco Chicken Mince 5% Fat 500g",
+     "size": 500,
+     "price": 2.49,
+     "checked": "2026-09-07"
+    },
+    {
+     "shop": "aldi",
+     "name": "Aldi own-brand, same size (price-matched to Tesco Chicken Mince 5% Fat 500g)",
+     "size": 500,
+     "price": 2.49,
+     "checked": "2026-09-07",
+     "via": "tesco"
+    },
+    {
+     "shop": "asda",
+     "name": "ASDA Tender Chicken Mince 800g",
+     "size": 800,
+     "price": 4.65,
+     "checked": "2026-09-07"
+    },
+    {
+     "shop": "sainsburys",
+     "name": "Sainsbury's British 6% Fat Chicken Mince 500g",
+     "size": 500,
+     "price": 3.0,
+     "checked": "2026-09-07"
+    }
+   ]
+  },
+  {
+   "id": "pork_mince_5",
+   "name": "Lean pork mince 5%",
+   "unit": "g",
+   "protein": 21,
+   "category": "protein",
+   "store": "fridge",
+   "packs": [
+    {
+     "shop": "tesco",
+     "name": "Tesco Lean Pork Mince 5% Fat 500g",
+     "size": 500,
+     "price": 2.49,
+     "checked": "2026-09-07"
+    },
+    {
+     "shop": "aldi",
+     "name": "Aldi own-brand, same size (price-matched to Tesco Lean Pork Mince 5% Fat 500g)",
+     "size": 500,
+     "price": 2.49,
+     "checked": "2026-09-07",
+     "via": "tesco"
+    },
+    {
+     "shop": "asda",
+     "name": "ASDA Succulent Lean Pork Mince 5% Fat 500g",
+     "size": 500,
+     "price": 2.11,
+     "checked": "2026-09-07"
+    },
+    {
+     "shop": "sainsburys",
+     "name": "Sainsbury's British Pork Mince 5% Fat 500g",
+     "size": 500,
+     "price": 2.49,
+     "checked": "2026-09-07"
+    }
+   ]
+  },
+  {
+   "id": "red_lentils",
+   "name": "Red split lentils (dry)",
+   "unit": "g",
+   "protein": 24,
+   "category": "cupboard",
+   "store": "cupboard",
+   "packs": [
+    {
+     "shop": "tesco",
+     "name": "East End Red Split Lentils 500g",
+     "size": 500,
+     "price": 1.5,
+     "checked": "2026-09-07"
+    },
+    {
+     "shop": "tesco",
+     "name": "Tesco Red Split Lentils 1kg",
+     "size": 1000,
+     "price": 2.6,
+     "checked": "2026-09-07"
+    },
+    {
+     "shop": "asda",
+     "name": "ASDA Red Lentils 500g",
+     "size": 500,
+     "price": 2.0,
+     "checked": "2026-09-07"
+    },
+    {
+     "shop": "sainsburys",
+     "name": "Laila Red Split Lentils 1kg",
+     "size": 1000,
+     "price": 2.0,
+     "checked": "2026-09-07"
+    }
+   ]
   }
  ]
 }
