@@ -1,7 +1,7 @@
 import * as P from './planner.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v10';
+const APP_VERSION = 'v11';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 
@@ -328,10 +328,9 @@ function renderPantry() {
   const row = (it) => { const v = w.pantry[it.id]; const on = v === true || typeof v === 'number';
     return `<div class="check"><input type="checkbox" data-pantry="${it.id}" ${on ? 'checked' : ''}><span class="grow">${esc(it.name)}${(it.packs || []).length ? '' : '<span class="sub">no price on file</span>'}</span>${on && !it.staple ? `<input class="qty" type="number" step="any" placeholder="plenty" data-pantry-qty="${it.id}" value="${typeof v === 'number' ? v : ''}"><span class="small muted">${it.unit === 'each' ? '' : it.unit}</span>` : ''}</div>`; };
   const html = order.filter((g) => groups[g]).map((g) => `<h2>${g}</h2><div class="card">${groups[g].map(row).join('')}</div>`).join('');
-  const other = Object.keys(S.weeks).find((k) => k !== S.activeWeek);
   const ticked = Object.keys(w.pantry).length;
   return `<h1>Pantry</h1>${weekSwitch()}<p class="small muted">What's in the cupboard for <b>${weekLabel(S.activeWeek).toLowerCase()}</b>. Every week starts blank so the shop list shows everything; tick what you already have before you shop. Leave the amount blank for "plenty", or type how much and the list buys only the difference. ${ticked} ticked.</p>
-  <div class="row" style="margin-bottom:12px; flex-wrap:wrap">${other ? `<button class="btn ghost" data-action="copy-pantry" data-from="${other}">Copy from ${weekLabel(other).toLowerCase()}</button>` : ''}<button class="btn ghost" data-action="clear-pantry">Untick all</button></div>${html}
+  <div class="row" style="margin-bottom:12px; flex-wrap:wrap"><button class="btn ghost" data-action="clear-pantry">Untick all</button></div>${html}
   <h2>Settings</h2><div class="card">
     <label class="field">Protein target per day (g)<input type="number" data-setting="proteinTarget" value="${S.settings.proteinTarget}"></label>
     <label class="field">Daily snack protein counted (g), e.g. one scoop<input type="number" data-setting="snackProtein" value="${S.settings.snackProtein}"></label>
@@ -343,6 +342,21 @@ function renderPantry() {
 }
 
 // ---------- sheet ----------
+// In-app replacements for confirm/alert/prompt: iOS standalone web apps often don't show the built-in ones at all.
+function ask(text, okLabel = 'Yes', danger = false) {
+  return new Promise((resolve) => {
+    openSheet(`<h3>${esc(text)}</h3><div class="row" style="margin-top:14px"><button class="btn ghost grow" data-dlg="0">Cancel</button><button class="btn grow ${danger ? 'danger' : ''}" data-dlg="1">${esc(okLabel)}</button></div>`);
+    document.getElementById('sheet-inner').onclick = (e) => { const b = e.target.closest('[data-dlg]'); if (!b) return; document.getElementById('sheet-inner').onclick = null; closeSheet(); resolve(b.dataset.dlg === '1'); };
+  });
+}
+function toast(text) { showHint(text); clearTimeout(toast.t); toast.t = setTimeout(hideHint, 2200); }
+function showText(title, txt) { openSheet(`<h3>${esc(title)}</h3><textarea class="field" style="width:100%;min-height:140px" readonly>${esc(txt)}</textarea><button class="btn block" data-action="close-sheet" style="margin-top:10px">Done</button>`); }
+function askText(title, placeholder) {
+  return new Promise((resolve) => {
+    openSheet(`<h3>${esc(title)}</h3><textarea id="ask-text" class="field" style="width:100%;min-height:140px" placeholder="${esc(placeholder)}"></textarea><div class="row" style="margin-top:10px"><button class="btn ghost grow" data-dlg="0">Cancel</button><button class="btn grow" data-dlg="1">OK</button></div>`);
+    document.getElementById('sheet-inner').onclick = (e) => { const b = e.target.closest('[data-dlg]'); if (!b) return; const v = document.getElementById('ask-text').value; document.getElementById('sheet-inner').onclick = null; closeSheet(); resolve(b.dataset.dlg === '1' ? v : null); };
+  });
+}
 function openSheet(html) { const s = document.getElementById('sheet'); document.getElementById('sheet-inner').innerHTML = html; s.hidden = false; }
 function closeSheet() { document.getElementById('sheet').hidden = true; }
 document.getElementById('sheet').addEventListener('click', (e) => { if (e.target.id === 'sheet') closeSheet(); else onAction(e); });
@@ -434,9 +448,9 @@ function onAction(e) {
   else if (a === 'relayout') { relayout(); render(); }
   else if (a === 'dayx') { const i = +el.dataset.day; w.days[i] = !w.days[i]; relayout(w); render(); }
   else if (a === 'need') { delete w.pantry[id]; save(); render(); }
-  else if (a === 'clear-pantry') { if (confirm(`Untick everything for ${weekLabel(S.activeWeek).toLowerCase()}? The shop list will then include every ingredient.`)) { w.pantry = {}; save(); render(); } }
-  else if (a === 'copy-pantry') { const from = S.weeks[el.dataset.from]; if (from) { w.pantry = { ...from.pantry, ...w.pantry }; save(); render(); } }
-  else if (a === 'clear-week') { if (confirm(`Clear every meal from ${weekLabel(S.activeWeek).toLowerCase()}?`)) { w.portions = {}; w.ticks = {}; relayout(); render(); } }
+  else if (a === 'clear-pantry') { ask(`Untick everything for ${weekLabel(S.activeWeek).toLowerCase()}? The shop list will then include every ingredient.`, 'Untick all').then((ok) => { if (ok) { w.pantry = {}; save(); render(); toast('Pantry cleared'); } }); }
+  else if (a === 'clear-week') { ask(`Clear every meal from ${weekLabel(S.activeWeek).toLowerCase()}?`, 'Clear week', true).then((ok) => { if (ok) { w.portions = {}; w.ticks = {}; relayout(); render(); } }); }
+  else if (a === 'close-sheet') closeSheet();
   else if (a === 'cell' && picked) { dropPicked(el); }
   else if (a === 'cell') {
     const day = +el.dataset.day, slot = el.dataset.slot;
@@ -449,24 +463,23 @@ function onAction(e) {
     w.grid[day][slot] = val; portionsFromGrid(); closeSheet(); render();
   } else if (a === 'open-recipe') { const r = recById(id); if (r) openSheet(recipeDetail(r)); }
   else if (a === 'add-portion') { w.portions[id] = (w.portions[id] || 0) + 1; relayout(); closeSheet(); S.tab = 'plan'; render({ top: true }); }
-  else if (a === 'delete-recipe') { if (confirm('Delete this recipe?')) { S.customRecipes = S.customRecipes.filter((r) => r.id !== id); for (const wk of Object.values(S.weeks)) { delete wk.portions[id]; relayout(wk); } closeSheet(); render(); } }
+  else if (a === 'delete-recipe') { ask('Delete this recipe?', 'Delete', true).then((ok) => { if (ok) { S.customRecipes = S.customRecipes.filter((r) => r.id !== id); META.clear(); for (const wk of Object.values(S.weeks)) { delete wk.portions[id]; relayout(wk); } closeSheet(); render(); } }); }
   else if (a === 'add-recipe') { openSheet(recipeForm()); addIngRow(); }
   else if (a === 'add-link') openSheet(linkForm());
   else if (a === 'inbox-rm') { S.inbox.splice(+el.dataset.i, 1); save(); render(); }
   else if (a === 'inbox-copy') {
     const txt = 'Please add these to Fuel as priced recipes:\n' + S.inbox.map((x) => `- ${x.url}${x.note ? ` (${x.note})` : ''}`).join('\n');
-    (navigator.clipboard?.writeText(txt) || Promise.reject()).then(() => alert('Copied. Paste it to Claude.'), () => prompt('Copy this:', txt));
+    (navigator.clipboard?.writeText(txt) || Promise.reject()).then(() => toast('Copied. Paste it to Claude.'), () => showText('Copy this and paste it to Claude', txt));
   }
   else if (a === 'add-ing-row') addIngRow();
   else if (a === 'rm-row') el.closest('.ing-row').remove();
   else if (a === 'new-ingredient') openSheet(newIngredientForm());
   else if (a === 'export') {
     const txt = JSON.stringify({ weeks: S.weeks, activeWeek: S.activeWeek, customRecipes: S.customRecipes, customIngredients: S.customIngredients, settings: S.settings, inbox: S.inbox });
-    (navigator.clipboard?.writeText(txt) || Promise.reject()).then(() => alert('Backup copied to the clipboard. Paste it somewhere safe.'), () => prompt('Copy this:', txt));
+    (navigator.clipboard?.writeText(txt) || Promise.reject()).then(() => toast('Backup copied. Paste it somewhere safe.'), () => showText('Copy this backup', txt));
   } else if (a === 'import') {
-    const txt = prompt('Paste your backup'); if (!txt) return;
-    try { Object.assign(S, JSON.parse(txt)); setupWeeks(); render(); } catch { alert('That did not look like a backup.'); }
-  } else if (a === 'reset') { if (confirm('Wipe plans, pantry and your own recipes on this phone?')) { localStorage.removeItem(KEY); location.reload(); } }
+    askText('Paste your backup', 'Paste the backup text here').then((txt) => { if (!txt) return; try { Object.assign(S, JSON.parse(txt)); setupWeeks(); render(); toast('Backup restored'); } catch { toast('That did not look like a backup.'); } });
+  } else if (a === 'reset') { ask('Wipe plans, pantry and your own recipes on this phone?', 'Wipe', true).then((ok) => { if (ok) { localStorage.removeItem(KEY); location.reload(); } }); }
 }
 function addIngRow() { const t = document.getElementById('ing-row-t'); document.getElementById('ing-rows').appendChild(t.content.cloneNode(true)); }
 function onChange(e) {
@@ -509,9 +522,9 @@ function onSubmit(e) {
   }
   if (f.id === 'recipe-form') {
     const name = fd.get('name').trim(); const id = 'c_' + name.toLowerCase().replace(/[^a-z0-9]+/g, '_');
-    const slots = fd.getAll('slot'); if (!slots.length) { alert('Pick at least one slot.'); return; }
+    const slots = fd.getAll('slot'); if (!slots.length) { toast('Pick at least one slot.'); return; }
     const ings = [...f.querySelectorAll('.ing-row')].map((r) => ({ id: r.querySelector('[name=ing]').value, qty: +r.querySelector('[name=qty]').value })).filter((x) => x.qty > 0);
-    if (!ings.length) { alert('Add at least one ingredient.'); return; }
+    if (!ings.length) { toast('Add at least one ingredient.'); return; }
     const method = String(fd.get('method')).split('\n').map((s) => s.trim()).filter(Boolean);
     const r = { id, name, slots, cold: !!fd.get('cold'), reheat: fd.get('reheat'), fridgeDays: +fd.get('fridgeDays') || 0, freezer: !!fd.get('freezer'), cookMinutes: +fd.get('cookMinutes') || 0, equipment: [], source: fd.get('source') || 'yours', ingredients: ings, method, notes: '' };
     S.customRecipes = S.customRecipes.filter((x) => x.id !== id).concat([r]); META.clear(); save(); closeSheet(); render();
