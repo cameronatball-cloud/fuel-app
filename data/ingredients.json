@@ -1,5 +1,5 @@
 {
- "checkedNote": "Prices read live from tesco.com, asda.com and sainsburys.co.uk on the date shown. Aldi prices come from the 'Aldi Price Match' labels Tesco and Sainsbury's print on matched lines (that is Aldi's actual shelf price); Aldi's own website has no product listing to read. Lidl publishes no prices online, so Lidl stays blank until a shelf label is supplied.",
+ "checkedNote": "Tesco, ASDA, Sainsbury's and Aldi prices are read from each supermarket's own website on the date shown (big-store prices; Tesco Express and Sainsbury's Local charge more). Lidl publishes no prices for its core range anywhere online, so Lidl shows no price until a shelf label is supplied. 'Not stocked' means that shop doesn't sell the item.",
  "items": [
   {
    "id": "chicken_breast",
@@ -12,46 +12,51 @@
     {
      "shop": "tesco",
      "name": "Tesco British Chicken Breast Fillets 1kg",
-     "size": 1000.0,
+     "size": 1000,
      "price": 6.69,
      "checked": "2026-09-06"
     },
     {
-     "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to British Chicken Breast Fillets 1kg)",
-     "size": 1000.0,
-     "price": 6.69,
-     "checked": "2026-09-06",
-     "via": "tesco"
-    },
-    {
      "shop": "asda",
      "name": "ASDA Tender Chicken Breast Fillets 1.6kg",
-     "size": 1600.0,
+     "size": 1600,
      "price": 10.65,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's 1kg British Chicken Breast Fillets",
-     "size": 1000.0,
+     "size": 1000,
      "price": 6.69,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's 2kg British Chicken Breast Fillets",
-     "size": 2000.0,
+     "size": 2000,
      "price": 12.29,
      "checked": "2026-09-06"
     },
     {
      "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to 2kg British Chicken Breast Fillets)",
-     "size": 2000.0,
+     "name": "Everyday Essentials Chicken Breast Fillets 1kg",
+     "size": 1000,
+     "price": 4.25,
+     "checked": "2026-09-07"
+    },
+    {
+     "shop": "aldi",
+     "name": "Ashfields Chicken Breast Fillets 1kg",
+     "size": 1000,
+     "price": 6.69,
+     "checked": "2026-09-07"
+    },
+    {
+     "shop": "aldi",
+     "name": "Ashfields Chicken Breast Fillets 2kg",
+     "size": 2000,
      "price": 12.29,
-     "checked": "2026-09-06",
-     "via": "sainsburys"
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -66,30 +71,44 @@
     {
      "shop": "tesco",
      "name": "Tesco British Chicken Thigh Fillets 1kg",
-     "size": 1000.0,
+     "size": 1000,
      "price": 7.25,
      "checked": "2026-09-06"
     },
     {
      "shop": "tesco",
      "name": "Tesco British Chicken Thigh Fillets 600g",
-     "size": 600.0,
+     "size": 600,
      "price": 5.6,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "ASDA Succulent Boneless Chicken Thigh Fillets 1kg",
-     "size": 1000.0,
+     "size": 1000,
      "price": 6.84,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's 1kg British Chicken Thigh Fillets",
-     "size": 1000.0,
+     "size": 1000,
      "price": 6.95,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Ashfields Chicken Thigh Fillets 900g",
+     "size": 900,
+     "price": 5.39,
+     "checked": "2026-09-07"
+    },
+    {
+     "shop": "aldi",
+     "name": "Ashfields Chicken Thigh Fillets 600g",
+     "size": 600,
+     "price": 4.39,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -104,60 +123,58 @@
     {
      "shop": "tesco",
      "name": "Tesco Lean Beef Steak Mince 5% Fat 500g",
-     "size": 500.0,
+     "size": 500,
      "price": 5.05,
      "checked": "2026-09-06"
-    },
-    {
-     "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to Lean Beef Steak Mince 5% Fat 500g)",
-     "size": 500.0,
-     "price": 5.05,
-     "checked": "2026-09-06",
-     "via": "tesco"
     },
     {
      "shop": "tesco",
      "name": "Tesco Lean Beef Steak Mince 5% Fat 750g",
-     "size": 750.0,
+     "size": 750,
      "price": 7.09,
      "checked": "2026-09-06"
     },
     {
-     "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to Lean Beef Steak Mince 5% Fat 750g)",
-     "size": 750.0,
-     "price": 7.09,
-     "checked": "2026-09-06",
-     "via": "tesco"
-    },
-    {
      "shop": "asda",
      "name": "ASDA 5% Fat Beef Mince 500g",
-     "size": 500.0,
+     "size": 500,
      "price": 5.15,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "ASDA 5% Fat Beef Steak Mince 1kg",
-     "size": 1000.0,
+     "size": 1000,
      "price": 9.53,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's 5% Fat Beef Mince 500g",
-     "size": 500.0,
+     "size": 500,
      "price": 5.05,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's 5% Fat Beef Mince 750g",
-     "size": 750.0,
+     "size": 750,
      "price": 7.09,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Ashfields British Lean Beef Steak Mince 5% Fat 500g",
+     "size": 500,
+     "price": 5.05,
+     "checked": "2026-09-07"
+    },
+    {
+     "shop": "aldi",
+     "name": "Ashfields British Lean Beef Steak Mince 5% Fat 750g",
+     "size": 750,
+     "price": 7.09,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -172,53 +189,51 @@
     {
      "shop": "tesco",
      "name": "Tesco Tuna Chunks In Spring Water 4x145g",
-     "size": 4.0,
+     "size": 4,
      "price": 2.49,
      "checked": "2026-09-06"
-    },
-    {
-     "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to Tuna Chunks In Spring Water 4x145g)",
-     "size": 4.0,
-     "price": 2.49,
-     "checked": "2026-09-06",
-     "via": "tesco"
     },
     {
      "shop": "tesco",
      "name": "Tesco Tuna Chunks In Spring Water 145g",
-     "size": 1.0,
+     "size": 1,
      "price": 0.65,
      "checked": "2026-09-06"
     },
     {
-     "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to Tuna Chunks In Spring Water 145g)",
-     "size": 1.0,
-     "price": 0.65,
-     "checked": "2026-09-06",
-     "via": "tesco"
-    },
-    {
      "shop": "asda",
      "name": "ASDA Tuna Chunks in Spring Water 4x145g",
-     "size": 4.0,
+     "size": 4,
      "price": 2.49,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's Tuna Chunks in Spring Water 4x145g",
-     "size": 4.0,
+     "size": 4,
      "price": 2.49,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's Tuna Chunks in Spring Water 145g",
-     "size": 1.0,
+     "size": 1,
      "price": 0.65,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "The Fishmonger Tuna Chunks In Water 4 Pack",
+     "size": 4,
+     "price": 2.49,
+     "checked": "2026-09-07"
+    },
+    {
+     "shop": "aldi",
+     "name": "The Fishmonger Tuna Chunks In Spring Water 102g drained",
+     "size": 1,
+     "price": 0.65,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -233,45 +248,58 @@
     {
      "shop": "tesco",
      "name": "Tesco Mixed Sized Free Range Eggs 15 Pack",
-     "size": 15.0,
+     "size": 15,
      "price": 2.85,
      "checked": "2026-09-06"
     },
     {
-     "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to Mixed Sized Free Range Eggs 15 Pack)",
-     "size": 15.0,
-     "price": 2.85,
-     "checked": "2026-09-06",
-     "via": "tesco"
-    },
-    {
      "shop": "tesco",
      "name": "Tesco Free Range Eggs Medium 6 Pack",
-     "size": 6.0,
+     "size": 6,
      "price": 1.8,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "Just Essentials by ASDA 15 Eggs",
-     "size": 15.0,
+     "size": 15,
      "price": 2.87,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Stamford Street Co. Mixed Size Free Range Eggs x10",
-     "size": 10.0,
+     "size": 10,
      "price": 1.9,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's Free Range Eggs Medium x15",
-     "size": 15.0,
+     "size": 15,
      "price": 3.55,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Merevale British Free Range Mixed Weight Eggs 15 Pack",
+     "size": 15,
+     "price": 2.85,
+     "checked": "2026-09-07"
+    },
+    {
+     "shop": "aldi",
+     "name": "Merevale British Medium Free Range Eggs 12 Pack",
+     "size": 12,
+     "price": 2.49,
+     "checked": "2026-09-07"
+    },
+    {
+     "shop": "aldi",
+     "name": "Merevale Free Range Eggs 6 Pack",
+     "size": 6,
+     "price": 0.99,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -286,37 +314,44 @@
     {
      "shop": "tesco",
      "name": "Arla Skyr Natural 0% 1kg",
-     "size": 1000.0,
+     "size": 1000,
      "price": 3.5,
      "checked": "2026-09-06"
     },
     {
      "shop": "tesco",
      "name": "Danone Skyr High Protein 0% Natural 800g",
-     "size": 800.0,
+     "size": 800,
      "price": 3.5,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "Arla Skyr Natural 1kg",
-     "size": 1000.0,
+     "size": 1000,
      "price": 3.2,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Arla Skyr Natural 1kg",
-     "size": 1000.0,
+     "size": 1000,
      "price": 3.5,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Danone Skyr 800g",
-     "size": 800.0,
+     "size": 800,
      "price": 3.5,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Brooklea Fat Free Greek Style Yogurt 1kg (Aldi has no natural skyr; ~10g protein/100g)",
+     "size": 1000,
+     "price": 1.49,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -331,31 +366,30 @@
     {
      "shop": "tesco",
      "name": "Creamfields Low Fat Cottage Cheese 300g",
-     "size": 300.0,
+     "size": 300,
      "price": 0.85,
      "checked": "2026-09-06"
     },
     {
-     "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to Creamfields Low Fat Cottage Cheese 300g)",
-     "size": 300.0,
-     "price": 0.85,
-     "checked": "2026-09-06",
-     "via": "tesco"
-    },
-    {
      "shop": "asda",
      "name": "ASDA Cottage Cheese 300g",
-     "size": 300.0,
+     "size": 300,
      "price": 1.58,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Graham's Cottage Cheese Natural 300g",
-     "size": 300.0,
+     "size": 300,
      "price": 1.65,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Everyday Essentials Low Fat Cottage Cheese 300g",
+     "size": 300,
+     "price": 0.85,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -370,38 +404,44 @@
     {
      "shop": "tesco",
      "name": "Creamfields Mature White Cheddar 400g",
-     "size": 400.0,
+     "size": 400,
      "price": 2.45,
      "checked": "2026-09-06"
     },
     {
-     "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to Creamfields Mature White Cheddar 400g)",
-     "size": 400.0,
-     "price": 2.45,
-     "checked": "2026-09-06",
-     "via": "tesco"
-    },
-    {
      "shop": "tesco",
      "name": "Tesco Mature Cheddar 700g",
-     "size": 700.0,
+     "size": 700,
      "price": 4.25,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "ASDA British Mature Cheddar 400g",
-     "size": 400.0,
+     "size": 400,
      "price": 3.17,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Stamford Street Co. Mature White Cheddar 400g",
-     "size": 400.0,
+     "size": 400,
      "price": 2.45,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Emporium British Mature Cheddar 400g",
+     "size": 400,
+     "price": 2.45,
+     "checked": "2026-09-07"
+    },
+    {
+     "shop": "aldi",
+     "name": "Emporium Grated Mature Cheddar 250g",
+     "size": 250,
+     "price": 1.89,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -417,31 +457,34 @@
     {
      "shop": "tesco",
      "name": "PhD Diet Whey Protein Powder 1kg",
-     "size": 1000.0,
+     "size": 1000,
      "price": 30.0,
      "checked": "2026-09-06"
     },
     {
      "shop": "tesco",
      "name": "Applied Nutrition Critical Whey 825g",
-     "size": 825.0,
+     "size": 825,
      "price": 25.0,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "MyProtein Essential Whey Protein 600g",
-     "size": 600.0,
+     "size": 600,
      "price": 14.0,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's Pro Fit Lean Vanilla Whey Powder 500g",
-     "size": 500.0,
+     "size": 500,
      "price": 13.0,
      "checked": "2026-09-06"
     }
+   ],
+   "unavailable": [
+    "aldi"
    ]
   },
   {
@@ -455,53 +498,51 @@
     {
      "shop": "tesco",
      "name": "Tesco British Semi Skimmed Milk 4 Pints 2.272L",
-     "size": 2272.0,
+     "size": 2272,
      "price": 1.65,
      "checked": "2026-09-06"
-    },
-    {
-     "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to British Semi Skimmed Milk 4 Pints 2.272L)",
-     "size": 2272.0,
-     "price": 1.65,
-     "checked": "2026-09-06",
-     "via": "tesco"
     },
     {
      "shop": "tesco",
      "name": "Tesco British Semi Skimmed Milk 2 Pints 1.13L",
-     "size": 1136.0,
+     "size": 1136,
      "price": 1.2,
      "checked": "2026-09-06"
     },
     {
-     "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to British Semi Skimmed Milk 2 Pints 1.13L)",
-     "size": 1136.0,
-     "price": 1.2,
-     "checked": "2026-09-06",
-     "via": "tesco"
-    },
-    {
      "shop": "asda",
      "name": "ASDA British Semi Skimmed Milk 4 Pints",
-     "size": 2272.0,
+     "size": 2272,
      "price": 1.75,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's British Semi Skimmed Milk 2.27L (4 pint)",
-     "size": 2272.0,
+     "size": 2272,
      "price": 1.65,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's British Semi Skimmed Milk 1.13L (2 pint)",
-     "size": 1136.0,
+     "size": 1136,
      "price": 1.2,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Cowbelle Semi Skimmed Milk 2.27L (4 pints)",
+     "size": 2272,
+     "price": 1.65,
+     "checked": "2026-09-07"
+    },
+    {
+     "shop": "aldi",
+     "name": "Cowbelle British Semi Skimmed Milk 1.14L (2 pints)",
+     "size": 1136,
+     "price": 1.2,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -517,31 +558,30 @@
     {
      "shop": "tesco",
      "name": "Tesco British Salted Block Butter 250g",
-     "size": 250.0,
+     "size": 250,
      "price": 1.85,
      "checked": "2026-09-06"
     },
     {
-     "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to British Salted Block Butter 250g)",
-     "size": 250.0,
-     "price": 1.85,
-     "checked": "2026-09-06",
-     "via": "tesco"
-    },
-    {
      "shop": "asda",
      "name": "ASDA British Salted Butter 250g",
-     "size": 250.0,
+     "size": 250,
      "price": 1.85,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's British Butter Salted 250g",
-     "size": 250.0,
+     "size": 250,
      "price": 1.85,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Cowbelle British Salted Butter 250g",
+     "size": 250,
+     "price": 1.85,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -557,46 +597,37 @@
     {
      "shop": "tesco",
      "name": "Tesco Basmati Rice 2kg",
-     "size": 2000.0,
+     "size": 2000,
      "price": 3.6,
      "checked": "2026-09-06"
     },
     {
      "shop": "tesco",
      "name": "Tesco Basmati Rice 1kg",
-     "size": 1000.0,
+     "size": 1000,
      "price": 1.79,
      "checked": "2026-09-06"
     },
     {
-     "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to Basmati Rice 1kg)",
-     "size": 1000.0,
-     "price": 1.79,
-     "checked": "2026-09-06",
-     "via": "tesco"
-    },
-    {
      "shop": "asda",
      "name": "ASDA Basmati White Rice 2kg",
-     "size": 2000.0,
+     "size": 2000,
      "price": 3.6,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's Basmati Rice 2kg",
-     "size": 2000.0,
+     "size": 2000,
      "price": 3.58,
      "checked": "2026-09-06"
     },
     {
      "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to Basmati Rice 2kg)",
-     "size": 2000.0,
-     "price": 3.58,
-     "checked": "2026-09-06",
-     "via": "sainsburys"
+     "name": "Worldwide Foods Basmati Rice 1kg",
+     "size": 1000,
+     "price": 1.79,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -611,52 +642,58 @@
     {
      "shop": "tesco",
      "name": "Hearty Food Co. Penne Pasta 500g",
-     "size": 500.0,
+     "size": 500,
      "price": 0.41,
      "checked": "2026-09-06"
     },
     {
-     "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to Hearty Food Co. Penne Pasta 500g)",
-     "size": 500.0,
-     "price": 0.41,
-     "checked": "2026-09-06",
-     "via": "tesco"
-    },
-    {
      "shop": "tesco",
      "name": "Tesco Penne Pasta Quills 500g",
-     "size": 500.0,
+     "size": 500,
      "price": 0.69,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "Napolina Penne 500g",
-     "size": 500.0,
+     "size": 500,
      "price": 0.74,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "ASDA Penne 500g",
-     "size": 500.0,
+     "size": 500,
      "price": 0.71,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Stamford Street Co. Penne Pasta 500g",
-     "size": 500.0,
+     "size": 500,
      "price": 0.41,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's Penne Rigate Pasta 500g",
-     "size": 500.0,
+     "size": 500,
      "price": 0.69,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Everyday Essentials Penne Pasta 500g",
+     "size": 500,
+     "price": 0.41,
+     "checked": "2026-09-07"
+    },
+    {
+     "shop": "aldi",
+     "name": "Cucina Penne Pasta 500g",
+     "size": 500,
+     "price": 0.69,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -671,23 +708,30 @@
     {
      "shop": "tesco",
      "name": "Tesco Rice Noodles 300g",
-     "size": 300.0,
+     "size": 300,
      "price": 1.15,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "ASDA Rice Noodles 250g",
-     "size": 250.0,
+     "size": 250,
      "price": 1.15,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's Rice Noodles 250g",
-     "size": 250.0,
+     "size": 250,
      "price": 1.0,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Ready, Set…Cook! Rice Noodles 300g",
+     "size": 300,
+     "price": 0.99,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -702,38 +746,37 @@
     {
      "shop": "tesco",
      "name": "Grower's Harvest Porridge Oats 1kg",
-     "size": 1000.0,
+     "size": 1000,
      "price": 0.85,
      "checked": "2026-09-06"
     },
     {
-     "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to Grower's Harvest Porridge Oats 1kg)",
-     "size": 1000.0,
-     "price": 0.85,
-     "checked": "2026-09-06",
-     "via": "tesco"
-    },
-    {
      "shop": "asda",
      "name": "Scott's Porage Original Porridge Oats 1kg",
-     "size": 1000.0,
+     "size": 1000,
      "price": 2.94,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "Just Essentials by ASDA Porridge Oats 1kg",
-     "size": 1000.0,
+     "size": 1000,
      "price": 0.85,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Stamford Street Co. Porridge Oats 1kg",
-     "size": 1000.0,
+     "size": 1000,
      "price": 0.85,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Everyday Essentials Porridge Oats 1kg",
+     "size": 1000,
+     "price": 0.85,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -748,38 +791,37 @@
     {
      "shop": "tesco",
      "name": "H.W. Nevill's Medium Sliced Wholemeal Bread 800g (~20 slices)",
-     "size": 20.0,
+     "size": 20,
      "price": 0.55,
      "checked": "2026-09-06"
     },
     {
-     "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to H.W. Nevill's Medium Sliced Wholemeal Bread 800g (~20 slices))",
-     "size": 20.0,
-     "price": 0.55,
-     "checked": "2026-09-06",
-     "via": "tesco"
-    },
-    {
      "shop": "tesco",
      "name": "Tesco Wholemeal Medium Sliced Bread 800g (~20 slices)",
-     "size": 20.0,
+     "size": 20,
      "price": 0.75,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "Just Essentials by ASDA Wholemeal Bread 800g (~20 slices)",
-     "size": 20.0,
+     "size": 20,
      "price": 0.55,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's Medium Sliced Wholemeal Bread 800g (~20 slices)",
-     "size": 20.0,
+     "size": 20,
      "price": 0.75,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Everyday Essentials Medium Sliced Wholemeal Bread 800g (~20 slices)",
+     "size": 20,
+     "price": 0.55,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -794,38 +836,37 @@
     {
      "shop": "tesco",
      "name": "H.W. Nevills Plain White Tortilla Wraps 8 Pack",
-     "size": 8.0,
+     "size": 8,
      "price": 0.99,
      "checked": "2026-09-06"
     },
     {
-     "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to H.W. Nevills Plain White Tortilla Wraps 8 Pack)",
-     "size": 8.0,
-     "price": 0.99,
-     "checked": "2026-09-06",
-     "via": "tesco"
-    },
-    {
      "shop": "asda",
      "name": "Old El Paso Regular Super Soft Flour Tortillas 8pk",
-     "size": 8.0,
+     "size": 8,
      "price": 1.6,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "The Bakery at ASDA 8 White Wraps 488g",
-     "size": 8.0,
+     "size": 8,
      "price": 1.32,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Stamford Street Co. Plain Tortilla Wraps x8",
-     "size": 8.0,
+     "size": 8,
      "price": 0.99,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Village Bakery White Tortilla Wraps ×8",
+     "size": 8,
+     "price": 0.99,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -840,61 +881,44 @@
     {
      "shop": "tesco",
      "name": "Tesco Sweet Potatoes 1kg",
-     "size": 1000.0,
+     "size": 1000,
      "price": 1.19,
      "checked": "2026-09-06"
-    },
-    {
-     "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to Sweet Potatoes 1kg)",
-     "size": 1000.0,
-     "price": 1.19,
-     "checked": "2026-09-06",
-     "via": "tesco"
     },
     {
      "shop": "tesco",
      "name": "Tesco Large Sweet Potatoes Loose (each ~350g)",
-     "size": 350.0,
+     "size": 350,
      "price": 0.42,
      "checked": "2026-09-06"
     },
     {
-     "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to Large Sweet Potatoes Loose (each ~350g))",
-     "size": 350.0,
-     "price": 0.42,
-     "checked": "2026-09-06",
-     "via": "tesco"
-    },
-    {
      "shop": "asda",
      "name": "ASDA Sweet Potatoes 1kg",
-     "size": 1000.0,
+     "size": 1000,
      "price": 1.24,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "Just Essentials by ASDA Sweet Potatoes 500g",
-     "size": 500.0,
+     "size": 500,
      "price": 0.6,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's Sweet Potato 1.25kg",
-     "size": 1250.0,
+     "size": 1250,
      "price": 1.49,
      "checked": "2026-09-06"
     },
     {
      "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to Sweet Potato 1.25kg)",
-     "size": 1250.0,
-     "price": 1.49,
-     "checked": "2026-09-06",
-     "via": "sainsburys"
+     "name": "Nature's Pick Sweet Potatoes 1kg",
+     "size": 1000,
+     "price": 1.19,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -909,31 +933,30 @@
     {
      "shop": "tesco",
      "name": "Growers Harvest Mixed Vegetables 1kg",
-     "size": 1000.0,
+     "size": 1000,
      "price": 0.99,
      "checked": "2026-09-06"
     },
     {
-     "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to Growers Harvest Mixed Vegetables 1kg)",
-     "size": 1000.0,
-     "price": 0.99,
-     "checked": "2026-09-06",
-     "via": "tesco"
-    },
-    {
      "shop": "asda",
      "name": "Just Essentials by ASDA Mixed Vegetables 1kg",
-     "size": 1000.0,
+     "size": 1000,
      "price": 0.98,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Stamford Street Mixed Vegetables 1kg",
-     "size": 1000.0,
+     "size": 1000,
      "price": 0.99,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Four Seasons Mixed Vegetables 1kg",
+     "size": 1000,
+     "price": 0.99,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -948,46 +971,37 @@
     {
      "shop": "tesco",
      "name": "Tesco Frozen Broccoli Florets 900g",
-     "size": 900.0,
+     "size": 900,
      "price": 1.16,
      "checked": "2026-09-06"
-    },
-    {
-     "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to Frozen Broccoli Florets 900g)",
-     "size": 900.0,
-     "price": 1.16,
-     "checked": "2026-09-06",
-     "via": "tesco"
     },
     {
      "shop": "tesco",
      "name": "Tesco Broccoli 375g",
-     "size": 375.0,
+     "size": 375,
      "price": 0.9,
      "checked": "2026-09-06"
     },
     {
-     "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to Broccoli 375g)",
-     "size": 375.0,
-     "price": 0.9,
-     "checked": "2026-09-06",
-     "via": "tesco"
-    },
-    {
      "shop": "asda",
      "name": "ASDA Broccoli Florets 1kg (frozen)",
-     "size": 1000.0,
+     "size": 1000,
      "price": 1.44,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's Broccoli Florets 900g (frozen)",
-     "size": 900.0,
+     "size": 900,
      "price": 1.16,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Four Seasons Broccoli Florets 1kg (frozen)",
+     "size": 1000,
+     "price": 1.29,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -1002,38 +1016,37 @@
     {
      "shop": "tesco",
      "name": "Tesco Whole Cucumber Each",
-     "size": 1.0,
+     "size": 1,
      "price": 0.99,
      "checked": "2026-09-06"
     },
     {
-     "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to Whole Cucumber Each)",
-     "size": 1.0,
-     "price": 0.99,
-     "checked": "2026-09-06",
-     "via": "tesco"
-    },
-    {
      "shop": "asda",
      "name": "ASDA Cucumber",
-     "size": 1.0,
+     "size": 1,
      "price": 0.99,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's Whole Cucumber",
-     "size": 1.0,
+     "size": 1,
      "price": 0.99,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's Small Whole Cucumber",
-     "size": 1.0,
+     "size": 1,
      "price": 0.7,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Nature's Pick Cucumber",
+     "size": 1,
+     "price": 0.99,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -1048,30 +1061,37 @@
     {
      "shop": "tesco",
      "name": "Tesco Ripe & Ready Avocado",
-     "size": 1.0,
+     "size": 1,
      "price": 0.69,
      "checked": "2026-09-06"
     },
     {
      "shop": "tesco",
      "name": "Tesco Ripen At Home Avocados 3 Pack",
-     "size": 3.0,
+     "size": 3,
      "price": 2.0,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "Just Essentials by ASDA Avocados 4pk",
-     "size": 4.0,
+     "size": 4,
      "price": 1.29,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "ASDA Large Avocado",
-     "size": 1.0,
+     "size": 1,
      "price": 0.88,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Nature's Pick Avocado Medium",
+     "size": 1,
+     "price": 0.69,
+     "checked": "2026-09-07"
     }
    ],
    "unavailable": [
@@ -1089,53 +1109,44 @@
     {
      "shop": "tesco",
      "name": "Tesco Ripe Bananas 5 Pack",
-     "size": 5.0,
+     "size": 5,
      "price": 0.78,
      "checked": "2026-09-06"
-    },
-    {
-     "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to Ripe Bananas 5 Pack)",
-     "size": 5.0,
-     "price": 0.78,
-     "checked": "2026-09-06",
-     "via": "tesco"
     },
     {
      "shop": "tesco",
      "name": "Tesco Bananas Loose (each)",
-     "size": 1.0,
+     "size": 1,
      "price": 0.16,
      "checked": "2026-09-06"
     },
     {
-     "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to Bananas Loose (each))",
-     "size": 1.0,
-     "price": 0.16,
-     "checked": "2026-09-06",
-     "via": "tesco"
-    },
-    {
      "shop": "asda",
      "name": "ASDA 6 Bananas",
-     "size": 6.0,
+     "size": 6,
      "price": 0.94,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "ASDA Garden Gang 7 Brilliant Bananas",
-     "size": 7.0,
+     "size": 7,
      "price": 0.77,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's Fairtrade Bananas x5",
-     "size": 5.0,
+     "size": 5,
      "price": 0.78,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Nature's Pick Bananas ×5",
+     "size": 5,
+     "price": 0.78,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -1165,53 +1176,44 @@
     {
      "shop": "tesco",
      "name": "Grower's Harvest Chopped Tomatoes 400g",
-     "size": 400.0,
+     "size": 400,
      "price": 0.43,
      "checked": "2026-09-06"
     },
     {
-     "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to Grower's Harvest Chopped Tomatoes 400g)",
-     "size": 400.0,
-     "price": 0.43,
-     "checked": "2026-09-06",
-     "via": "tesco"
-    },
-    {
      "shop": "tesco",
      "name": "Tesco Italian Chopped Tomatoes 4x400g",
-     "size": 1600.0,
+     "size": 1600,
      "price": 1.85,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "Just Essentials by ASDA Chopped Tomatoes 400g",
-     "size": 400.0,
+     "size": 400,
      "price": 0.43,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Stamford Street Co. Chopped Tomatoes 400g",
-     "size": 400.0,
+     "size": 400,
      "price": 0.43,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's Italian Chopped Tomatoes 4x400g",
-     "size": 1600.0,
+     "size": 1600,
      "price": 1.8,
      "checked": "2026-09-06"
     },
     {
      "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to Italian Chopped Tomatoes 4x400g)",
-     "size": 1600.0,
-     "price": 1.8,
-     "checked": "2026-09-06",
-     "via": "sainsburys"
+     "name": "Everyday Essentials Chopped Tomatoes 400g",
+     "size": 400,
+     "price": 0.43,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -1226,31 +1228,30 @@
     {
      "shop": "tesco",
      "name": "Growers Harvest Red Kidney Beans In Water 400g (240g drained)",
-     "size": 240.0,
+     "size": 240,
      "price": 0.35,
      "checked": "2026-09-06"
     },
     {
-     "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to Growers Harvest Red Kidney Beans In Water 400g (240g drained))",
-     "size": 240.0,
-     "price": 0.35,
-     "checked": "2026-09-06",
-     "via": "tesco"
-    },
-    {
      "shop": "asda",
      "name": "ASDA Red Kidney Beans in Water 400g (240g drained)",
-     "size": 240.0,
+     "size": 240,
      "price": 0.39,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's Red Kidney Beans in Water 400g (240g drained)",
-     "size": 240.0,
+     "size": 240,
      "price": 0.39,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Everyday Essentials Red Kidney Beans 400g (240g drained)",
+     "size": 240,
+     "price": 0.35,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -1265,31 +1266,30 @@
     {
      "shop": "tesco",
      "name": "Tesco Coconut Milk 400ml",
-     "size": 400.0,
+     "size": 400,
      "price": 0.75,
      "checked": "2026-09-06"
     },
     {
-     "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to Coconut Milk 400ml)",
-     "size": 400.0,
-     "price": 0.75,
-     "checked": "2026-09-06",
-     "via": "tesco"
-    },
-    {
      "shop": "asda",
      "name": "ASDA Coconut Milk 400ml",
-     "size": 400.0,
+     "size": 400,
      "price": 0.85,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's Coconut Milk 400ml",
-     "size": 400.0,
+     "size": 400,
      "price": 0.75,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Asia Green Garden Coconut Milk 400ml",
+     "size": 400,
+     "price": 0.75,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -1304,44 +1304,51 @@
     {
      "shop": "tesco",
      "name": "Thai Dragon Red Curry Paste 400g",
-     "size": 400.0,
+     "size": 400,
      "price": 2.1,
      "checked": "2026-09-06"
     },
     {
      "shop": "tesco",
      "name": "Tesco Red Thai Curry Paste 180g",
-     "size": 180.0,
+     "size": 180,
      "price": 2.25,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "Blue Dragon Thai Red Curry Paste 170g",
-     "size": 170.0,
+     "size": 170,
      "price": 2.45,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "ASDA Red Thai Curry Paste 200g",
-     "size": 200.0,
+     "size": 200,
      "price": 2.55,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Blue Dragon Thai Red Curry Paste 170g",
-     "size": 170.0,
+     "size": 170,
      "price": 2.45,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's Thai Red Curry Spice Paste 180g",
-     "size": 180.0,
+     "size": 180,
      "price": 2.5,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Ready, Set…Cook! Thai Red Curry Paste 180g",
+     "size": 180,
+     "price": 1.39,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -1356,38 +1363,37 @@
     {
      "shop": "tesco",
      "name": "Tesco Crunchy Peanut Butter 340g",
-     "size": 340.0,
+     "size": 340,
      "price": 0.95,
      "checked": "2026-09-06"
     },
     {
-     "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to Crunchy Peanut Butter 340g)",
-     "size": 340.0,
-     "price": 0.95,
-     "checked": "2026-09-06",
-     "via": "tesco"
-    },
-    {
      "shop": "tesco",
      "name": "Tesco Crunchy Peanut Butter 700g",
-     "size": 700.0,
+     "size": 700,
      "price": 2.0,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "Just Essentials by ASDA Crunchy Peanut Butter 340g",
-     "size": 340.0,
+     "size": 340,
      "price": 1.0,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Stamford Street Co. Crunchy Peanut Butter 340g",
-     "size": 340.0,
+     "size": 340,
      "price": 0.95,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Grandessa Crunchy Peanut Butter 340g",
+     "size": 340,
+     "price": 0.95,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -1402,30 +1408,37 @@
     {
      "shop": "tesco",
      "name": "Encona Thai Sweet Chilli Sauce 285ml",
-     "size": 285.0,
+     "size": 285,
      "price": 1.75,
      "checked": "2026-09-06"
     },
     {
      "shop": "tesco",
      "name": "Thai Dragon Sweet Chilli Sauce 455ml",
-     "size": 455.0,
+     "size": 455,
      "price": 2.5,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "ASDA Sweet Chilli Sauce 300g",
-     "size": 300.0,
+     "size": 300,
      "price": 2.4,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's Sweet Chilli Sauce 280g",
-     "size": 280.0,
+     "size": 280,
      "price": 2.35,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Asia Specialities Sweet Chilli Sauce 300g",
+     "size": 300,
+     "price": 1.89,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -1440,31 +1453,30 @@
     {
      "shop": "tesco",
      "name": "Tesco Light Mayonnaise 450ml",
-     "size": 450.0,
+     "size": 450,
      "price": 0.86,
      "checked": "2026-09-06"
     },
     {
-     "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to Light Mayonnaise 450ml)",
-     "size": 450.0,
-     "price": 0.86,
-     "checked": "2026-09-06",
-     "via": "tesco"
-    },
-    {
      "shop": "asda",
      "name": "ASDA Classic Light Mayonnaise 500ml",
-     "size": 500.0,
+     "size": 500,
      "price": 0.89,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's Mayonnaise Light Squeezy 500ml",
-     "size": 500.0,
+     "size": 500,
      "price": 1.0,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Bramwells Squeezy Light Mayonnaise 500ml",
+     "size": 500,
+     "price": 0.95,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -1480,45 +1492,44 @@
     {
      "shop": "tesco",
      "name": "Tesco Light Soy Sauce 150ml",
-     "size": 150.0,
+     "size": 150,
      "price": 0.55,
      "checked": "2026-09-06"
     },
     {
-     "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to Light Soy Sauce 150ml)",
-     "size": 150.0,
-     "price": 0.55,
-     "checked": "2026-09-06",
-     "via": "tesco"
-    },
-    {
      "shop": "tesco",
      "name": "Lee Kum Kee Premium Light Soy Sauce 500ml",
-     "size": 500.0,
+     "size": 500,
      "price": 2.5,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "ASDA Light Soy Sauce 150ml",
-     "size": 150.0,
+     "size": 150,
      "price": 0.57,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's Light Soy Sauce 150ml",
-     "size": 150.0,
+     "size": 150,
      "price": 0.55,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Lee Kum Kee Premium Light Soy Sauce 500ml",
-     "size": 500.0,
+     "size": 500,
      "price": 2.5,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Asia Specialities Light Soy Sauce 150ml",
+     "size": 150,
+     "price": 0.55,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -1534,24 +1545,27 @@
     {
      "shop": "tesco",
      "name": "Tesco Toasted Sesame Oil 250ml",
-     "size": 250.0,
+     "size": 250,
      "price": 2.65,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "ASDA Cook Sesame Oil 250ml",
-     "size": 250.0,
+     "size": 250,
      "price": 2.64,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "KTC Pressed Toasted Pure Sesame Oil 250ml",
-     "size": 250.0,
+     "size": 250,
      "price": 2.2,
      "checked": "2026-09-06"
     }
+   ],
+   "unavailable": [
+    "aldi"
    ]
   },
   {
@@ -1566,44 +1580,51 @@
     {
      "shop": "tesco",
      "name": "Tesco Sriracha Chilli Sauce 285g",
-     "size": 285.0,
+     "size": 285,
      "price": 2.4,
      "checked": "2026-09-06"
     },
     {
      "shop": "tesco",
      "name": "Thai Dragon Sriracha Hot Chilli Sauce 455ml",
-     "size": 455.0,
+     "size": 455,
      "price": 2.75,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "ASDA Sriracha Sauce 305g",
-     "size": 305.0,
+     "size": 305,
      "price": 2.24,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "Thai Dragon Sriracha Hot Chilli Sauce 455ml",
-     "size": 455.0,
+     "size": 455,
      "price": 2.48,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's Sriracha Hot Sauce 300g",
-     "size": 300.0,
+     "size": 300,
      "price": 1.9,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Thai Dragon Sriracha Hot Chilli Sauce 455ml",
-     "size": 455.0,
+     "size": 455,
      "price": 2.5,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Asia Specialities Sriracha 460ml",
+     "size": 460,
+     "price": 1.99,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -1619,31 +1640,37 @@
     {
      "shop": "tesco",
      "name": "Tesco Squeezy Clear Honey 340g",
-     "size": 340.0,
+     "size": 340,
      "price": 1.19,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "Just Essentials by ASDA Clear Honey 340g",
-     "size": 340.0,
+     "size": 340,
      "price": 0.74,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Stamford Street Co. Clear Honey 340g",
-     "size": 340.0,
+     "size": 340,
      "price": 0.74,
      "checked": "2026-09-06"
     },
     {
      "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to Stamford Street Co. Clear Honey 340g)",
-     "size": 340.0,
-     "price": 0.74,
-     "checked": "2026-09-06",
-     "via": "sainsburys"
+     "name": "Everyday Essentials Clear Honey 454g",
+     "size": 454,
+     "price": 0.99,
+     "checked": "2026-09-07"
+    },
+    {
+     "shop": "aldi",
+     "name": "Grandessa Squeezy Honey 454g",
+     "size": 454,
+     "price": 1.39,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -1659,31 +1686,34 @@
     {
      "shop": "tesco",
      "name": "Nishaan Garlic Paste 283g",
-     "size": 283.0,
+     "size": 283,
      "price": 1.9,
      "checked": "2026-09-06"
     },
     {
      "shop": "tesco",
      "name": "Tesco Garlic Paste 90g",
-     "size": 90.0,
+     "size": 90,
      "price": 1.8,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "KTC Minced Garlic Paste 210g",
-     "size": 210.0,
+     "size": 210,
      "price": 1.38,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "KTC Minced Garlic Paste 210g",
-     "size": 210.0,
+     "size": 210,
      "price": 1.4,
      "checked": "2026-09-06"
     }
+   ],
+   "unavailable": [
+    "aldi"
    ]
   },
   {
@@ -1698,31 +1728,34 @@
     {
      "shop": "tesco",
      "name": "Nishaan Ginger Garlic Paste 283g",
-     "size": 283.0,
+     "size": 283,
      "price": 1.9,
      "checked": "2026-09-06"
     },
     {
      "shop": "tesco",
      "name": "Tesco Garlic & Ginger Paste 95g",
-     "size": 95.0,
+     "size": 95,
      "price": 1.8,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "KTC Minced Ginger & Garlic Paste 210g",
-     "size": 210.0,
+     "size": 210,
      "price": 1.38,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "KTC Minced Garlic & Ginger Paste 210g",
-     "size": 210.0,
+     "size": 210,
      "price": 1.4,
      "checked": "2026-09-06"
     }
+   ],
+   "unavailable": [
+    "aldi"
    ]
   },
   {
@@ -1737,31 +1770,30 @@
     {
      "shop": "tesco",
      "name": "Tesco Tomato Puree 200g",
-     "size": 200.0,
+     "size": 200,
      "price": 0.59,
      "checked": "2026-09-06"
     },
     {
-     "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to Tomato Puree 200g)",
-     "size": 200.0,
-     "price": 0.59,
-     "checked": "2026-09-06",
-     "via": "tesco"
-    },
-    {
      "shop": "asda",
      "name": "ASDA Double Concentrate Tomato Puree 200g",
-     "size": 200.0,
+     "size": 200,
      "price": 0.7,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's Tomato Puree Double Concentrate 200g",
-     "size": 200.0,
+     "size": 200,
      "price": 0.59,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Cucina Tomato Puree Double Concentrate 200g",
+     "size": 200,
+     "price": 0.59,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -1777,23 +1809,30 @@
     {
      "shop": "tesco",
      "name": "Tesco Chicken Stock Cubes 10 Pack",
-     "size": 10.0,
+     "size": 10,
      "price": 1.0,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "ASDA Chicken Stock Cubes 12x10g",
-     "size": 12.0,
+     "size": 12,
      "price": 1.25,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's Stock Cubes Chicken 10x10g",
-     "size": 10.0,
+     "size": 10,
      "price": 1.1,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Bramwells Chicken Stock Cubes ×12",
+     "size": 12,
+     "price": 0.69,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -1809,37 +1848,44 @@
     {
      "shop": "tesco",
      "name": "Tesco Olive Oil 500ml",
-     "size": 500.0,
+     "size": 500,
      "price": 5.75,
      "checked": "2026-09-06"
     },
     {
      "shop": "tesco",
      "name": "Olivio Oil 500ml (olive oil blend)",
-     "size": 500.0,
+     "size": 500,
      "price": 2.75,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "ASDA Olive Oil 1 Litre",
-     "size": 1000.0,
+     "size": 1000,
      "price": 7.0,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "ASDA Olive Oil 250ml",
-     "size": 250.0,
+     "size": 250,
      "price": 3.09,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's Olive Oil 1L",
-     "size": 1000.0,
+     "size": 1000,
      "price": 7.25,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Solesta Olive Oil 1L",
+     "size": 1000,
+     "price": 5.29,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -1855,23 +1901,30 @@
     {
      "shop": "tesco",
      "name": "Tesco Ground Cumin 43g",
-     "size": 43.0,
+     "size": 43,
      "price": 1.0,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "ASDA Cook Ground Cumin 41g",
-     "size": 41.0,
+     "size": 41,
      "price": 1.0,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's Ground Cumin 43g",
-     "size": 43.0,
+     "size": 43,
      "price": 1.15,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Ready, Set…Cook! Cumin 40g",
+     "size": 40,
+     "price": 0.65,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -1887,23 +1940,30 @@
     {
      "shop": "tesco",
      "name": "Tesco Paprika 50g",
-     "size": 50.0,
+     "size": 50,
      "price": 1.0,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "COOK by ASDA Paprika 46g",
-     "size": 46.0,
+     "size": 46,
      "price": 1.0,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's Paprika 44g",
-     "size": 44.0,
+     "size": 44,
      "price": 1.15,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Ready, Set…Cook! Paprika 40g",
+     "size": 40,
+     "price": 0.69,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -1919,23 +1979,30 @@
     {
      "shop": "tesco",
      "name": "Tesco Hot Chilli Powder 50g",
-     "size": 50.0,
+     "size": 50,
      "price": 1.0,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "COOK by ASDA Hot Chilli Powder 100g",
-     "size": 100.0,
+     "size": 100,
      "price": 1.0,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's Hot Chilli Powder 44g",
-     "size": 44.0,
+     "size": 44,
      "price": 1.15,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Ready, Set…Cook! Chilli Powder 40g",
+     "size": 40,
+     "price": 0.79,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -1951,23 +2018,30 @@
     {
      "shop": "tesco",
      "name": "Tesco Mild Curry Powder 80g",
-     "size": 80.0,
+     "size": 80,
      "price": 1.25,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "COOK by ASDA Mild Curry Powder 80g",
-     "size": 80.0,
+     "size": 80,
      "price": 1.35,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's Mild Curry Powder 79g",
-     "size": 79.0,
+     "size": 79,
      "price": 1.3,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Ready, Set…Cook! Mild Curry Powder 90g",
+     "size": 90,
+     "price": 0.89,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -1983,23 +2057,30 @@
     {
      "shop": "tesco",
      "name": "Tesco Ground Turmeric 45g",
-     "size": 45.0,
+     "size": 45,
      "price": 1.0,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "Rajah Haldi Ground Turmeric 100g",
-     "size": 100.0,
+     "size": 100,
      "price": 1.42,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Rajah Haldi Turmeric Ground 100g",
-     "size": 100.0,
+     "size": 100,
      "price": 1.4,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Ready, Set…Cook! Ground Turmeric 40g",
+     "size": 40,
+     "price": 0.75,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -2014,23 +2095,30 @@
     {
      "shop": "tesco",
      "name": "Tesco Fajita Seasoning 30g",
-     "size": 30.0,
+     "size": 30,
      "price": 1.0,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "ASDA Sizzlin' Fajita Seasoning 30g",
-     "size": 30.0,
+     "size": 30,
      "price": 1.02,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's Fajita Spice Mix 30g",
-     "size": 30.0,
+     "size": 30,
      "price": 1.0,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Ready, Set…Cook! Fajita Mix Seasoning 50g",
+     "size": 50,
+     "price": 0.69,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -2045,19 +2133,20 @@
     {
      "shop": "tesco",
      "name": "Tesco Wheat & Corn Tortillas x8",
-     "size": 8.0,
+     "size": 8,
      "price": 1.5,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "ASDA 8 Corn Tortillas 320g",
-     "size": 8.0,
+     "size": 8,
      "price": 1.44,
      "checked": "2026-09-06"
     }
    ],
    "unavailable": [
+    "aldi",
     "sainsburys"
    ]
   },
@@ -2072,31 +2161,30 @@
     {
      "shop": "tesco",
      "name": "Tesco Finest Baby Potatoes 750g",
-     "size": 750.0,
+     "size": 750,
      "price": 1.3,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "ASDA Firm & Flavoursome Baby Potatoes 1kg",
-     "size": 1000.0,
+     "size": 1000,
      "price": 0.99,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's 1kg Baby Potatoes",
-     "size": 1000.0,
+     "size": 1000,
      "price": 0.99,
      "checked": "2026-09-06"
     },
     {
      "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to 1kg Baby Potatoes)",
-     "size": 1000.0,
+     "name": "Nature's Pick British Baby Potatoes 1kg",
+     "size": 1000,
      "price": 0.99,
-     "checked": "2026-09-06",
-     "via": "sainsburys"
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -2111,23 +2199,30 @@
     {
      "shop": "tesco",
      "name": "Creamfields Grated Grana Padano 100g",
-     "size": 100.0,
+     "size": 100,
      "price": 1.65,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "Grana Padano Grated 100g",
-     "size": 100.0,
+     "size": 100,
      "price": 2.24,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's Grated Parmesan Cheese 120g",
-     "size": 120.0,
+     "size": 120,
      "price": 3.1,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Emporium Italian Grana Padano 200g",
+     "size": 200,
+     "price": 2.85,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -2142,31 +2237,30 @@
     {
      "shop": "tesco",
      "name": "Tesco Classic Green Pesto 190g",
-     "size": 190.0,
+     "size": 190,
      "price": 0.89,
      "checked": "2026-09-06"
     },
     {
-     "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to Classic Green Pesto 190g)",
-     "size": 190.0,
-     "price": 0.89,
-     "checked": "2026-09-06",
-     "via": "tesco"
-    },
-    {
      "shop": "asda",
      "name": "ASDA Green Pesto 190g",
-     "size": 190.0,
+     "size": 190,
      "price": 1.0,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's Green Pesto 190g",
-     "size": 190.0,
+     "size": 190,
      "price": 0.89,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Cucina Basil Pesto 190g",
+     "size": 190,
+     "price": 0.89,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -2181,19 +2275,20 @@
     {
      "shop": "tesco",
      "name": "Tesco Finest Nduja 70g",
-     "size": 70.0,
+     "size": 70,
      "price": 3.1,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's Italian 'Nduja Inspired to Cook 60g",
-     "size": 60.0,
+     "size": 60,
      "price": 2.75,
      "checked": "2026-09-06"
     }
    ],
    "unavailable": [
+    "aldi",
     "asda"
    ]
   },
@@ -2208,52 +2303,51 @@
     {
      "shop": "tesco",
      "name": "Suntrail Farms Lemons Minimum 4 Pack",
-     "size": 4.0,
+     "size": 4,
      "price": 0.89,
      "checked": "2026-09-06"
     },
     {
-     "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to Suntrail Farms Lemons Minimum 4 Pack)",
-     "size": 4.0,
-     "price": 0.89,
-     "checked": "2026-09-06",
-     "via": "tesco"
-    },
-    {
      "shop": "tesco",
      "name": "Tesco Lemons Each",
-     "size": 1.0,
+     "size": 1,
      "price": 0.37,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "Just Essentials by ASDA Lemons 4pk",
-     "size": 4.0,
+     "size": 4,
      "price": 0.89,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "ASDA Lemons each",
-     "size": 1.0,
+     "size": 1,
      "price": 0.37,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Stamford Street Co. 4 x Unwaxed Lemons",
-     "size": 4.0,
+     "size": 4,
      "price": 0.89,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's Lemons each",
-     "size": 1.0,
+     "size": 1,
      "price": 0.37,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Everyday Essentials Wonky Lemons ×4",
+     "size": 4,
+     "price": 0.89,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -2268,31 +2362,30 @@
     {
      "shop": "tesco",
      "name": "Tesco Fresh Cut Flat Leaf Parsley 30g",
-     "size": 30.0,
+     "size": 30,
      "price": 0.5,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "ASDA Flat Leaf Parsley 25g",
-     "size": 25.0,
+     "size": 25,
      "price": 0.52,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's Fresh Packed Flat Leaf Parsley 30g",
-     "size": 30.0,
+     "size": 30,
      "price": 0.5,
      "checked": "2026-09-06"
     },
     {
      "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to Fresh Packed Flat Leaf Parsley 30g)",
-     "size": 30.0,
+     "name": "Ready, Set…Cook! Cut Parsley 30g",
+     "size": 30,
      "price": 0.5,
-     "checked": "2026-09-06",
-     "via": "sainsburys"
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -2307,23 +2400,30 @@
     {
      "shop": "tesco",
      "name": "Tesco Golden Breadcrumbs 175g",
-     "size": 175.0,
+     "size": 175,
      "price": 1.25,
      "checked": "2026-09-06"
     },
     {
      "shop": "asda",
      "name": "ASDA Golden Breadcrumbs 175g",
-     "size": 175.0,
+     "size": 175,
      "price": 1.25,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's Golden Breadcrumbs 230g",
-     "size": 230.0,
+     "size": 230,
      "price": 1.6,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Quixo Golden Breadcrumbs 175g",
+     "size": 175,
+     "price": 0.49,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -2339,31 +2439,30 @@
     {
      "shop": "tesco",
      "name": "Stockwell & Co. Plain Flour 1.5kg",
-     "size": 1500.0,
+     "size": 1500,
      "price": 0.7,
      "checked": "2026-09-06"
     },
     {
-     "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to Stockwell & Co. Plain Flour 1.5kg)",
-     "size": 1500.0,
-     "price": 0.7,
-     "checked": "2026-09-06",
-     "via": "tesco"
-    },
-    {
      "shop": "asda",
      "name": "Just Essentials by ASDA Plain Flour 1.5kg",
-     "size": 1500.0,
+     "size": 1500,
      "price": 0.7,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's Plain Flour 1.5kg",
-     "size": 1500.0,
+     "size": 1500,
      "price": 0.7,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "The Pantry Plain Flour 1.5kg",
+     "size": 1500,
+     "price": 0.7,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -2378,46 +2477,44 @@
     {
      "shop": "tesco",
      "name": "Tesco Red Peppers Each",
-     "size": 1.0,
+     "size": 1,
      "price": 0.7,
      "checked": "2026-09-06"
-    },
-    {
-     "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to Red Peppers Each)",
-     "size": 1.0,
-     "price": 0.7,
-     "checked": "2026-09-06",
-     "via": "tesco"
     },
     {
      "shop": "tesco",
      "name": "Tesco Sliced Mixed Frozen Peppers 500g (≈4 peppers)",
-     "size": 4.0,
+     "size": 4,
      "price": 0.99,
      "checked": "2026-09-06"
     },
     {
-     "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to Sliced Mixed Frozen Peppers 500g (≈4 peppers))",
-     "size": 4.0,
-     "price": 0.99,
-     "checked": "2026-09-06",
-     "via": "tesco"
-    },
-    {
      "shop": "asda",
      "name": "COOK by ASDA Sliced Mixed Peppers 600g (≈4 peppers)",
-     "size": 4.0,
+     "size": 4,
      "price": 1.6,
      "checked": "2026-09-06"
     },
     {
      "shop": "sainsburys",
      "name": "Sainsbury's Sliced Mixed Peppers 500g (≈4 peppers)",
-     "size": 4.0,
+     "size": 4,
      "price": 0.99,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Nature's Pick Mixed Peppers ×3",
+     "size": 3,
+     "price": 1.29,
+     "checked": "2026-09-07"
+    },
+    {
+     "shop": "aldi",
+     "name": "Nature's Pick Red Pepper (each)",
+     "size": 1,
+     "price": 0.7,
+     "checked": "2026-09-07"
     }
    ],
    "aka": "peppers_frozen"
@@ -2451,6 +2548,13 @@
      "size": 450,
      "price": 3.5,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Four Seasons Frozen Mango Chunks 500g",
+     "size": 500,
+     "price": 1.79,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -2483,6 +2587,13 @@
      "size": 360,
      "price": 3.5,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Four Seasons Frozen Blueberries 400g",
+     "size": 400,
+     "price": 1.99,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -2511,6 +2622,13 @@
      "size": 315,
      "price": 3.5,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Four Seasons Frozen Raspberries 350g",
+     "size": 350,
+     "price": 1.99,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -2536,6 +2654,13 @@
      "size": 350,
      "price": 2.96,
      "checked": "2026-09-06"
+    },
+    {
+     "shop": "aldi",
+     "name": "Four Seasons Frozen Strawberries 350g",
+     "size": 350,
+     "price": 1.99,
+     "checked": "2026-09-07"
     }
    ]
   },
@@ -2555,14 +2680,6 @@
      "checked": "2026-09-07"
     },
     {
-     "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to Tesco Chicken Mince 5% Fat 500g)",
-     "size": 500,
-     "price": 2.49,
-     "checked": "2026-09-07",
-     "via": "tesco"
-    },
-    {
      "shop": "asda",
      "name": "ASDA Tender Chicken Mince 800g",
      "size": 800,
@@ -2574,6 +2691,13 @@
      "name": "Sainsbury's British 6% Fat Chicken Mince 500g",
      "size": 500,
      "price": 3.0,
+     "checked": "2026-09-07"
+    },
+    {
+     "shop": "aldi",
+     "name": "Ashfields Lean Chicken Mince 5% Fat 500g",
+     "size": 500,
+     "price": 2.49,
      "checked": "2026-09-07"
     }
    ]
@@ -2594,14 +2718,6 @@
      "checked": "2026-09-07"
     },
     {
-     "shop": "aldi",
-     "name": "Aldi own-brand, same size (price-matched to Tesco Lean Pork Mince 5% Fat 500g)",
-     "size": 500,
-     "price": 2.49,
-     "checked": "2026-09-07",
-     "via": "tesco"
-    },
-    {
      "shop": "asda",
      "name": "ASDA Succulent Lean Pork Mince 5% Fat 500g",
      "size": 500,
@@ -2611,6 +2727,13 @@
     {
      "shop": "sainsburys",
      "name": "Sainsbury's British Pork Mince 5% Fat 500g",
+     "size": 500,
+     "price": 2.49,
+     "checked": "2026-09-07"
+    },
+    {
+     "shop": "aldi",
+     "name": "Ashfields British Lean Pork Mince 5% Fat 500g",
      "size": 500,
      "price": 2.49,
      "checked": "2026-09-07"
@@ -2651,6 +2774,13 @@
      "name": "Laila Red Split Lentils 1kg",
      "size": 1000,
      "price": 2.0,
+     "checked": "2026-09-07"
+    },
+    {
+     "shop": "aldi",
+     "name": "Worldwide Foods Red Lentils 500g",
+     "size": 500,
+     "price": 0.99,
      "checked": "2026-09-07"
     }
    ]

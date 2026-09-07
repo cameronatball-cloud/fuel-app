@@ -1,7 +1,7 @@
 import * as P from './planner.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v13';
+const APP_VERSION = 'v14';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 
@@ -252,15 +252,21 @@ function renderShop() {
   const fullWeek = P.compareShops(needsAll, ing)[0];
   const head = `<h1>Shop</h1>${weekSwitch()}`;
   if (!Object.keys(needsAll).length) return `${head}<div class="card"><p>Nothing picked for ${weekLabel(S.activeWeek).toLowerCase()} yet. Tick meals on the Plan tab.</p></div>`;
-  const ranked = P.compareShops(needs, ing);
+  // Rank: items a shop doesn't sell are not the app's fault and you'd buy them elsewhere, so only
+  // genuinely unpriced items make a shop "not comparable". Then cheapest total wins.
+  const ranked = P.compareShops(needs, ing).map((b) => {
+    const notSold = b.missing.filter((m) => (ingById(m.id)?.unavailable || []).includes(b.shop));
+    const unpriced = b.missing.filter((m) => !(ingById(m.id)?.unavailable || []).includes(b.shop));
+    return { ...b, notSold, unpriced };
+  }).sort((a, b) => (a.unpriced.length - b.unpriced.length) || (a.total - b.total));
   const byShop = Object.fromEntries(ranked.map((b) => [b.shop, b]));
   const split = P.cheapestSplit(needs, ing);
   const best = ranked[0];
   const budget = S.settings.budget;
   const pct = Math.min(100, Math.round((best.total / budget) * 100));
   // per-shop totals table
-  const totals = `<table class="tbl"><thead><tr><th>Shop</th><th class="r">Total</th><th class="r">Priced</th><th class="r">Missing</th></tr></thead><tbody>${ranked.map((b) => `<tr class="${b === best ? 'best' : ''}"><td>${P.SHOP_NAMES[b.shop]}${b === best ? ' <span class="badge ok">cheapest</span>' : ''}</td><td class="r"><b>${P.gbp(b.total)}</b></td><td class="r">${b.lines.length}</td><td class="r">${b.missing.length ? `<span class="badge warn">${b.missing.length} · not comparable</span>` : '0'}</td></tr>`).join('')}</tbody></table>
-    <p class="small muted">A shop's total only counts items it has a price for. Where items are missing the total is lower than a real basket would be, so only shops with 0 missing are compared for "cheapest". Aldi's prices are the ones Tesco and Sainsbury's price-match; where a value line (Stamford Street, Hearty Food Co.) undercuts the matched line, that shop beats Aldi on that item.</p>`;
+  const totals = `<table class="tbl"><thead><tr><th>Shop</th><th class="r">Total</th><th class="r">Priced</th><th class="r">Not sold</th><th class="r">Unpriced</th></tr></thead><tbody>${ranked.map((b) => `<tr class="${b === best ? 'best' : ''}"><td>${P.SHOP_NAMES[b.shop]}${b === best ? ' <span class="badge ok">cheapest</span>' : ''}</td><td class="r"><b>${P.gbp(b.total)}</b></td><td class="r">${b.lines.length}</td><td class="r">${b.notSold.length ? `<span class="badge">${b.notSold.length}</span>` : '0'}</td><td class="r">${b.unpriced.length ? `<span class="badge warn">${b.unpriced.length} · not comparable</span>` : '0'}</td></tr>`).join('')}</tbody></table>
+    <p class="small muted">Every price is read from that supermarket's own website (Tesco, ASDA, Sainsbury's and Aldi). "Not sold" means the shop doesn't stock it, so you'd get it elsewhere or already have it; the total leaves it out. "Unpriced" means no price exists online: Lidl publishes none for its everyday range, so Lidl stays blank until a shelf label is added.</p>`;
   // per-item comparison
   const ids = Object.keys(needs).filter((id) => ingById(id));
   const cheapestFor = (id) => { let m = null; for (const s of P.SHOPS) { const l = byShop[s].lines.find((x) => x.id === id); if (l && (m === null || l.cost < m)) m = l.cost; } return m; };
