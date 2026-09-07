@@ -177,3 +177,10 @@ a { color: var(--accent); font-weight: 700; }
 @keyframes sheetUp { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
 .sheet-inner { animation: sheetUp .18s ease-out; }
 html { scroll-behavior: auto; }
+
+.cell.out { background: #ecebf3; color: var(--muted); }
+.cell.tubcell { outline: 2px dashed rgba(27,26,46,.35); outline-offset: -2px; }
+.cell.freshcell::before { content: ""; position: absolute; top: 4px; right: 4px; width: 8px; height: 8px; border-radius: 50%; background: var(--coral); }
+.cell { position: relative; }
+.chip[data-action] { cursor: pointer; }
+.btn.block .sub { display: block; font-weight: 500; font-size: 12px; }

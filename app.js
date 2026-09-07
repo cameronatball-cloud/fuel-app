@@ -1,12 +1,12 @@
 import * as P from './planner.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v12';
+const APP_VERSION = 'v13';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 
 function load() {
-  const base = { tab: 'plan', activeWeek: null, weeks: {}, customRecipes: [], customIngredients: [], inbox: [], settings: { proteinTarget: 180, snackProtein: 24, budget: 50 } };
+  const base = { tab: 'plan', activeWeek: null, weeks: {}, tubs: {}, customRecipes: [], customIngredients: [], inbox: [], settings: { proteinTarget: 180, snackProtein: 24, budget: 50, avoid: [] } };
   try { return { ...base, ...JSON.parse(localStorage.getItem(KEY) || '{}') }; } catch { return base; }
 }
 function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {} }
@@ -34,7 +34,7 @@ function sundayOf(date) { const d = new Date(Date.UTC(date.getFullYear(), date.g
 function addDays(isoDate, n) { const d = new Date(isoDate + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return iso(d); }
 function fmtDate(isoDate) { const d = new Date(isoDate + 'T00:00:00Z'); return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' }); }
 const W = () => S.weeks[S.activeWeek];
-function blankWeek() { return { portions: {}, grid: null, overflow: [], cookDay: 0, ticks: {}, days: [true, true, true, true, true, true, true], choices: {}, pantry: {} }; }
+function blankWeek() { return { portions: {}, grid: null, overflow: [], cookDay: 0, ticks: {}, days: [true, true, true, true, true, true, true], choices: {}, pantry: {}, fresh: {} }; }
 function setupWeeks() {
   const thisSun = sundayOf(new Date()), nextSun = addDays(thisSun, 7);
   // migrate v1 single-week state
@@ -45,18 +45,24 @@ function setupWeeks() {
   S.thisSun = thisSun; S.nextSun = nextSun;
   // pantry used to be one global list; it now belongs to each week (a fresh week starts with nothing ticked)
   if (S.pantry) { const p = S.pantry; if (p.peppers_frozen !== undefined) { p.pepper = p.peppers_frozen; delete p.peppers_frozen; } S.weeks[thisSun].pantry = { ...(S.weeks[thisSun].pantry || {}), ...p }; delete S.pantry; }
-  for (const w of Object.values(S.weeks)) { w.days ||= [true, true, true, true, true, true, true]; w.choices ||= {}; w.pantry ||= {}; if (!w.grid) relayout(w); }
+  S.tubs ||= {}; S.settings.avoid ||= [];
+  for (const w of Object.values(S.weeks)) { w.days ||= [true, true, true, true, true, true, true]; w.choices ||= {}; w.pantry ||= {}; w.fresh ||= {}; if (!w.grid) relayout(w); }
+  if (!S.settings.onboarded && Object.values(S.weeks).some((w) => Object.keys(w.portions).length)) S.settings.onboarded = true;
   save();
 }
+function lockedCells(w) { const l = {}; (w.grid || []).forEach((d, i) => { for (const s of P.SLOTS) if (P.isOut(d[s]) || P.isTub(d[s])) l[`${i}-${s}`] = d[s]; }); return l; }
 function relayout(w = W()) {
-  let { grid, overflow } = P.autoLayout(w.portions, REC(), w.cookDay, w.days);
+  const locked = lockedCells(w);
+  let { grid, overflow } = P.autoLayout(w.portions, REC(), w.cookDay, w.days, locked);
   // The week can't hold more than its slots: trim portions to what fits rather than carrying phantom extras.
-  if (overflow.length) { w.portions = P.gridCounts(grid); ({ grid, overflow } = P.autoLayout(w.portions, REC(), w.cookDay, w.days)); }
-  w.grid = grid; w.overflow = overflow; save();
+  if (overflow.length) { w.portions = P.gridCounts(grid); ({ grid, overflow } = P.autoLayout(w.portions, REC(), w.cookDay, w.days, locked)); }
+  w.grid = grid; w.overflow = overflow;
+  for (const k of Object.keys(w.fresh || {})) { const [d, s] = k.split('-'); if (!P.isRecipeCell(grid[+d]?.[s])) delete w.fresh[k]; }
+  save();
 }
 function portionsFromGrid(w = W()) {
   const counts = {};
-  for (const d of w.grid) for (const s of P.SLOTS) if (d[s]) counts[d[s]] = (counts[d[s]] || 0) + 1;
+  for (const d of w.grid) for (const s of P.SLOTS) if (P.isRecipeCell(d[s])) counts[d[s]] = (counts[d[s]] || 0) + 1;
   w.portions = counts; w.overflow = []; save();
 }
 function weekLabel(k) { return k === S.thisSun ? 'This week' : k === S.nextSun ? 'Next week' : `Week of ${fmtDate(k)}`; }
@@ -80,6 +86,7 @@ async function boot() {
   v.addEventListener('pointerdown', onDragStart);
   v.addEventListener('contextmenu', (e) => { if (e.target.closest('.cell')) e.preventDefault(); });
   render();
+  if (!S.settings.onboarded) openIntro();
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 }
 
@@ -91,6 +98,14 @@ function render(opts = {}) {
 }
 
 // ----- Plan -----
+const AVOID = {
+  fish: { label: 'Fish & tuna', ids: ['tuna'] }, pork: { label: 'Pork', ids: ['pork_mince_5', 'nduja'] }, beef: { label: 'Beef', ids: ['beef_mince_5'] },
+  thigh: { label: 'Chicken thighs', ids: ['chicken_thigh'] }, eggs: { label: 'Eggs', ids: ['egg'] }, dairy: { label: 'Dairy', ids: ['cheddar', 'skyr', 'cottage_cheese', 'milk', 'butter', 'parmesan'] },
+  spicy: { label: 'Spicy food', ids: ['sriracha', 'chilli_powder', 'curry_paste'] }, nuts: { label: 'Peanuts', ids: ['peanut_butter'] }, coconut: { label: 'Coconut', ids: ['coconut_milk'] },
+};
+function avoidedIds() { return new Set((S.settings.avoid || []).flatMap((k) => AVOID[k]?.ids || [])); }
+function isAvoided(r) { const av = avoidedIds(); return av.size > 0 && r.ingredients.some((x) => av.has(x.id)); }
+function suggestions(n = 6) { return REC().filter((r) => !isAvoided(r) && r.cookMinutes > 0).map((r) => ({ r, score: metaFor(r).c.cost ? metaFor(r).pp / metaFor(r).c.cost : 0 })).sort((a, b) => b.score - a.score).slice(0, n).map((x) => x.r); }
 const META = new Map();
 function metaFor(r) { let m = META.get(r.id); if (!m) { const ing = ING(); m = { pp: P.proteinPerPortion(r, ing), c: P.costPerPortion(r, ing) }; META.set(r.id, m); } return m; }
 function mealMeta(r) {
@@ -101,62 +116,85 @@ function mealMeta(r) {
   const fz = r.freezer ? '<span class="badge">freezes</span>' : (r.fridgeDays ? `<span class="badge warn">fridge ${r.fridgeDays}d</span>` : '<span class="badge">made fresh</span>');
   return `${pp}g protein${cost ? ` · ${cost} a portion` : ''} ${flex}${cold}${fz}`;
 }
-function renderPlan() {
-  const w = W(); const recipes = REC(), ing = ING();
+function planTop(w) {
+  const recipes = REC(), ing = ING();
   const st = P.gridStats(w.grid, recipes, ing, S.settings.snackProtein, w.days);
   const target = S.settings.proteinTarget;
   const max = Math.max(target * 1.2, ...st.perDay);
   const bars = st.perDay.map((p) => `<div class="bar ${p < target ? 'low' : ''}"><b>${p}</b><i style="height:${Math.round((p / max) * 100)}%"></i></div>`).join('');
-  const q = (S.planSearch || '').toLowerCase();
   const chosen = Object.keys(w.portions).filter((id) => w.portions[id] > 0);
-  const free = P.freeSlots(w.grid, w.days);
-  const row = (r) => {
-    const n = w.portions[r.id] || 0;
-    const room = P.roomFor(r, free);
-    const full = room <= 0;
-    return `<div class="recipe-row pick ${n ? 'on' : ''} ${full && !n ? 'full' : ''}"><input type="checkbox" class="tick" data-pick="${r.id}" ${n ? 'checked' : ''} ${full && !n ? 'disabled' : ''} aria-label="Include ${esc(r.name)}"><div class="grow"><div class="name">${esc(r.name)}</div><div class="meta">${mealMeta(r)}${full && !n ? ' <span class="badge">week full</span>' : ''}</div></div>
-      ${n ? `<div class="stepper"><button data-action="dec" data-id="${r.id}">−</button><b>${n}</b><button data-action="inc" data-id="${r.id}" ${full ? 'disabled' : ''}>+</button></div>` : ''}</div>`;
-  };
-  const group = (slot, title) => {
-    const list = recipes.filter((r) => (slot === 'breakfast' ? r.slots[0] === 'breakfast' : r.slots[0] !== 'breakfast') && (!q || r.name.toLowerCase().includes(q)));
-    return list.length ? `<h2>${title}</h2><div class="card">${list.map(row).join('')}</div>` : '';
-  };
   const overflow = (w.overflow || []).map((o) => `<div class="warn-box">${esc(recById(o.id)?.name)}: ${o.unplaced} portion${o.unplaced > 1 ? 's' : ''} won't fit in the week. Drop the count or move something.</div>`).join('');
+  const cell = (v, i, s) => {
+    if (!w.days[i]) return `<div class="cell off"></div>`;
+    if (!v) return `<button class="cell empty" data-action="cell" data-day="${i}" data-slot="${s}">+</button>`;
+    if (P.isOut(v)) return `<button class="cell out" data-action="cell" data-day="${i}" data-slot="${s}"><span class="cname">Out</span><span class="cmeta shortn">🍽</span><span class="cmark full">eating out</span></button>`;
+    if (P.isTub(v)) { const r = recById(P.tubRecipe(v)); return `<button class="cell tubcell" style="${cellStyle(P.tubRecipe(v))}" data-action="cell" data-day="${i}" data-slot="${s}"><span class="cname"><span class="full">${esc(r?.name || '')}</span><span class="shortn">${esc(shortName(r))}</span></span><span class="cmeta"><span class="full">${r ? metaFor(r).pp : 0}g · freezer tub</span><span class="shortn">${r ? metaFor(r).pp : 0}g 🧊</span></span><span class="cmark full">from the freezer</span></button>`; }
+    const r = recById(v); if (!r) return `<button class="cell empty" data-action="cell" data-day="${i}" data-slot="${s}">+</button>`;
+    const isFresh = !!w.fresh[`${i}-${s}`];
+    const tp = P.tubPlan(r, w.grid, w.cookDay, w.fresh);
+    const cls = isFresh || tp.fresh ? 'freshcell' : tp.freezer.includes(i) ? 'frozen' : tp.late.includes(i) ? 'late' : '';
+    const mark = isFresh ? 'make fresh' : cls === 'frozen' ? '❄ freezer' : cls === 'late' ? '⚠ fridge' : tp.fresh ? 'fresh' : 'fridge';
+    const markShort = isFresh ? '🍳' : cls === 'frozen' ? '❄' : cls === 'late' ? '⚠' : '';
+    return `<button class="cell ${cls}" style="${cellStyle(v)}" data-action="cell" data-day="${i}" data-slot="${s}" draggable="false"><span class="cname"><span class="full">${esc(r.name)}</span><span class="shortn">${esc(shortName(r))}</span></span><span class="cmeta"><span class="full">${metaFor(r).pp}g protein</span><span class="shortn">${metaFor(r).pp}g ${markShort}</span></span><span class="cmark full">${mark}</span></button>`;
+  };
   const gridHtml = `<div class="grid"><div></div>${P.DAYS.map((d, i) => `<div class="hd ${w.days[i] ? '' : 'off'}"><span>${d}</span><button class="dayx" data-action="dayx" data-day="${i}" title="${w.days[i] ? 'Skip this day' : 'Put this day back'}">${w.days[i] ? '×' : '+'}</button></div>`).join('')}
-    ${P.SLOTS.map((s) => `<div class="lbl">${({ breakfast: 'Bfast', lunch: 'Lunch', dinner: 'Dinner' })[s]}</div>` + w.grid.map((d, i) => {
-      const id = d[s]; const r = id && recById(id);
-      if (!w.days[i]) return `<div class="cell off"></div>`;
-      if (!r) return `<button class="cell empty" data-action="cell" data-day="${i}" data-slot="${s}">+</button>`;
-      const tp = P.tubPlan(r, w.grid, w.cookDay);
-      const cls = tp.fresh ? '' : tp.freezer.includes(i) ? 'frozen' : tp.late.includes(i) ? 'late' : '';
-      const mark = cls === 'frozen' ? '❄ freezer' : cls === 'late' ? '⚠ fridge' : tp.fresh ? 'fresh' : 'fridge';
-      const markShort = cls === 'frozen' ? '❄' : cls === 'late' ? '⚠' : '';
-      return `<button class="cell ${cls}" style="${cellStyle(id)}" data-action="cell" data-day="${i}" data-slot="${s}" draggable="false"><span class="cname"><span class="full">${esc(r.name)}</span><span class="shortn">${esc(shortName(r))}</span></span><span class="cmeta"><span class="full">${metaFor(r).pp}g protein</span><span class="shortn">${metaFor(r).pp}g ${markShort}</span></span><span class="cmark full">${mark}</span></button>`;
-    }).join('')).join('')}</div>`;
+    ${P.SLOTS.map((s) => `<div class="lbl">${({ breakfast: 'Bfast', lunch: 'Lunch', dinner: 'Dinner' })[s]}</div>` + w.grid.map((d, i) => cell(d[s], i, s)).join('')).join('')}</div>`;
+  const tubs = Object.entries(S.tubs).filter(([, n]) => n > 0);
+  const tubHtml = tubs.length ? `<p class="small" style="margin-top:8px"><b>In the freezer:</b> ${tubs.map(([id, n]) => `${esc(shortName(recById(id)))} ×${n}`).join(', ')}. Tap an empty cell to use one; it costs nothing to buy or cook.</p>` : '';
   const summary = chosen.length
     ? `<div class="chip-row">${chosen.map((id) => `<span class="chip meal" style="${cellStyle(id)}">${esc(shortName(recById(id)))} × ${w.portions[id]}</span>`).join('')}</div>`
     : `<p class="muted">Nothing picked yet. Tick meals below and they land in the grid.</p>`;
-  return `<h1>Plan</h1>${weekSwitch()}
-  <div class="card"><h3>${weekLabel(S.activeWeek)} <span class="muted small">from Sun ${fmtDate(S.activeWeek)}</span></h3>${summary}
+  const hasGrid = chosen.length || tubs.length || Object.keys(lockedCells(w)).length;
+  return `<div class="card"><h3>${weekLabel(S.activeWeek)} <span class="muted small">from Sun ${fmtDate(S.activeWeek)}</span></h3>${summary}${tubHtml}
     <div class="stat-grid" style="margin-top:10px"><div class="stat"><b>${st.filled}<span>/${st.slots}</span></b><span>meal slots filled</span></div><div class="stat"><b>${st.distinct}</b><span>different meals</span></div><div class="stat"><b>${st.avg}g</b><span>avg protein/day</span></div></div>
     <div class="bars" style="margin-top:26px">${bars}</div><div class="bars-labels">${P.DAYS.map((d) => `<div>${d}</div>`).join('')}</div>
     <p class="small muted">Target ${target}g a day including a ${S.settings.snackProtein}g snack. Amber days are under.</p></div>
-  ${chosen.length ? `<div class="card">${gridHtml}
-    <p class="small muted" style="margin-top:10px">Press and hold a meal to pick it up, then tap where it goes (two meals swap). Tap to pick from a list or clear. ❄ from the freezer that day, thaw the night before. ⚠ past its fridge life and can't be frozen.</p>
+  ${hasGrid ? `<div class="card">${gridHtml}
+    <p class="small muted" style="margin-top:10px">Press and hold a meal to pick it up, then tap where it goes (two meals swap). Tap a cell to change it, mark it "eating out", make it fresh that day, or use a freezer tub. ❄ from the freezer that day, thaw the night before. ⚠ past its fridge life and can't be frozen.</p>
     <p class="small muted" style="margin:8px 0 2px">Cook day</p>
     <div class="day-pick">${P.DAYS.map((d, i) => `<button data-action="cookday" data-day="${i}" class="${w.cookDay === i ? 'on' : ''}">${d}</button>`).join('')}</div>
     <div class="row" style="margin-top:8px"><button class="btn ghost small" data-action="relayout">Re-lay out</button><button class="btn ghost small" data-action="clear-week">Clear week</button></div></div>` : ''}
-  ${overflow}${lateWarnings(w)}
+  ${overflow}${lateWarnings(w)}`;
+}
+function pickRow(r, w, free) {
+  const n = w.portions[r.id] || 0;
+  const full = P.roomFor(r, free) <= 0;
+  return `<div class="recipe-row pick ${n ? 'on' : ''} ${full && !n ? 'full' : ''}" data-row="${r.id}"><input type="checkbox" class="tick" data-pick="${r.id}" ${n ? 'checked' : ''} ${full && !n ? 'disabled' : ''} aria-label="Include ${esc(r.name)}"><div class="grow"><div class="name">${esc(r.name)}</div><div class="meta">${mealMeta(r)}${full && !n ? ' <span class="badge">week full</span>' : ''}</div></div>
+      ${n ? `<div class="stepper"><button data-action="dec" data-id="${r.id}">−</button><b>${n}</b><button data-action="inc" data-id="${r.id}" ${full ? 'disabled' : ''}>+</button></div>` : ''}</div>`;
+}
+function renderPlan() {
+  const w = W(); const recipes = REC();
+  const q = (S.planSearch || '').toLowerCase();
+  const free = P.freeSlots(w.grid, w.days);
+  const visible = recipes.filter((r) => !isAvoided(r));
+  const hidden = recipes.length - visible.length;
+  const group = (slot, title) => {
+    const list = visible.filter((r) => (slot === 'breakfast' ? r.slots[0] === 'breakfast' : r.slots[0] !== 'breakfast') && (!q || r.name.toLowerCase().includes(q)));
+    return list.length ? `<h2>${title}</h2><div class="card">${list.map((r) => pickRow(r, w, free)).join('')}</div>` : '';
+  };
+  const sug = !Object.keys(w.portions).length ? suggestions(6) : [];
+  const sugHtml = sug.length ? `<div class="card"><h3>Best value for your goal</h3><p class="small muted">Most protein per pound, skipping anything you've said you don't eat.</p><div class="chip-row">${sug.map((r) => `<button class="chip" data-action="quick-pick" data-id="${r.id}">+ ${esc(shortName(r))} · ${metaFor(r).pp}g · £${metaFor(r).c.cost.toFixed(2)}</button>`).join('')}</div></div>` : '';
+  return `<h1>Plan</h1>${weekSwitch()}<div id="plan-top">${planTop(w)}</div>
   <h2 style="margin-top:26px">Pick meals</h2>
   <input class="search" placeholder="Search meals" value="${esc(S.planSearch || '')}" data-plan-search>
-  ${group('breakfast', 'Breakfasts')}${group('mains', 'Mains (lunch or dinner)')}`;
+  ${sugHtml}
+  <div id="plan-pick">${group('breakfast', 'Breakfasts')}${group('mains', 'Mains (lunch or dinner)')}
+  ${hidden ? `<p class="small muted">${hidden} recipe${hidden > 1 ? 's' : ''} hidden because of what you don't eat (Pantry → Settings).</p>` : ''}</div>`;
+}
+// Re-draw only what changed on the Plan tab: the top card/grid and the state of each pick row.
+function refreshPlan() {
+  const top = document.getElementById('plan-top'); const w = W();
+  if (!top || S.tab !== 'plan') { render(); return; }
+  top.innerHTML = planTop(w);
+  const free = P.freeSlots(w.grid, w.days);
+  document.querySelectorAll('.recipe-row.pick').forEach((rowEl) => { const r = recById(rowEl.dataset.row); if (!r) return; const tmp = document.createElement('div'); tmp.innerHTML = pickRow(r, w, free); const fresh = tmp.firstElementChild; if (fresh.outerHTML !== rowEl.outerHTML) rowEl.replaceWith(fresh); });
 }
 function shortName(r) { if (!r) return ''; if (r.short) return r.short; const w = r.name.split(' '); let out = w[0]; if (w[1] && (out + ' ' + w[1]).length <= 11) out += ' ' + w[1]; return out; }
 function lateWarnings(w) {
   const out = [];
   for (const [rid, n] of Object.entries(w.portions)) {
     const r = recById(rid); if (!r || !n || r.cookMinutes === 0) continue;
-    const tp = P.tubPlan(r, w.grid, w.cookDay);
+    const tp = P.tubPlan(r, w.grid, w.cookDay, w.fresh);
     if (tp.late.length) out.push(`<div class="warn-box"><b>${esc(r.name)}</b> keeps ${r.fridgeDays} day${r.fridgeDays === 1 ? '' : 's'} and can't be frozen, so the ${tp.late.map((d) => P.DAYS[d]).join(', ')} portion${tp.late.length > 1 ? 's need' : ' needs'} a second cook midweek. Move ${tp.late.length > 1 ? 'them' : 'it'} earlier or swap for a freezer recipe.</div>`);
   }
   return out.join('');
@@ -166,17 +204,19 @@ function defaultPortions(r) { return r.slots[0] === 'breakfast' ? 4 : 3; }
 // ----- Cook -----
 function renderCook() {
   const w = W(); const recipes = REC(), ing = ING();
-  const counts = P.gridCounts(w.grid);
+  const all = P.gridCounts(w.grid);
+  const counts = P.gridCounts(w.grid, { fresh: w.fresh, skipFresh: true });
   const rs = P.runSheet(counts, recipes);
-  const fresh = Object.entries(counts).filter(([rid, n]) => n > 0 && recById(rid)?.cookMinutes === 0).map(([rid, n]) => ({ recipe: recById(rid), portions: n }));
+  const fresh = Object.entries(all).filter(([rid, n]) => n > 0 && recById(rid)?.cookMinutes === 0).map(([rid, n]) => ({ recipe: recById(rid), portions: n }));
+  for (const c of P.freshCells(w.grid, w.fresh)) { const r = recById(c.id); if (r) fresh.push({ recipe: r, portions: 1, day: P.DAYS[c.day] }); }
   const head = `<h1>Cook</h1>${weekSwitch()}`;
   if (!rs.list.length && !fresh.length) return `${head}<div class="card"><p>Nothing picked for ${weekLabel(S.activeWeek).toLowerCase()} yet. Tick meals on the Plan tab.</p></div>`;
   const cookDay = P.DAYS[w.cookDay];
   const sheet = rs.list.map((x) => `<li><b>${esc(x.recipe.name)}</b> × ${x.portions} <span class="muted small">· ${x.recipe.cookMinutes} min · ${x.recipe.equipment.join(', ')}</span></li>`).join('');
-  const freshList = fresh.map((x) => `<li><b>${esc(x.recipe.name)}</b> × ${x.portions} <span class="muted small">· made fresh, ${x.recipe.slots[0]}</span></li>`).join('');
+  const freshList = fresh.map((x) => `<li><b>${esc(x.recipe.name)}</b> × ${x.portions} <span class="muted small">· ${x.day ? `make fresh on ${x.day}` : `made fresh, ${x.recipe.slots[0]}`}</span></li>`).join('');
   const cards = rs.list.map(({ recipe: r, portions: n }) => {
     const scaled = P.scaleIngredients(r, n, ing);
-    const tp = P.tubPlan(r, w.grid, w.cookDay);
+    const tp = P.tubPlan(r, w.grid, w.cookDay, w.fresh);
     const reheat = { none: 'Eat cold', microwave: 'Microwave 2–3 min, stir halfway', hob: 'Reheat in a pan', 'air-fryer': 'Air-fryer 6 min at 180°C' }[r.reheat] || '';
     return `<div class="card"><h3>${esc(r.name)} <span class="muted">× ${n}</span></h3>
       <p class="small muted">${P.proteinPerPortion(r, ing)}g protein a portion · ${r.cookMinutes} min · ${r.equipment.join(', ')}</p>
@@ -219,8 +259,8 @@ function renderShop() {
   const budget = S.settings.budget;
   const pct = Math.min(100, Math.round((best.total / budget) * 100));
   // per-shop totals table
-  const totals = `<table class="tbl"><thead><tr><th>Shop</th><th class="r">Total</th><th class="r">Priced</th><th class="r">Missing</th></tr></thead><tbody>${ranked.map((b) => `<tr class="${b === best ? 'best' : ''}"><td>${P.SHOP_NAMES[b.shop]}${b === best ? ' <span class="badge ok">cheapest</span>' : ''}</td><td class="r"><b>${P.gbp(b.total)}</b></td><td class="r">${b.lines.length}</td><td class="r">${b.missing.length ? `<span class="badge warn">${b.missing.length}</span>` : '0'}</td></tr>`).join('')}</tbody></table>
-    <p class="small muted">Totals only count items that shop has a price for, so a shop with missing prices looks cheaper than it is.</p>`;
+  const totals = `<table class="tbl"><thead><tr><th>Shop</th><th class="r">Total</th><th class="r">Priced</th><th class="r">Missing</th></tr></thead><tbody>${ranked.map((b) => `<tr class="${b === best ? 'best' : ''}"><td>${P.SHOP_NAMES[b.shop]}${b === best ? ' <span class="badge ok">cheapest</span>' : ''}</td><td class="r"><b>${P.gbp(b.total)}</b></td><td class="r">${b.lines.length}</td><td class="r">${b.missing.length ? `<span class="badge warn">${b.missing.length} · not comparable</span>` : '0'}</td></tr>`).join('')}</tbody></table>
+    <p class="small muted">A shop's total only counts items it has a price for. Where items are missing the total is lower than a real basket would be, so only shops with 0 missing are compared for "cheapest". Aldi's prices are the ones Tesco and Sainsbury's price-match; where a value line (Stamford Street, Hearty Food Co.) undercuts the matched line, that shop beats Aldi on that item.</p>`;
   // per-item comparison
   const ids = Object.keys(needs).filter((id) => ingById(id));
   const cheapestFor = (id) => { let m = null; for (const s of P.SHOPS) { const l = byShop[s].lines.find((x) => x.id === id); if (l && (m === null || l.cost < m)) m = l.cost; } return m; };
@@ -335,6 +375,9 @@ function renderPantry() {
     <label class="field">Protein target per day (g)<input type="number" data-setting="proteinTarget" value="${S.settings.proteinTarget}"></label>
     <label class="field">Daily snack protein counted (g), e.g. one scoop<input type="number" data-setting="snackProtein" value="${S.settings.snackProtein}"></label>
     <label class="field">Weekly food budget (£)<input type="number" data-setting="budget" value="${S.settings.budget}"></label>
+    <div class="small muted" style="margin-top:8px">Things you don't eat (recipes with these are hidden)</div>
+    <div class="chip-row">${Object.entries(AVOID).map(([k, v]) => `<button class="chip ${S.settings.avoid.includes(k) ? 'on' : ''}" data-action="avoid" data-id="${k}">${v.label}</button>`).join('')}</div>
+    <button class="btn ghost small" data-action="intro">Show the intro again</button>
     <label class="check"><input type="checkbox" data-setting-bool="preferThigh" ${S.settings.preferThigh ? 'checked' : ''}><span>Buy boneless thigh fillets instead of breast<span class="sub">Swaps every breast line on the shop list for thigh fillets. Breast is currently the cheaper per kilo at all four shops.</span></span></label></div>
   <h2>Backup</h2><div class="card"><div class="row"><button class="btn ghost grow" data-action="export">Copy backup</button><button class="btn ghost grow" data-action="import">Paste backup</button></div>
   <button class="btn danger block" data-action="reset" style="margin-top:10px">Reset everything</button></div>
@@ -356,6 +399,18 @@ function askText(title, placeholder) {
     openSheet(`<h3>${esc(title)}</h3><textarea id="ask-text" class="field" style="width:100%;min-height:140px" placeholder="${esc(placeholder)}"></textarea><div class="row" style="margin-top:10px"><button class="btn ghost grow" data-dlg="0">Cancel</button><button class="btn grow" data-dlg="1">OK</button></div>`);
     document.getElementById('sheet-inner').onclick = (e) => { const b = e.target.closest('[data-dlg]'); if (!b) return; const v = document.getElementById('ask-text').value; document.getElementById('sheet-inner').onclick = null; closeSheet(); resolve(b.dataset.dlg === '1' ? v : null); };
   });
+}
+// First-open questionnaire: goal → protein target, budget, dislikes → suggestions.
+function openIntro() { introStep(1); }
+function introStep(n) {
+  const goals = [['Build muscle', 200, 'Rugby, lifting, bulking. 200g a day.'], ['Stay lean and strong', 170, 'Training most days, not bulking. 170g.'], ['Lose fat, keep muscle', 160, 'Cutting. 160g keeps you full.'], ['Just eat well', 120, 'Healthy, cheap, sorted. 120g.']];
+  const budgets = [30, 40, 50, 60];
+  const step = {
+    1: `<h3>What's the goal?</h3><p class="small muted">Sets your daily protein target. Change it any time in Pantry → Settings.</p>${goals.map(([t, p, d]) => `<button class="btn ghost block" style="text-align:left;margin-top:8px" data-action="intro-goal" data-protein="${p}"><b>${t}</b><span class="sub muted">${d}</span></button>`).join('')}`,
+    2: `<h3>Weekly food budget?</h3><p class="small muted">The shop list shows what's left against it.</p><div class="chip-row">${budgets.map((b) => `<button class="chip" data-action="intro-budget" data-budget="${b}">£${b}</button>`).join('')}</div>`,
+    3: `<h3>Anything you don't eat?</h3><p class="small muted">Recipes with these are hidden. Tap all that apply, then Done.</p><div class="chip-row">${Object.entries(AVOID).map(([k, v]) => `<button class="chip ${S.settings.avoid.includes(k) ? 'on' : ''}" data-action="intro-avoid" data-id="${k}">${v.label}</button>`).join('')}</div><button class="btn block" data-action="intro-done" style="margin-top:14px">Done, show me meals</button>`,
+  }[n];
+  openSheet(`<p class="small muted">Step ${n} of 3</p>${step}`);
 }
 function openSheet(html) { const s = document.getElementById('sheet'); document.getElementById('sheet-inner').innerHTML = html; s.hidden = false; }
 function closeSheet() { document.getElementById('sheet').hidden = true; }
@@ -382,7 +437,7 @@ function dropPicked(target) {
   if (to.d === from.d && to.s === from.s) return;
   const w = W();
   const tmp = w.grid[from.d][from.s]; w.grid[from.d][from.s] = w.grid[to.d][to.s]; w.grid[to.d][to.s] = tmp;
-  portionsFromGrid(); render();
+  portionsFromGrid(); refreshPlan();
 }
 function showHint(text) { let h = document.getElementById('hint'); if (!h) { h = document.createElement('div'); h.id = 'hint'; document.body.appendChild(h); } h.textContent = text; h.classList.add('on'); }
 function hideHint() { document.getElementById('hint')?.classList.remove('on'); }
@@ -442,25 +497,51 @@ function onAction(e) {
     if (a === 'inc' && P.roomFor(recById(id), P.freeSlots(w.grid, w.days)) <= 0) return;
     w.portions[id] = Math.max(0, (w.portions[id] || 0) + (a === 'inc' ? 1 : -1));
     if (!w.portions[id]) delete w.portions[id];
-    relayout(); render();
+    relayout(); refreshPlan();
   } else if (a === 'week') { S.activeWeek = el.dataset.week; save(); render(); }
-  else if (a === 'cookday') { w.cookDay = +el.dataset.day; relayout(); render(); }
-  else if (a === 'relayout') { relayout(); render(); }
-  else if (a === 'dayx') { const i = +el.dataset.day; w.days[i] = !w.days[i]; relayout(w); render(); }
+  else if (a === 'cookday') { w.cookDay = +el.dataset.day; relayout(); refreshPlan(); }
+  else if (a === 'quick-pick') { const r = recById(id); const room = P.roomFor(r, P.freeSlots(w.grid, w.days)); if (r && room > 0) { w.portions[r.id] = Math.min(defaultPortions(r), room); relayout(); render(); } }
+  else if (a === 'relayout') { relayout(); refreshPlan(); }
+  else if (a === 'dayx') { const i = +el.dataset.day; w.days[i] = !w.days[i]; relayout(w); refreshPlan(); }
   else if (a === 'need') { delete w.pantry[id]; save(); render(); }
+  else if (a === 'avoid') { const i = S.settings.avoid.indexOf(id); if (i >= 0) S.settings.avoid.splice(i, 1); else S.settings.avoid.push(id); save(); render(); }
+  else if (a === 'intro') openIntro();
+  else if (a === 'intro-goal') { S.settings.proteinTarget = +el.dataset.protein; save(); introStep(2); }
+  else if (a === 'intro-budget') { S.settings.budget = +el.dataset.budget; save(); introStep(3); }
+  else if (a === 'intro-avoid') { const i = S.settings.avoid.indexOf(id); if (i >= 0) S.settings.avoid.splice(i, 1); else S.settings.avoid.push(id); save(); el.classList.toggle('on'); }
+  else if (a === 'intro-done') { S.settings.onboarded = true; save(); closeSheet(); S.tab = 'plan'; render({ top: true }); }
   else if (a === 'clear-pantry') { ask(`Untick everything for ${weekLabel(S.activeWeek).toLowerCase()}? The shop list will then include every ingredient.`, 'Untick all').then((ok) => { if (ok) { w.pantry = {}; save(); render(); toast('Pantry cleared'); } }); }
   else if (a === 'clear-week') { ask(`Clear every meal from ${weekLabel(S.activeWeek).toLowerCase()}?`, 'Clear week', true).then((ok) => { if (ok) { w.portions = {}; w.ticks = {}; relayout(); render(); } }); }
   else if (a === 'close-sheet') closeSheet();
   else if (a === 'cell' && picked) { dropPicked(el); }
   else if (a === 'cell') {
     const day = +el.dataset.day, slot = el.dataset.slot;
+    const cur = w.grid[day][slot];
     const planned = Object.keys(w.portions).map(recById).filter(Boolean);
-    const others = REC().filter((r) => !w.portions[r.id]);
-    const opt = (r) => `<option value="${r.id}" ${w.grid[day][slot] === r.id ? 'selected' : ''}>${esc(r.name)}</option>`;
-    openSheet(`<h3>${P.DAYS[day]} ${slot}</h3><label class="field">Meal<select id="cell-pick"><option value="">— empty —</option><optgroup label="Picked this week">${planned.map(opt).join('')}</optgroup><optgroup label="Everything else">${others.map(opt).join('')}</optgroup></select></label><button class="btn block" data-action="cell-set" data-day="${day}" data-slot="${slot}">Set</button>`);
+    const others = REC().filter((r) => !w.portions[r.id] && !isAvoided(r));
+    const opt = (r) => `<option value="${r.id}" ${cur === r.id ? 'selected' : ''}>${esc(r.name)}</option>`;
+    const tubs = Object.entries(S.tubs).filter(([, n]) => n > 0);
+    const tubOpts = tubs.map(([id, n]) => `<option value="tub:${id}" ${cur === 'tub:' + id ? 'selected' : ''}>${esc(recById(id)?.name || id)} · freezer tub (${n} left)</option>`).join('');
+    const r = P.isRecipeCell(cur) ? recById(cur) : null;
+    const freshRow = r && r.cookMinutes > 0 ? `<label class="check"><input type="checkbox" id="cell-fresh" ${w.fresh[`${day}-${slot}`] ? 'checked' : ''}><span>Make this one fresh on the day<span class="sub">Left out of the batch cook; still on the shop list.</span></span></label>` : '';
+    openSheet(`<h3>${P.DAYS[day]} ${slot}</h3><label class="field">Meal<select id="cell-pick"><option value="" ${!cur ? 'selected' : ''}>— empty —</option><option value="out" ${P.isOut(cur) ? 'selected' : ''}>Eating out / skip this meal</option>${tubOpts ? `<optgroup label="From the freezer">${tubOpts}</optgroup>` : ''}<optgroup label="Picked this week">${planned.map(opt).join('')}</optgroup><optgroup label="Everything else">${others.map(opt).join('')}</optgroup></select></label>${freshRow}<button class="btn block" data-action="cell-set" data-day="${day}" data-slot="${slot}">Set</button>`);
   } else if (a === 'cell-set') {
     const day = +el.dataset.day, slot = el.dataset.slot, val = document.getElementById('cell-pick').value || null;
-    w.grid[day][slot] = val; portionsFromGrid(); closeSheet(); render();
+    const key = `${day}-${slot}`; const cur = w.grid[day][slot];
+    const freshBox = document.getElementById('cell-fresh');
+    const apply = () => {
+      if (P.isTub(cur) && val !== cur) S.tubs[P.tubRecipe(cur)] = (S.tubs[P.tubRecipe(cur)] || 0) + 1; // putting a tub back
+      if (P.isTub(val) && val !== cur) { const rid = P.tubRecipe(val); if (!(S.tubs[rid] > 0)) { toast('No tubs of that left'); return; } S.tubs[rid] -= 1; }
+      w.grid[day][slot] = val;
+      if (freshBox && val === cur) { if (freshBox.checked) w.fresh[key] = true; else delete w.fresh[key]; } else delete w.fresh[key];
+      portionsFromGrid(); closeSheet(); refreshPlan();
+    };
+    if (P.isOut(val) && P.isRecipeCell(cur) && recById(cur)?.cookMinutes > 0) {
+      closeSheet();
+      ask(`Have you already cooked that ${shortName(recById(cur)).toLowerCase()}? Yes puts the spare portion in your freezer for another week.`, 'Yes, it\'s cooked').then((cooked) => { if (cooked) { S.tubs[cur] = (S.tubs[cur] || 0) + 1; w.grid[day][slot] = 'out'; delete w.fresh[key]; portionsFromGrid(); refreshPlan(); } else apply(); });
+      return;
+    }
+    apply();
   } else if (a === 'open-recipe') { const r = recById(id); if (r) openSheet(recipeDetail(r)); }
   else if (a === 'add-portion') { w.portions[id] = (w.portions[id] || 0) + 1; relayout(); closeSheet(); S.tab = 'plan'; render({ top: true }); }
   else if (a === 'delete-recipe') { ask('Delete this recipe?', 'Delete', true).then((ok) => { if (ok) { S.customRecipes = S.customRecipes.filter((r) => r.id !== id); META.clear(); for (const wk of Object.values(S.weeks)) { delete wk.portions[id]; relayout(wk); } closeSheet(); render(); } }); }
@@ -488,7 +569,7 @@ function onChange(e) {
     const r = recById(t.dataset.pick);
     const room = P.roomFor(r, P.freeSlots(w.grid, w.days));
     if (t.checked) { if (room <= 0) { t.checked = false; return; } w.portions[r.id] = Math.min(defaultPortions(r), room); } else delete w.portions[r.id];
-    relayout(); render();
+    relayout(); refreshPlan();
   }
   else if (t.dataset.tick) { w.ticks[t.dataset.tick] = t.checked; save(); t.closest('.line').classList.toggle('done', t.checked); }
   else if (t.dataset.choice) { w.choices[t.dataset.choice] = t.value; save(); render(); }

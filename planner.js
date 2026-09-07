@@ -72,10 +72,22 @@ export function netPantry(needs, pantry) {
 }
 
 // Portions actually on the grid (what will be eaten), per recipe.
-export function gridCounts(grid) {
+export const isOut = (v) => v === 'out';
+export const isTub = (v) => typeof v === 'string' && v.startsWith('tub:');
+export const tubRecipe = (v) => (isTub(v) ? v.slice(4) : null);
+export const isRecipeCell = (v) => !!v && !isOut(v) && !isTub(v);
+
+// Portions to buy/cook per recipe. Tubs (already cooked) and 'out' never count.
+// opts.fresh = {"d-s": true}; opts.skipFresh drops those (for the batch-cook list).
+export function gridCounts(grid, opts = {}) {
   const counts = {};
-  for (const d of grid) for (const s of SLOTS) if (d[s]) counts[d[s]] = (counts[d[s]] || 0) + 1;
+  grid.forEach((d, i) => { for (const s of SLOTS) { const v = d[s]; if (!isRecipeCell(v)) continue; if (opts.skipFresh && opts.fresh?.[`${i}-${s}`]) continue; counts[v] = (counts[v] || 0) + 1; } });
   return counts;
+}
+export function freshCells(grid, fresh = {}) {
+  const out = [];
+  grid.forEach((d, i) => { for (const s of SLOTS) if (isRecipeCell(d[s]) && fresh[`${i}-${s}`]) out.push({ day: i, slot: s, id: d[s] }); });
+  return out;
 }
 
 export const packsFor = (need, size) => Math.max(1, Math.ceil(need / size - 1e-9));
@@ -157,11 +169,13 @@ export function cheapestSplit(needs, ingredients, shops = SHOPS, threshold = 1) 
 // where they break up the most repetition. 3. Each slot is filled day by day from the cook day:
 // a recipe that can't be frozen and would otherwise run out of fridge life is placed first;
 // after that, avoid repeating yesterday's meal and lead with whatever has most portions left.
-export function autoLayout(portions, recipes, cookDay = 0, days = [true, true, true, true, true, true, true]) {
+export function autoLayout(portions, recipes, cookDay = 0, days = [true, true, true, true, true, true, true], locked = {}) {
   const rec = byId(recipes);
   const grid = DAYS.map(() => ({ breakfast: null, lunch: null, dinner: null }));
-  const targets = Array.from({ length: 7 }, (_, k) => (cookDay + k) % 7).filter((d) => days[d]);
-  const cap = targets.length;
+  for (const [k, v] of Object.entries(locked)) { const [d, sl] = k.split('-'); if (days[+d]) grid[+d][sl] = v; }
+  const order = Array.from({ length: 7 }, (_, k) => (cookDay + k) % 7).filter((d) => days[d]);
+  const targetsFor = (sl) => order.filter((d) => !grid[d][sl]);
+  const capOf = { breakfast: targetsFor('breakfast').length, lunch: targetsFor('lunch').length, dinner: targetsFor('dinner').length };
   const entries = Object.entries(portions).filter(([rid, n]) => rec[rid] && n > 0).sort((a, b) => b[1] - a[1]);
   const counts = { breakfast: {}, lunch: {}, dinner: {} };
   const load = { breakfast: 0, lunch: 0, dinner: 0 };
@@ -172,7 +186,7 @@ export function autoLayout(portions, recipes, cookDay = 0, days = [true, true, t
     if (rec[rid].slots.length === 1) continue;
     let unplaced = 0;
     for (let i = 0; i < n; i++) {
-      const open = rec[rid].slots.filter((s) => load[s] < cap);
+      const open = rec[rid].slots.filter((s) => load[s] < capOf[s]);
       if (!open.length) { unplaced++; continue; }
       const score = (s) => Math.max(0, ...Object.entries(counts[s]).filter(([r]) => r !== rid).map(([, c]) => c)) - (counts[s][rid] || 0);
       const slot = open.reduce((best, s) => (score(s) >= score(best) ? s : best), open[0]);
@@ -181,7 +195,8 @@ export function autoLayout(portions, recipes, cookDay = 0, days = [true, true, t
     if (unplaced) overflow.push({ id: rid, unplaced });
   }
   for (const slot of SLOTS) {
-    const seq = sequence(counts[slot], rec, cap);
+    const targets = targetsFor(slot);
+    const seq = sequence(counts[slot], rec, targets.length);
     seq.forEach((rid, k) => { grid[targets[k]][slot] = rid; });
     const left = { ...counts[slot] };
     for (const rid of seq) left[rid] -= 1;
@@ -223,21 +238,21 @@ export function gridStats(grid, recipes, ingredients, snackProtein = 0, days = [
   const perDay = grid.map((d, i) => {
     if (!days[i]) return 0;
     let p = snackProtein;
-    for (const s of SLOTS) if (d[s] && rec[d[s]]) p += proteinPerPortion(rec[d[s]], ingredients);
+    for (const s of SLOTS) { const v = d[s]; const rid = isTub(v) ? tubRecipe(v) : v; if (rid && rec[rid]) p += proteinPerPortion(rec[rid], ingredients); }
     return Math.round(p);
   });
   const filled = grid.reduce((n, d) => n + SLOTS.filter((s) => d[s]).length, 0);
-  const distinct = new Set(grid.flatMap((d) => SLOTS.map((s) => d[s]).filter(Boolean))).size;
+  const distinct = new Set(grid.flatMap((d) => SLOTS.map((s) => (isTub(d[s]) ? tubRecipe(d[s]) : d[s])).filter((v) => v && v !== 'out'))).size;
   const active = days.filter(Boolean).length || 1;
   return { perDay, filled, distinct, slots: active * 3, activeDays: active, avg: Math.round(perDay.reduce((a, b) => a + b, 0) / active) };
 }
 
 // ---------- storage ----------
 // cookDay: index into DAYS (0 = Sunday). Portions eaten within fridgeDays of cooking go in the fridge.
-export function tubPlan(recipe, grid, cookDay = 0) {
+export function tubPlan(recipe, grid, cookDay = 0, fresh = {}) {
   const days = [];
   if (recipe.cookMinutes === 0) return { total: 0, fridge: [], freezer: [], late: [], eatBy: null, fresh: true };
-  grid.forEach((d, i) => { for (const s of SLOTS) if (d[s] === recipe.id) days.push(i); });
+  grid.forEach((d, i) => { for (const s of SLOTS) if (d[s] === recipe.id && !fresh[`${i}-${s}`]) days.push(i); });
   const fridge = [], freezer = [], late = [];
   for (const d of days) {
     const age = (d - cookDay + 7) % 7; // days after cooking

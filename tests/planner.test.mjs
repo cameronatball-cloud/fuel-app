@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { freeSlots, roomFor, gridCounts, costPerPortion, aggregateNeeds, netPantry, packsFor, basketAt, compareShops, cheapestSplit, autoLayout, gridStats, tubPlan, proteinPerPortion, runSheet } from '../planner.js';
+import { freshCells, freeSlots, roomFor, gridCounts, costPerPortion, aggregateNeeds, netPantry, packsFor, basketAt, compareShops, cheapestSplit, autoLayout, gridStats, tubPlan, proteinPerPortion, runSheet } from '../planner.js';
 
 const ingredients = [
   { id: 'chicken', name: 'Chicken breast', unit: 'g', protein: 22.5, packs: [
@@ -157,4 +157,19 @@ test('aggregateNeeds resolves choices and freeSlots/roomFor gate adding', () => 
   assert.deepEqual(free, { breakfast: 0, lunch: 7, dinner: 0 });
   assert.equal(roomFor(recipes[0], free), 0); // dinner-only curry: no room
   assert.equal(roomFor(recipes[3], free), 7); // wrap can go at lunch
+});
+
+test('markers: out and tub cells are kept through relayout, excluded from counts, counted for protein', () => {
+  const locked = { '0-dinner': 'out', '1-dinner': 'tub:curry' };
+  const { grid } = autoLayout({ curry: 3 }, recipes, 0, undefined, locked);
+  assert.equal(grid[0].dinner, 'out'); assert.equal(grid[1].dinner, 'tub:curry');
+  assert.equal(grid.filter((d) => d.dinner === 'curry').length, 3);
+  assert.deepEqual(gridCounts(grid), { curry: 3 });
+  const fresh = { '2-dinner': true };
+  assert.deepEqual(gridCounts(grid, { fresh, skipFresh: true }), { curry: 2 });
+  assert.deepEqual(freshCells(grid, fresh).map((c) => c.day), [2]);
+  const s = gridStats(grid, recipes, ingredients, 0);
+  assert.equal(s.perDay[1], 45); // the tub still feeds you
+  assert.equal(s.perDay[0], 0);
+  assert.equal(tubPlan(recipes[0], grid, 0, fresh).total, 2);
 });
