@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { freshCells, freeSlots, roomFor, gridCounts, costPerPortion, aggregateNeeds, netPantry, packsFor, basketAt, compareShops, cheapestSplit, autoLayout, gridStats, tubPlan, proteinPerPortion, runSheet } from '../planner.js';
+import { kcalPerPortion, scaleRecipes, portionFactor, proteinTargetFor, freshCells, freeSlots, roomFor, gridCounts, costPerPortion, aggregateNeeds, netPantry, packsFor, basketAt, compareShops, cheapestSplit, autoLayout, gridStats, tubPlan, proteinPerPortion, runSheet } from '../planner.js';
 
 const ingredients = [
   { id: 'chicken', name: 'Chicken breast', unit: 'g', protein: 22.5, packs: [
@@ -172,4 +172,19 @@ test('markers: out and tub cells are kept through relayout, excluded from counts
   assert.equal(s.perDay[1], 45); // the tub still feeds you
   assert.equal(s.perDay[0], 0);
   assert.equal(tubPlan(recipes[0], grid, 0, fresh).total, 2);
+});
+
+test('kcal, scaling and targets', () => {
+  const ing2 = ingredients.map((i) => ({ ...i, kcal: i.id === 'chicken' ? 106 : i.id === 'rice' ? 350 : i.id === 'egg' ? 70 : 0 }));
+  assert.equal(kcalPerPortion(recipes[0], ing2), Math.round(175 * 1.06 + 75 * 3.5));
+  const big = scaleRecipes(recipes, 1.2);
+  assert.equal(big[0].ingredients[0].qty, 210);
+  assert.equal(recipes[0].ingredients[0].qty, 175); // untouched
+  assert.equal(portionFactor(85, 'build'), 1.15);
+  assert.equal(portionFactor(60, 'lose'), 0.75);
+  assert.equal(proteinTargetFor(85, 'build'), 170);
+  assert.equal(proteinTargetFor(85, 'lose'), 185);
+  const s = gridStats([{ breakfast: 'eggs', lunch: null, dinner: 'curry' }, ...Array.from({ length: 6 }, () => ({ breakfast: null, lunch: null, dinner: null }))], recipes, ing2, { protein: 10, kcal: 100 });
+  assert.equal(s.perDay[0], 10 + 19 + 45);
+  assert.equal(s.kcalPerDay[0], 100 + 210 + Math.round(175 * 1.06 + 75 * 3.5));
 });

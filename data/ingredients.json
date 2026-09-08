@@ -58,7 +58,8 @@
      "price": 12.29,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 106
   },
   {
    "id": "chicken_thigh",
@@ -110,7 +111,8 @@
      "price": 4.39,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 130
   },
   {
    "id": "beef_mince_5",
@@ -176,7 +178,8 @@
      "price": 7.09,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 125
   },
   {
    "id": "tuna",
@@ -235,7 +238,8 @@
      "price": 0.65,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 100
   },
   {
    "id": "egg",
@@ -301,7 +305,8 @@
      "price": 0.99,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 70
   },
   {
    "id": "skyr",
@@ -353,7 +358,8 @@
      "price": 1.49,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 57
   },
   {
    "id": "cottage_cheese",
@@ -391,7 +397,8 @@
      "price": 0.85,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 90
   },
   {
    "id": "cheddar",
@@ -443,7 +450,8 @@
      "price": 1.89,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 410
   },
   {
    "id": "protein_powder",
@@ -485,7 +493,8 @@
    ],
    "unavailable": [
     "aldi"
-   ]
+   ],
+   "kcal": 380
   },
   {
    "id": "milk",
@@ -544,7 +553,8 @@
      "price": 1.2,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 47
   },
   {
    "id": "butter",
@@ -583,7 +593,8 @@
      "price": 1.85,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 720
   },
   {
    "id": "basmati",
@@ -629,7 +640,8 @@
      "price": 1.79,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 350
   },
   {
    "id": "penne",
@@ -695,7 +707,8 @@
      "price": 0.69,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 350
   },
   {
    "id": "rice_noodles",
@@ -733,7 +746,8 @@
      "price": 0.99,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 360
   },
   {
    "id": "oats",
@@ -778,7 +792,8 @@
      "price": 0.85,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 375
   },
   {
    "id": "bread",
@@ -823,7 +838,8 @@
      "price": 0.55,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 90
   },
   {
    "id": "wrap",
@@ -868,7 +884,8 @@
      "price": 0.99,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 190
   },
   {
    "id": "sweet_potato",
@@ -920,7 +937,8 @@
      "price": 1.19,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 86
   },
   {
    "id": "mixed_veg",
@@ -958,7 +976,8 @@
      "price": 0.99,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 45
   },
   {
    "id": "broccoli",
@@ -1003,7 +1022,8 @@
      "price": 1.29,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 32
   },
   {
    "id": "cucumber",
@@ -1048,7 +1068,8 @@
      "price": 0.99,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 50
   },
   {
    "id": "avocado",
@@ -1096,7 +1117,8 @@
    ],
    "unavailable": [
     "sainsburys"
-   ]
+   ],
+   "kcal": 240
   },
   {
    "id": "banana",
@@ -1148,7 +1170,8 @@
      "price": 0.78,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 105
   },
   {
    "id": "frozen_fruit",
@@ -1163,7 +1186,8 @@
     "frozen_raspberries",
     "frozen_strawberries"
    ],
-   "packs": []
+   "packs": [],
+   "kcal": 50
   },
   {
    "id": "chopped_tomatoes",
@@ -1215,7 +1239,8 @@
      "price": 0.43,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 22
   },
   {
    "id": "kidney_beans",
@@ -1253,7 +1278,8 @@
      "price": 0.35,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 110
   },
   {
    "id": "coconut_milk",
@@ -1291,7 +1317,8 @@
      "price": 0.75,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 180
   },
   {
    "id": "curry_paste",
@@ -1350,7 +1377,8 @@
      "price": 1.39,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 150
   },
   {
    "id": "peanut_butter",
@@ -1395,7 +1423,8 @@
      "price": 0.95,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 600
   },
   {
    "id": "sweet_chilli",
@@ -1440,7 +1469,8 @@
      "price": 1.89,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 220
   },
   {
    "id": "light_mayo",
@@ -1478,7 +1508,8 @@
      "price": 0.95,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 300
   },
   {
    "id": "soy_sauce",
@@ -1531,7 +1562,8 @@
      "price": 0.55,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 60
   },
   {
    "id": "sesame_oil",
@@ -1566,7 +1598,8 @@
    ],
    "unavailable": [
     "aldi"
-   ]
+   ],
+   "kcal": 880
   },
   {
    "id": "sriracha",
@@ -1626,7 +1659,8 @@
      "price": 1.99,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 100
   },
   {
    "id": "honey",
@@ -1672,7 +1706,8 @@
      "price": 1.39,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 330
   },
   {
    "id": "garlic_paste",
@@ -1714,7 +1749,8 @@
    ],
    "unavailable": [
     "aldi"
-   ]
+   ],
+   "kcal": 130
   },
   {
    "id": "ginger_garlic_paste",
@@ -1756,7 +1792,8 @@
    ],
    "unavailable": [
     "aldi"
-   ]
+   ],
+   "kcal": 110
   },
   {
    "id": "tomato_puree",
@@ -1795,7 +1832,8 @@
      "price": 0.59,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 90
   },
   {
    "id": "stock_cube",
@@ -1834,7 +1872,8 @@
      "price": 0.69,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 30
   },
   {
    "id": "olive_oil",
@@ -1887,7 +1926,8 @@
      "price": 5.29,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 880
   },
   {
    "id": "cumin",
@@ -1926,7 +1966,8 @@
      "price": 0.65,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 330
   },
   {
    "id": "paprika",
@@ -1965,7 +2006,8 @@
      "price": 0.69,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 330
   },
   {
    "id": "chilli_powder",
@@ -2004,7 +2046,8 @@
      "price": 0.79,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 330
   },
   {
    "id": "curry_powder",
@@ -2043,7 +2086,8 @@
      "price": 0.89,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 330
   },
   {
    "id": "turmeric",
@@ -2082,7 +2126,8 @@
      "price": 0.75,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 330
   },
   {
    "id": "fajita_seasoning",
@@ -2120,7 +2165,8 @@
      "price": 0.69,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 300
   },
   {
    "id": "corn_tortilla",
@@ -2148,7 +2194,8 @@
    "unavailable": [
     "aldi",
     "sainsburys"
-   ]
+   ],
+   "kcal": 60
   },
   {
    "id": "baby_potatoes",
@@ -2186,7 +2233,8 @@
      "price": 0.99,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 75
   },
   {
    "id": "parmesan",
@@ -2224,7 +2272,8 @@
      "price": 2.85,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 400
   },
   {
    "id": "pesto",
@@ -2262,7 +2311,8 @@
      "price": 0.89,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 480
   },
   {
    "id": "nduja",
@@ -2290,7 +2340,8 @@
    "unavailable": [
     "aldi",
     "asda"
-   ]
+   ],
+   "kcal": 450
   },
   {
    "id": "lemon",
@@ -2349,7 +2400,8 @@
      "price": 0.89,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 20
   },
   {
    "id": "parsley",
@@ -2387,7 +2439,8 @@
      "price": 0.5,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 35
   },
   {
    "id": "breadcrumbs",
@@ -2425,7 +2478,8 @@
      "price": 0.49,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 350
   },
   {
    "id": "flour",
@@ -2464,7 +2518,8 @@
      "price": 0.7,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 350
   },
   {
    "id": "pepper",
@@ -2517,7 +2572,8 @@
      "checked": "2026-09-07"
     }
    ],
-   "aka": "peppers_frozen"
+   "aka": "peppers_frozen",
+   "kcal": 30
   },
   {
    "id": "frozen_mango",
@@ -2556,7 +2612,8 @@
      "price": 1.79,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 60
   },
   {
    "id": "frozen_blueberries",
@@ -2595,7 +2652,8 @@
      "price": 1.99,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 55
   },
   {
    "id": "frozen_raspberries",
@@ -2630,7 +2688,8 @@
      "price": 1.99,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 50
   },
   {
    "id": "frozen_strawberries",
@@ -2662,7 +2721,8 @@
      "price": 1.99,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 35
   },
   {
    "id": "chicken_mince",
@@ -2700,7 +2760,8 @@
      "price": 2.49,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 110
   },
   {
    "id": "pork_mince_5",
@@ -2738,7 +2799,8 @@
      "price": 2.49,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 120
   },
   {
    "id": "red_lentils",
@@ -2783,7 +2845,8 @@
      "price": 0.99,
      "checked": "2026-09-07"
     }
-   ]
+   ],
+   "kcal": 340
   }
  ]
 }

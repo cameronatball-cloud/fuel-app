@@ -35,7 +35,11 @@
     "Half an avocado on top when there's one in the fridge."
    ],
    "notes": "Not a batch recipe. 8 minutes, one pan.",
-   "short": "Eggs"
+   "short": "Eggs",
+   "tags": [
+    "breakfast"
+   ],
+   "core": true
   },
   {
    "id": "skyr_bowl",
@@ -73,7 +77,11 @@
     "Frozen fruit thaws in the bowl in 10 minutes, or overnight in the fridge."
    ],
    "notes": "No cooking. Assemble the night before for a grab-and-go.",
-   "short": "Skyr"
+   "short": "Skyr",
+   "tags": [
+    "breakfast"
+   ],
+   "core": true
   },
   {
    "id": "bang_bang_salad",
@@ -141,7 +149,12 @@
     "Tub: chicken and rice in the tub, diced cucumber and the reserved dressing in a small pot on top. Combine when eating."
    ],
    "notes": "Cold lunch for uni. Keep the cucumber and dressing separate so the rice stays crisp. Skyr replaces mayo; edamame and avocado dropped for cost, add an avocado quarter when one's going spare.",
-   "short": "Bang bang"
+   "short": "Bang bang",
+   "tags": [
+    "asian",
+    "cold-lunch"
+   ],
+   "core": true
   },
   {
    "id": "soy_chicken_box",
@@ -200,7 +213,12 @@
     "Small pot: skyr mixed with sriracha. Cucumber sliced on top or in the pot."
    ],
    "notes": "Eat cold or microwave 2 minutes. Freezes fine without the cucumber and sauce pot.",
-   "short": "Soy box"
+   "short": "Soy box",
+   "tags": [
+    "asian",
+    "cold-lunch"
+   ],
+   "core": false
   },
   {
    "id": "beef_noodle_salad",
@@ -262,7 +280,12 @@
     "Tub noodles, beef on top, sliced cucumber and sriracha in a pot to add when eating."
    ],
    "notes": "Cold lunch. The original recipe is app-gated; this is rebuilt from the caption's macros.",
-   "short": "Beef noodle"
+   "short": "Beef noodle",
+   "tags": [
+    "asian",
+    "cold-lunch"
+   ],
+   "core": false
   },
   {
    "id": "tuna_pasta",
@@ -320,7 +343,13 @@
     "Stir in drained tuna and the pasta. Tub, cheese grated on top."
    ],
    "notes": "The cottage cheese trick from the buffalo pasta reel: creamy sauce, extra protein, no cream. Good cold.",
-   "short": "Tuna pasta"
+   "short": "Tuna pasta",
+   "tags": [
+    "pasta",
+    "italian",
+    "cold-lunch"
+   ],
+   "core": true
   },
   {
    "id": "pb_chicken_wrap",
@@ -375,7 +404,11 @@
     "Wrap: chicken, cucumber ribbons, rest of the sauce. Roll tight in foil."
    ],
    "notes": "Cold lunch. Make the morning of, or the night before at most.",
-   "short": "PB wrap"
+   "short": "PB wrap",
+   "tags": [
+    "cold-lunch"
+   ],
+   "core": false
   },
   {
    "id": "jacket_sp_tuna",
@@ -422,7 +455,11 @@
     "Tub the potato whole; tuna mix in with it. Cheese on top when reheating."
    ],
    "notes": "Reheat 3 minutes in the microwave. Not for the freezer.",
-   "short": "Jacket"
+   "short": "Jacket",
+   "tags": [
+    "british"
+   ],
+   "core": true
   },
   {
    "id": "egg_fried_rice",
@@ -475,7 +512,11 @@
     "Freeze the tubs the same day unless eating tomorrow."
    ],
    "notes": "Add a tin of tuna per portion for a 50g-protein lunch.",
-   "short": "Egg rice"
+   "short": "Egg rice",
+   "tags": [
+    "asian"
+   ],
+   "core": true
   },
   {
    "id": "chilli",
@@ -545,7 +586,11 @@
     "Cook the rice separately. Tub rice on one side, chilli on the other. Cheese on top when eating."
    ],
    "notes": "Freezes for 3 months. Leftover chilli plus corn tortillas and cheese makes enchiladas. The reel's recipe is DM-gated, so this is the standard.",
-   "short": "Chilli"
+   "short": "Chilli",
+   "tags": [
+    "mexican"
+   ],
+   "core": true
   },
   {
    "id": "bolognese",
@@ -602,7 +647,12 @@
     "Boil the penne, drain, stir through the sauce so it doesn't dry out in the tub. Cheese on top when eating."
    ],
    "notes": "Freezes for 3 months. Bulk it with 100g frozen mixed veg per portion if you want more volume.",
-   "short": "Bolognese"
+   "short": "Bolognese",
+   "tags": [
+    "pasta",
+    "italian"
+   ],
+   "core": true
   },
   {
    "id": "red_curry",
@@ -666,7 +716,12 @@
     "Rice cooked separately. Tub rice and curry side by side."
    ],
    "notes": "Thighs work and are cheaper per kg; breast keeps it leaner. Freeze the rice the same day.",
-   "short": "Red curry"
+   "short": "Red curry",
+   "tags": [
+    "curry",
+    "asian"
+   ],
+   "core": true
   },
   {
    "id": "soy_honey_chicken",
@@ -724,7 +779,11 @@
     "Rice and steamed broccoli alongside. Tub all three."
    ],
    "notes": "Fastest dinner on the list.",
-   "short": "Soy honey"
+   "short": "Soy honey",
+   "tags": [
+    "asian"
+   ],
+   "core": true
   },
   {
    "id": "coconut_rice_chicken",
@@ -783,7 +842,11 @@
     "Steam broccoli separately. Tub."
    ],
    "notes": "One pot. Coconut rice: freeze what isn't eaten within 2 days.",
-   "short": "Coco rice"
+   "short": "Coco rice",
+   "tags": [
+    "asian"
+   ],
+   "core": false
   },
   {
    "id": "kbbq_chicken",
@@ -851,7 +914,11 @@
     "Tub rice, chicken, salad pot on top."
    ],
    "notes": "Breast works if thighs aren't on offer. Salad pot stays cold.",
-   "short": "KBBQ"
+   "short": "KBBQ",
+   "tags": [
+    "asian"
+   ],
+   "core": false
   },
   {
    "id": "satay_chicken",
@@ -914,7 +981,11 @@
     "Warm the rest of the sauce in a pan. Tub rice, chicken, sauce over. Cucumber in a pot."
    ],
    "notes": "From the cook.withcourtney reel. Lime and fish sauce dropped for cost; skewers optional.",
-   "short": "Satay"
+   "short": "Satay",
+   "tags": [
+    "asian"
+   ],
+   "core": false
   },
   {
    "id": "buffalo_pasta",
@@ -977,7 +1048,11 @@
     "Chicken back in. Tub."
    ],
    "notes": "Sriracha replaces Frank's; the cream cheese from the reel is dropped.",
-   "short": "Buffalo"
+   "short": "Buffalo",
+   "tags": [
+    "pasta"
+   ],
+   "core": false
   },
   {
    "id": "fajitas",
@@ -1026,7 +1101,11 @@
     "Tub the filling. Wraps stay in the packet; cheese and a spoon of skyr when serving."
    ],
    "notes": "Filling freezes. Assemble the wraps fresh: 2 minutes.",
-   "short": "Fajitas"
+   "short": "Fajitas",
+   "tags": [
+    "mexican"
+   ],
+   "core": true
   },
   {
    "id": "chicken_sp_broccoli",
@@ -1077,7 +1156,11 @@
     "Steam the broccoli. Tub all three."
    ],
    "notes": "The rugby staple. Freezes.",
-   "short": "Chicken SP"
+   "short": "Chicken SP",
+   "tags": [
+    "british"
+   ],
+   "core": true
   },
   {
    "id": "beef_sweet_potato",
@@ -1128,7 +1211,11 @@
     "Fold the potato through. Tub."
    ],
    "notes": "Freezes. Fried egg on top when eating at home.",
-   "short": "Beef hash"
+   "short": "Beef hash",
+   "tags": [
+    "british"
+   ],
+   "core": false
   },
   {
    "id": "sambal_satay",
@@ -1204,7 +1291,11 @@
     "Sear the thighs 3–4 min a side, then lower the heat until cooked through. Slice.",
     "Tub rice, chicken, sauce over. Cucumber in a pot."
    ],
-   "notes": "From the foodie_mette reel. Lemongrass and lime dropped for cost."
+   "notes": "From the foodie_mette reel. Lemongrass and lime dropped for cost.",
+   "tags": [
+    "asian"
+   ],
+   "core": false
   },
   {
    "id": "green_goddess",
@@ -1268,7 +1359,11 @@
     "Crisp the 'nduja in a dry pan until it breaks down and the fat renders.",
     "Toss warm potatoes and chicken through the dressing. Tub. 'Nduja and its oil over the top when serving."
    ],
-   "notes": "From the erickbadgr reel, cheapened: tarragon, chives and anchovies dropped, skyr for Greek yoghurt. The 'nduja is most of the cost; leave it out and it's a £2 lunch."
+   "notes": "From the erickbadgr reel, cheapened: tarragon, chives and anchovies dropped, skyr for Greek yoghurt. The 'nduja is most of the cost; leave it out and it's a £2 lunch.",
+   "tags": [
+    "cold-lunch"
+   ],
+   "core": false
   },
   {
    "id": "pesto_gnocchi",
@@ -1344,7 +1439,12 @@
     "Sauce: blend the cottage cheese (or skyr) with the pesto, garlic paste and a splash of pasta water until smooth. Warm it gently in the pasta pan; don't boil or it splits.",
     "Toss the penne through, off the heat add lemon juice, pepper and the rest of the parmesan. Tub with the chicken on top."
    ],
-   "notes": "Cream and gnocchi swapped for cottage cheese and penne at Cameron's request: same creamy hit, a third of the cost, and it freezes."
+   "notes": "Cream and gnocchi swapped for cottage cheese and penne at Cameron's request: same creamy hit, a third of the cost, and it freezes.",
+   "tags": [
+    "pasta",
+    "italian"
+   ],
+   "core": false
   },
   {
    "id": "beef_enchiladas",
@@ -1420,7 +1520,11 @@
     "Bake at 200°C for 15 minutes until the cheese is bubbling. Tub two per portion with a spoon of skyr.",
     "Batch tip: the chilli is the same base as the chilli con carne. Make a double batch, half with rice, half rolled up."
    ],
-   "notes": "The enchilada idea from week 1, now its own recipe. Corn tortillas if you have a kit; flour wraps are cheaper and sold everywhere."
+   "notes": "The enchilada idea from week 1, now its own recipe. Corn tortillas if you have a kit; flour wraps are cheaper and sold everywhere.",
+   "tags": [
+    "mexican"
+   ],
+   "core": false
   },
   {
    "id": "chicken_curry",
@@ -1478,7 +1582,11 @@
     "Add diced chicken and colour it, then tomatoes, coconut milk, pepper strips and a crumbled stock cube. Simmer 20 minutes.",
     "Rice cooked separately. Tub rice and curry side by side."
    ],
-   "notes": "The 'normal' chicken curry from your list, built on the madras powder in the cupboard. About £1.80 a portion."
+   "notes": "The 'normal' chicken curry from your list, built on the madras powder in the cupboard. About £1.80 a portion.",
+   "tags": [
+    "curry"
+   ],
+   "core": true
   },
   {
    "id": "chicken_lentil_curry",
@@ -1540,7 +1648,11 @@
     "Add lentils, tomatoes, coconut milk and 250ml stock per portion. Simmer 25 minutes, stirring, until the lentils collapse and it's thick. Add water if it catches.",
     "Rice on the side, or eat it as a thick dhal on its own."
    ],
-   "notes": "Lentils stretch the meat: 45g protein for about £1.50 a portion and it freezes brilliantly."
+   "notes": "Lentils stretch the meat: 45g protein for about £1.50 a portion and it freezes brilliantly.",
+   "tags": [
+    "curry"
+   ],
+   "core": false
   },
   {
    "id": "chicken_meatballs",
@@ -1607,7 +1719,12 @@
     "Sauce: tomatoes, purée, a crumbled stock cube, simmer 10 minutes. Drop the meatballs in for 10 more.",
     "Boil the penne, stir through. Parmesan on top when eating."
    ],
-   "notes": "Chicken mince is the cheapest lean protein on the list at £2.49 a pack. Freezes."
+   "notes": "Chicken mince is the cheapest lean protein on the list at £2.49 a pack. Freezes.",
+   "tags": [
+    "pasta",
+    "italian"
+   ],
+   "core": true
   },
   {
    "id": "pork_stirfry",
@@ -1677,7 +1794,11 @@
     "Toss in pepper strips and broccoli for the last 3 minutes.",
     "Serve on rice with a fried egg on top. Tub rice, pork and veg; fry the egg when eating if you can."
    ],
-   "notes": "5% pork mince is the same price as chicken mince and works better with soy and honey. Sesame oil off the heat."
+   "notes": "5% pork mince is the same price as chicken mince and works better with soy and honey. Sesame oil off the heat.",
+   "tags": [
+    "asian"
+   ],
+   "core": true
   },
   {
    "id": "burrito_bowl",
@@ -1740,7 +1861,12 @@
     "Rice cooked and cooled. Warm the beans with the chopped tomatoes and a pinch of the seasoning for a quick salsa.",
     "Tub in layers: rice, beans and salsa, chicken, pepper strips. Cheese and a spoon of skyr with lemon juice on top when eating."
    ],
-   "notes": "Eats cold or hot, so it's a uni lunch. Fajita flavour without the wraps."
+   "notes": "Eats cold or hot, so it's a uni lunch. Fajita flavour without the wraps.",
+   "tags": [
+    "mexican",
+    "cold-lunch"
+   ],
+   "core": false
   },
   {
    "id": "beef_bean_burrito",
@@ -1798,7 +1924,11 @@
     "Rice cooked. Lay a wrap out, rice then beef then cheese, fold the sides in and roll tight.",
     "Wrap each in foil. Fridge 3 days, or freeze and microwave from frozen for 3 minutes."
    ],
-   "notes": "Freezer burritos: grab-and-go for about £1.85 each."
+   "notes": "Freezer burritos: grab-and-go for about £1.85 each.",
+   "tags": [
+    "mexican"
+   ],
+   "core": false
   },
   {
    "id": "tuna_egg_rice_bowl",
@@ -1854,7 +1984,12 @@
     "Rice cooked and cooled. Boil the egg 7 minutes, peel, halve.",
     "Tub: rice, drained tuna, egg, cucumber. Soy and sesame over the rice; mayo and sriracha in a pot to stir through when eating."
    ],
-   "notes": "No cooking beyond rice and an egg. Cold lunch, 51g protein, about £1.55."
+   "notes": "No cooking beyond rice and an egg. Cold lunch, 51g protein, about £1.55.",
+   "tags": [
+    "asian",
+    "cold-lunch"
+   ],
+   "core": false
   },
   {
    "id": "tuna_melt",
@@ -1899,7 +2034,11 @@
     "Toast in a dry pan with a lid, or the air-fryer at 190°C 6 minutes, until the cheese melts.",
     "Cucumber on the side. Best eaten straight away; the filling keeps 2 days in a tub for a cold sandwich at uni."
    ],
-   "notes": "The sandwich option from your list. Make the filling in a batch, toast fresh."
+   "notes": "The sandwich option from your list. Make the filling in a batch, toast fresh.",
+   "tags": [
+    "british"
+   ],
+   "core": true
   },
   {
    "id": "lemon_chicken_wraps",
@@ -1957,7 +2096,11 @@
     "Grate a bit of cucumber into the skyr with a pinch of salt for a quick tzatziki; dice the rest.",
     "Wrap: skyr, chicken, cucumber, pepper. Roll in foil."
    ],
-   "notes": "Cold uni lunch. Cheaper than the peanut butter wrap and lighter."
+   "notes": "Cold uni lunch. Cheaper than the peanut butter wrap and lighter.",
+   "tags": [
+    "cold-lunch"
+   ],
+   "core": false
   },
   {
    "id": "egg_cheese_wraps",
@@ -2001,7 +2144,11 @@
     "Scramble the eggs with diced pepper. Lay on a wrap with cheese, roll, and toast the seam in the dry pan for a minute so it seals.",
     "Make 4 at once, wrap in foil. Fridge 3 days or freezer; microwave 90 seconds from the fridge."
    ],
-   "notes": "A batchable breakfast so you're not cooking eggs every morning. 30g protein."
+   "notes": "A batchable breakfast so you're not cooking eggs every morning. 30g protein.",
+   "tags": [
+    "breakfast"
+   ],
+   "core": true
   },
   {
    "id": "protein_pancakes",
@@ -2050,7 +2197,11 @@
     "Fry small pancakes in a little butter, 2 minutes a side. Honey over.",
     "Batch: they keep 3 days in the fridge and reheat in a toaster or dry pan."
    ],
-   "notes": "Oats are only a binder here, so this isn't porridge. About 32g protein a stack."
+   "notes": "Oats are only a binder here, so this isn't porridge. About 32g protein a stack.",
+   "tags": [
+    "breakfast"
+   ],
+   "core": false
   },
   {
    "id": "pb_banana_skyr",
@@ -2093,7 +2244,1171 @@
    "method": [
     "Stir the powder into the skyr, slice the banana over, peanut butter and honey on top."
    ],
-   "notes": "The fruit-free skyr bowl: bananas are 16p, so it's the cheapest breakfast in the app at 55g protein."
+   "notes": "The fruit-free skyr bowl: bananas are 16p, so it's the cheapest breakfast in the app at 55g protein.",
+   "tags": [
+    "breakfast"
+   ],
+   "core": true
+  },
+  {
+   "id": "snack_banana_pb",
+   "name": "Banana with peanut butter",
+   "short": "Banana PB",
+   "slots": [
+    "snack"
+   ],
+   "cold": true,
+   "reheat": "none",
+   "fridgeDays": 0,
+   "freezer": false,
+   "cookMinutes": 0,
+   "equipment": [],
+   "source": "basic",
+   "ingredients": [
+    {
+     "id": "banana",
+     "qty": 1
+    },
+    {
+     "id": "peanut_butter",
+     "qty": 15
+    }
+   ],
+   "method": [
+    "Slice, spread, eat."
+   ],
+   "notes": "The 30p snack.",
+   "tags": [
+    "snack"
+   ],
+   "core": true
+  },
+  {
+   "id": "snack_skyr_pot",
+   "name": "Skyr pot with honey",
+   "short": "Skyr pot",
+   "slots": [
+    "snack"
+   ],
+   "cold": true,
+   "reheat": "none",
+   "fridgeDays": 0,
+   "freezer": false,
+   "cookMinutes": 0,
+   "equipment": [],
+   "source": "basic",
+   "ingredients": [
+    {
+     "id": "skyr",
+     "qty": 150
+    },
+    {
+     "id": "honey",
+     "qty": 8
+    }
+   ],
+   "method": [
+    "Spoon into a small tub, honey on top. Frozen fruit if there's some spare."
+   ],
+   "notes": "16g protein for about 55p.",
+   "tags": [
+    "snack"
+   ],
+   "core": true
+  },
+  {
+   "id": "snack_cottage_cucumber",
+   "name": "Cottage cheese and cucumber",
+   "short": "Cottage pot",
+   "slots": [
+    "snack"
+   ],
+   "cold": true,
+   "reheat": "none",
+   "fridgeDays": 0,
+   "freezer": false,
+   "cookMinutes": 0,
+   "equipment": [],
+   "source": "basic",
+   "ingredients": [
+    {
+     "id": "cottage_cheese",
+     "qty": 150
+    },
+    {
+     "id": "cucumber",
+     "qty": 0.2
+    },
+    {
+     "id": "sriracha",
+     "qty": 5
+    }
+   ],
+   "method": [
+    "Half a tub of cottage cheese, cucumber sticks to dip, sriracha over."
+   ],
+   "notes": "17g protein, under 60p.",
+   "tags": [
+    "snack"
+   ],
+   "core": true
+  },
+  {
+   "id": "snack_boiled_eggs",
+   "name": "Two boiled eggs",
+   "short": "Boiled eggs",
+   "slots": [
+    "snack"
+   ],
+   "cold": true,
+   "reheat": "none",
+   "fridgeDays": 5,
+   "freezer": false,
+   "cookMinutes": 12,
+   "equipment": [
+    "hob"
+   ],
+   "source": "basic",
+   "ingredients": [
+    {
+     "id": "egg",
+     "qty": 2
+    }
+   ],
+   "method": [
+    "Batch: boil the week's eggs 8 minutes, cool in cold water, keep in the shell in the fridge up to 5 days. Salt and pepper when eating."
+   ],
+   "notes": "13g protein for about 35p. The one snack worth batching.",
+   "tags": [
+    "snack"
+   ],
+   "core": true
+  },
+  {
+   "id": "snack_pb_toast",
+   "name": "Peanut butter on toast",
+   "short": "PB toast",
+   "slots": [
+    "snack"
+   ],
+   "cold": false,
+   "reheat": "none",
+   "fridgeDays": 0,
+   "freezer": false,
+   "cookMinutes": 0,
+   "equipment": [],
+   "source": "basic",
+   "ingredients": [
+    {
+     "id": "bread",
+     "qty": 2
+    },
+    {
+     "id": "peanut_butter",
+     "qty": 20
+    }
+   ],
+   "method": [
+    "Toast, spread."
+   ],
+   "notes": "12g protein, more of a carb hit for training days.",
+   "tags": [
+    "snack"
+   ],
+   "core": true
+  },
+  {
+   "id": "snack_shake",
+   "name": "Protein shake",
+   "short": "Shake",
+   "slots": [
+    "snack"
+   ],
+   "cold": true,
+   "reheat": "none",
+   "fridgeDays": 0,
+   "freezer": false,
+   "cookMinutes": 0,
+   "equipment": [],
+   "source": "basic",
+   "ingredients": [
+    {
+     "id": "protein_powder",
+     "qty": 30
+    },
+    {
+     "id": "milk",
+     "qty": 250
+    }
+   ],
+   "method": [
+    "Scoop into a shaker with milk. Water if you're keeping calories down."
+   ],
+   "notes": "32g protein. Costs what your powder costs.",
+   "tags": [
+    "snack"
+   ],
+   "core": true
+  },
+  {
+   "id": "snack_cheese_wrap",
+   "name": "Cheese and cucumber wrap roll",
+   "short": "Cheese roll",
+   "slots": [
+    "snack"
+   ],
+   "cold": true,
+   "reheat": "none",
+   "fridgeDays": 1,
+   "freezer": false,
+   "cookMinutes": 0,
+   "equipment": [],
+   "source": "basic",
+   "ingredients": [
+    {
+     "id": "wrap",
+     "qty": 1
+    },
+    {
+     "id": "cheddar",
+     "qty": 30
+    },
+    {
+     "id": "cucumber",
+     "qty": 0.1
+    }
+   ],
+   "method": [
+    "Cheese and cucumber in a wrap, roll tight, slice into rounds."
+   ],
+   "notes": "12g protein, travels well.",
+   "tags": [
+    "snack"
+   ],
+   "core": false
+  },
+  {
+   "id": "garlic_butter_chicken_rice",
+   "name": "Garlic butter chicken with rice and broccoli",
+   "short": "Garlic chicken",
+   "slots": [
+    "lunch",
+    "dinner"
+   ],
+   "cold": false,
+   "reheat": "microwave",
+   "fridgeDays": 3,
+   "freezer": true,
+   "cookMinutes": 25,
+   "equipment": [
+    "hob"
+   ],
+   "source": "basic",
+   "ingredients": [
+    {
+     "id": "chicken_breast",
+     "qty": 175
+    },
+    {
+     "id": "butter",
+     "qty": 10
+    },
+    {
+     "id": "garlic_paste",
+     "qty": 8
+    },
+    {
+     "id": "lemon",
+     "qty": 0.25
+    },
+    {
+     "id": "parsley",
+     "qty": 5
+    },
+    {
+     "id": "basmati",
+     "qty": 75
+    },
+    {
+     "id": "broccoli",
+     "qty": 100
+    }
+   ],
+   "method": [
+    "Fry diced chicken until golden. Add butter, garlic paste and a squeeze of lemon for the last 2 minutes; toss until glossy.",
+    "Rice and steamed broccoli alongside. Parsley over."
+   ],
+   "notes": "Plain, fast, high protein. Freezes.",
+   "tags": [
+    "british"
+   ],
+   "core": false
+  },
+  {
+   "id": "chicken_pesto_pasta",
+   "name": "Chicken pesto pasta",
+   "short": "Pesto chicken",
+   "slots": [
+    "lunch",
+    "dinner"
+   ],
+   "cold": true,
+   "reheat": "microwave",
+   "fridgeDays": 3,
+   "freezer": true,
+   "cookMinutes": 25,
+   "equipment": [
+    "hob"
+   ],
+   "source": "basic",
+   "ingredients": [
+    {
+     "id": "chicken_breast",
+     "qty": 150
+    },
+    {
+     "id": "penne",
+     "qty": 90
+    },
+    {
+     "id": "pesto",
+     "qty": 25
+    },
+    {
+     "id": "cottage_cheese",
+     "qty": 80
+    },
+    {
+     "id": "parmesan",
+     "qty": 10
+    },
+    {
+     "id": "pepper",
+     "qty": 0.25
+    }
+   ],
+   "method": [
+    "Boil the penne. Fry the chicken with the pepper strips.",
+    "Blend pesto and cottage cheese until smooth, stir through the drained pasta and chicken. Parmesan on top."
+   ],
+   "notes": "Creamy pesto without cream: cottage cheese does the job and adds protein.",
+   "tags": [
+    "pasta",
+    "italian"
+   ],
+   "core": false
+  },
+  {
+   "id": "sweet_chilli_chicken_noodles",
+   "name": "Sweet chilli chicken noodles",
+   "short": "Chilli noodles",
+   "slots": [
+    "lunch",
+    "dinner"
+   ],
+   "cold": true,
+   "reheat": "microwave",
+   "fridgeDays": 3,
+   "freezer": true,
+   "cookMinutes": 20,
+   "equipment": [
+    "hob"
+   ],
+   "source": "basic",
+   "ingredients": [
+    {
+     "id": "chicken_breast",
+     "qty": 150
+    },
+    {
+     "id": "rice_noodles",
+     "qty": 70
+    },
+    {
+     "id": "sweet_chilli",
+     "qty": 25
+    },
+    {
+     "id": "soy_sauce",
+     "qty": 10
+    },
+    {
+     "id": "pepper",
+     "qty": 0.5
+    },
+    {
+     "id": "broccoli",
+     "qty": 80
+    },
+    {
+     "id": "garlic_paste",
+     "qty": 5
+    }
+   ],
+   "method": [
+    "Soak the noodles per the pack. Fry the chicken with garlic paste, add peppers and broccoli for 3 minutes.",
+    "Sweet chilli and soy in, noodles in, toss for a minute."
+   ],
+   "notes": "20-minute stir-fry. Eats cold too.",
+   "tags": [
+    "asian"
+   ],
+   "core": false
+  },
+  {
+   "id": "beef_broccoli_rice",
+   "name": "Beef and broccoli rice bowls",
+   "short": "Beef broccoli",
+   "slots": [
+    "lunch",
+    "dinner"
+   ],
+   "cold": false,
+   "reheat": "microwave",
+   "fridgeDays": 3,
+   "freezer": true,
+   "cookMinutes": 25,
+   "equipment": [
+    "hob"
+   ],
+   "source": "basic",
+   "ingredients": [
+    {
+     "id": "beef_mince_5",
+     "qty": 150
+    },
+    {
+     "id": "broccoli",
+     "qty": 150
+    },
+    {
+     "id": "soy_sauce",
+     "qty": 15
+    },
+    {
+     "id": "honey",
+     "qty": 8
+    },
+    {
+     "id": "garlic_paste",
+     "qty": 6
+    },
+    {
+     "id": "ginger_garlic_paste",
+     "qty": 4
+    },
+    {
+     "id": "basmati",
+     "qty": 75
+    },
+    {
+     "id": "sesame_oil",
+     "qty": 3
+    }
+   ],
+   "method": [
+    "Brown the mince hard, add garlic and ginger pastes, then soy and honey; bubble until sticky.",
+    "Steam the broccoli, fold through. Sesame oil off the heat. Rice alongside."
+   ],
+   "notes": "Takeaway-style, 40g+ protein, freezes.",
+   "tags": [
+    "asian"
+   ],
+   "core": false
+  },
+  {
+   "id": "chicken_broccoli_bake",
+   "name": "Chicken and broccoli pasta bake",
+   "short": "Pasta bake",
+   "slots": [
+    "lunch",
+    "dinner"
+   ],
+   "cold": false,
+   "reheat": "microwave",
+   "fridgeDays": 3,
+   "freezer": true,
+   "cookMinutes": 45,
+   "equipment": [
+    "hob",
+    "oven"
+   ],
+   "source": "basic",
+   "ingredients": [
+    {
+     "id": "chicken_breast",
+     "qty": 150
+    },
+    {
+     "id": "penne",
+     "qty": 90
+    },
+    {
+     "id": "cottage_cheese",
+     "qty": 100
+    },
+    {
+     "id": "chopped_tomatoes",
+     "qty": 100
+    },
+    {
+     "id": "cheddar",
+     "qty": 30
+    },
+    {
+     "id": "broccoli",
+     "qty": 100
+    },
+    {
+     "id": "garlic_paste",
+     "qty": 5
+    }
+   ],
+   "method": [
+    "Boil the penne 2 minutes short. Fry the chicken with garlic paste.",
+    "Blend cottage cheese with the tomatoes. Mix everything with the broccoli in a dish, cheese on top, bake 200°C 20 minutes."
+   ],
+   "notes": "One dish, four tubs, freezes.",
+   "tags": [
+    "pasta",
+    "italian"
+   ],
+   "core": false
+  },
+  {
+   "id": "egg_potato_hash",
+   "name": "Egg, potato and pepper hash",
+   "short": "Egg hash",
+   "slots": [
+    "breakfast",
+    "lunch"
+   ],
+   "cold": false,
+   "reheat": "microwave",
+   "fridgeDays": 2,
+   "freezer": false,
+   "cookMinutes": 30,
+   "equipment": [
+    "air-fryer",
+    "oven"
+   ],
+   "source": "basic",
+   "ingredients": [
+    {
+     "id": "egg",
+     "qty": 3
+    },
+    {
+     "id": "baby_potatoes",
+     "qty": 250
+    },
+    {
+     "id": "pepper",
+     "qty": 0.5
+    },
+    {
+     "id": "cheddar",
+     "qty": 25
+    },
+    {
+     "id": "paprika",
+     "qty": 2
+    },
+    {
+     "id": "olive_oil",
+     "qty": 5
+    }
+   ],
+   "method": [
+    "Halve the baby potatoes, air-fry or roast with paprika and oil 20 minutes. Peppers in for the last 8.",
+    "Make wells, crack the eggs in, cheese over, back in until the whites set."
+   ],
+   "notes": "Weekend breakfast or a lunch. Eat hot.",
+   "tags": [
+    "breakfast",
+    "british"
+   ],
+   "core": false
+  },
+  {
+   "id": "spicy_eggs_tomatoes",
+   "name": "Spicy eggs in tomatoes with toast",
+   "short": "Shakshuka",
+   "slots": [
+    "breakfast",
+    "lunch"
+   ],
+   "cold": false,
+   "reheat": "hob",
+   "fridgeDays": 3,
+   "freezer": true,
+   "cookMinutes": 20,
+   "equipment": [
+    "hob"
+   ],
+   "source": "basic",
+   "ingredients": [
+    {
+     "id": "egg",
+     "qty": 3
+    },
+    {
+     "id": "chopped_tomatoes",
+     "qty": 200
+    },
+    {
+     "id": "pepper",
+     "qty": 0.5
+    },
+    {
+     "id": "cumin",
+     "qty": 2
+    },
+    {
+     "id": "paprika",
+     "qty": 2
+    },
+    {
+     "id": "chilli_powder",
+     "qty": 1
+    },
+    {
+     "id": "garlic_paste",
+     "qty": 5
+    },
+    {
+     "id": "bread",
+     "qty": 2
+    }
+   ],
+   "method": [
+    "Soften the pepper, add garlic paste and spices, then the tomatoes. Simmer 8 minutes until thick.",
+    "Make wells, crack in the eggs, lid on 5 minutes until just set. Toast to mop up."
+   ],
+   "notes": "Shakshuka, basically. Sauce batches and freezes; eggs go in fresh.",
+   "tags": [
+    "breakfast"
+   ],
+   "core": false
+  },
+  {
+   "id": "chicken_fried_rice",
+   "name": "Chicken fried rice",
+   "short": "Chicken rice",
+   "slots": [
+    "lunch",
+    "dinner"
+   ],
+   "cold": false,
+   "reheat": "microwave",
+   "fridgeDays": 3,
+   "freezer": true,
+   "cookMinutes": 25,
+   "equipment": [
+    "hob"
+   ],
+   "source": "basic",
+   "ingredients": [
+    {
+     "id": "chicken_breast",
+     "qty": 150
+    },
+    {
+     "id": "basmati",
+     "qty": 75
+    },
+    {
+     "id": "egg",
+     "qty": 1
+    },
+    {
+     "id": "mixed_veg",
+     "qty": 100
+    },
+    {
+     "id": "soy_sauce",
+     "qty": 15
+    },
+    {
+     "id": "sesame_oil",
+     "qty": 3
+    },
+    {
+     "id": "garlic_paste",
+     "qty": 5
+    }
+   ],
+   "method": [
+    "Cold cooked rice works best. Fry the chicken, push aside, scramble the egg, add veg, rice and soy; fry hard 3 minutes.",
+    "Sesame oil off the heat. Freeze tubs the same day."
+   ],
+   "notes": "The egg fried rice with proper protein in it.",
+   "tags": [
+    "asian"
+   ],
+   "core": false
+  },
+  {
+   "id": "coconut_lentil_dhal",
+   "name": "Coconut red lentil dhal",
+   "short": "Dhal",
+   "slots": [
+    "lunch",
+    "dinner"
+   ],
+   "cold": false,
+   "reheat": "microwave",
+   "fridgeDays": 3,
+   "freezer": true,
+   "cookMinutes": 35,
+   "equipment": [
+    "hob"
+   ],
+   "source": "basic",
+   "ingredients": [
+    {
+     "id": "red_lentils",
+     "qty": 100
+    },
+    {
+     "id": "coconut_milk",
+     "qty": 100
+    },
+    {
+     "id": "chopped_tomatoes",
+     "qty": 100
+    },
+    {
+     "id": "curry_powder",
+     "qty": 6
+    },
+    {
+     "id": "turmeric",
+     "qty": 1
+    },
+    {
+     "id": "ginger_garlic_paste",
+     "qty": 6
+    },
+    {
+     "id": "stock_cube",
+     "qty": 0.3
+    },
+    {
+     "id": "basmati",
+     "qty": 60
+    }
+   ],
+   "method": [
+    "Fry the ginger-garlic paste and spices a minute. Add rinsed lentils, tomatoes, coconut milk and 300ml stock.",
+    "Simmer 25 minutes, stirring, until thick. Rice on the side."
+   ],
+   "notes": "Meat-free, 30g protein, about 90p a portion. Freezes for months.",
+   "tags": [
+    "curry",
+    "veggie"
+   ],
+   "core": false
+  },
+  {
+   "id": "tikka_chicken_rice",
+   "name": "Yogurt tikka chicken with rice",
+   "short": "Tikka",
+   "slots": [
+    "lunch",
+    "dinner"
+   ],
+   "cold": false,
+   "reheat": "microwave",
+   "fridgeDays": 3,
+   "freezer": true,
+   "cookMinutes": 30,
+   "equipment": [
+    "air-fryer",
+    "oven"
+   ],
+   "source": "basic",
+   "ingredients": [
+    {
+     "id": "chicken_breast",
+     "qty": 175
+    },
+    {
+     "id": "skyr",
+     "qty": 60
+    },
+    {
+     "id": "curry_powder",
+     "qty": 8
+    },
+    {
+     "id": "paprika",
+     "qty": 2
+    },
+    {
+     "id": "lemon",
+     "qty": 0.25
+    },
+    {
+     "id": "garlic_paste",
+     "qty": 5
+    },
+    {
+     "id": "basmati",
+     "qty": 75
+    },
+    {
+     "id": "cucumber",
+     "qty": 0.2
+    }
+   ],
+   "method": [
+    "Marinate the chicken in skyr, curry powder, paprika, garlic paste and lemon; overnight is best.",
+    "Air-fry 200°C 14 minutes or grill until charred. Rice and cucumber alongside, a spoon of skyr over."
+   ],
+   "notes": "Skyr marinade keeps it lean and tender.",
+   "tags": [
+    "curry"
+   ],
+   "core": false
+  },
+  {
+   "id": "bean_cheese_quesadilla",
+   "name": "Bean and cheese quesadillas",
+   "short": "Quesadilla",
+   "slots": [
+    "lunch",
+    "dinner"
+   ],
+   "cold": true,
+   "reheat": "microwave",
+   "fridgeDays": 2,
+   "freezer": false,
+   "cookMinutes": 15,
+   "equipment": [
+    "hob"
+   ],
+   "source": "basic",
+   "ingredients": [
+    {
+     "id": "kidney_beans",
+     "qty": 100
+    },
+    {
+     "id": "cheddar",
+     "qty": 40
+    },
+    {
+     "id": "wrap",
+     "qty": 2
+    },
+    {
+     "id": "pepper",
+     "qty": 0.25
+    },
+    {
+     "id": "fajita_seasoning",
+     "qty": 5
+    },
+    {
+     "id": "skyr",
+     "qty": 30
+    }
+   ],
+   "method": [
+    "Mash the drained beans with the seasoning and diced pepper. Spread on a wrap, cheese over, second wrap on top.",
+    "Dry-fry 3 minutes a side until crisp and melted. Cut into quarters, skyr to dip."
+   ],
+   "notes": "Meat-free and about £1.10. Eats cold in a lunchbox.",
+   "tags": [
+    "mexican",
+    "veggie"
+   ],
+   "core": false
+  },
+  {
+   "id": "protein_porridge",
+   "name": "Protein porridge",
+   "short": "Porridge",
+   "slots": [
+    "breakfast"
+   ],
+   "cold": false,
+   "reheat": "microwave",
+   "fridgeDays": 0,
+   "freezer": false,
+   "cookMinutes": 0,
+   "equipment": [
+    "hob"
+   ],
+   "source": "basic",
+   "ingredients": [
+    {
+     "id": "oats",
+     "qty": 60
+    },
+    {
+     "id": "milk",
+     "qty": 250
+    },
+    {
+     "id": "protein_powder",
+     "qty": 30
+    },
+    {
+     "id": "banana",
+     "qty": 0.5
+    },
+    {
+     "id": "honey",
+     "qty": 5
+    }
+   ],
+   "method": [
+    "Cook the oats in milk 4 minutes. Off the heat, stir in the powder, banana sliced on top, honey."
+   ],
+   "notes": "35g protein breakfast for about 70p.",
+   "tags": [
+    "breakfast"
+   ],
+   "core": false
+  },
+  {
+   "id": "greek_chicken_bowl",
+   "name": "Greek chicken rice bowl",
+   "short": "Greek bowl",
+   "slots": [
+    "lunch",
+    "dinner"
+   ],
+   "cold": true,
+   "reheat": "microwave",
+   "fridgeDays": 3,
+   "freezer": true,
+   "cookMinutes": 25,
+   "equipment": [
+    "air-fryer",
+    "hob"
+   ],
+   "source": "basic",
+   "ingredients": [
+    {
+     "id": "chicken_breast",
+     "qty": 150
+    },
+    {
+     "id": "basmati",
+     "qty": 70
+    },
+    {
+     "id": "cucumber",
+     "qty": 0.3
+    },
+    {
+     "id": "skyr",
+     "qty": 50
+    },
+    {
+     "id": "lemon",
+     "qty": 0.25
+    },
+    {
+     "id": "garlic_paste",
+     "qty": 4
+    },
+    {
+     "id": "olive_oil",
+     "qty": 5
+    },
+    {
+     "id": "parsley",
+     "qty": 5
+    }
+   ],
+   "method": [
+    "Chicken rubbed with garlic paste, lemon and oil; fry or air-fry.",
+    "Tub rice, chicken, diced cucumber. Skyr with lemon and parsley in a pot for the top."
+   ],
+   "notes": "Cold uni lunch. Clean and light.",
+   "tags": [
+    "cold-lunch"
+   ],
+   "core": false
+  },
+  {
+   "id": "sweet_chilli_pork_meatballs",
+   "name": "Sweet chilli pork meatballs with rice",
+   "short": "Pork balls",
+   "slots": [
+    "lunch",
+    "dinner"
+   ],
+   "cold": false,
+   "reheat": "microwave",
+   "fridgeDays": 3,
+   "freezer": true,
+   "cookMinutes": 30,
+   "equipment": [
+    "air-fryer",
+    "hob"
+   ],
+   "source": "basic",
+   "ingredients": [
+    {
+     "id": "pork_mince_5",
+     "qty": 150
+    },
+    {
+     "id": "breadcrumbs",
+     "qty": 15
+    },
+    {
+     "id": "egg",
+     "qty": 0.25
+    },
+    {
+     "id": "sweet_chilli",
+     "qty": 25
+    },
+    {
+     "id": "soy_sauce",
+     "qty": 10
+    },
+    {
+     "id": "basmati",
+     "qty": 75
+    },
+    {
+     "id": "broccoli",
+     "qty": 100
+    }
+   ],
+   "method": [
+    "Mix pork, breadcrumbs and egg; roll into balls, air-fry 200°C 12 minutes or pan-fry.",
+    "Warm sweet chilli and soy in a pan, toss the balls through. Rice and broccoli alongside."
+   ],
+   "notes": "Cheap pork mince, sticky and quick. Freezes.",
+   "tags": [
+    "asian"
+   ],
+   "core": false
+  },
+  {
+   "id": "tuna_pasta_salad",
+   "name": "Tuna pasta salad",
+   "short": "Tuna salad",
+   "slots": [
+    "lunch"
+   ],
+   "cold": true,
+   "reheat": "none",
+   "fridgeDays": 3,
+   "freezer": false,
+   "cookMinutes": 15,
+   "equipment": [
+    "hob"
+   ],
+   "source": "basic",
+   "ingredients": [
+    {
+     "id": "tuna",
+     "qty": 1.5
+    },
+    {
+     "id": "penne",
+     "qty": 80
+    },
+    {
+     "id": "light_mayo",
+     "qty": 20
+    },
+    {
+     "id": "skyr",
+     "qty": 30
+    },
+    {
+     "id": "cucumber",
+     "qty": 0.25
+    },
+    {
+     "id": "pepper",
+     "qty": 0.25
+    },
+    {
+     "id": "lemon",
+     "qty": 0.2
+    }
+   ],
+   "method": [
+    "Boil the pasta, cool under the tap. Mix mayo, skyr and lemon; stir through with tuna, cucumber and pepper."
+   ],
+   "notes": "Cold lunch, no reheating, 45g protein.",
+   "tags": [
+    "cold-lunch",
+    "pasta"
+   ],
+   "core": false
+  },
+  {
+   "id": "satay_noodles",
+   "name": "Satay chicken noodles",
+   "short": "Satay noodles",
+   "slots": [
+    "lunch",
+    "dinner"
+   ],
+   "cold": true,
+   "reheat": "microwave",
+   "fridgeDays": 3,
+   "freezer": true,
+   "cookMinutes": 20,
+   "equipment": [
+    "hob"
+   ],
+   "source": "basic",
+   "ingredients": [
+    {
+     "id": "chicken_breast",
+     "qty": 150
+    },
+    {
+     "id": "rice_noodles",
+     "qty": 70
+    },
+    {
+     "id": "peanut_butter",
+     "qty": 20
+    },
+    {
+     "id": "soy_sauce",
+     "qty": 10
+    },
+    {
+     "id": "sriracha",
+     "qty": 8
+    },
+    {
+     "id": "honey",
+     "qty": 5
+    },
+    {
+     "id": "coconut_milk",
+     "qty": 50
+    },
+    {
+     "id": "broccoli",
+     "qty": 80
+    }
+   ],
+   "method": [
+    "Whisk peanut butter, coconut milk, soy, sriracha and honey with a splash of hot water.",
+    "Fry the chicken, add broccoli, then the sauce and soaked noodles; toss 2 minutes."
+   ],
+   "notes": "The satay sauce on noodles instead of rice.",
+   "tags": [
+    "asian"
+   ],
+   "core": false
   }
  ]
 }

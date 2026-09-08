@@ -8,6 +8,33 @@ export const SHOP_NAMES = { aldi: 'Aldi', lidl: 'Lidl', asda: 'ASDA', tesco: 'Te
 const byId = (list) => Object.fromEntries(list.map((x) => [x.id, x]));
 
 // ---------- nutrition ----------
+export function kcalPerPortion(recipe, ingredients) {
+  const ing = byId(ingredients);
+  let k = 0;
+  for (const { id, qty } of recipe.ingredients) {
+    const it = ing[id]; if (!it || !it.kcal) continue;
+    k += it.unit === 'each' ? it.kcal * qty : (it.kcal * qty) / 100;
+  }
+  return Math.round(k);
+}
+
+// Portion scaling: every quantity × factor. Returns new recipe objects; originals untouched.
+export function scaleRecipes(recipes, factor = 1) {
+  if (!factor || factor === 1) return recipes;
+  return recipes.map((r) => ({ ...r, ingredients: r.ingredients.map((x) => ({ id: x.id, qty: Math.round(x.qty * factor * 100) / 100 })) }));
+}
+
+// Sensible portion factor from bodyweight (kg) and goal.
+export function portionFactor(weightKg, goal) {
+  let f = weightKg < 60 ? 0.75 : weightKg < 72 ? 0.85 : weightKg < 85 ? 0.95 : weightKg < 95 ? 1.05 : weightKg < 110 ? 1.15 : 1.25;
+  if (goal === 'lose') f -= 0.1; if (goal === 'build') f += 0.1;
+  return Math.round(Math.min(1.4, Math.max(0.6, f)) * 20) / 20;
+}
+export function proteinTargetFor(weightKg, goal) {
+  const perKg = goal === 'lose' ? 2.2 : goal === 'build' ? 2.0 : goal === 'lean' ? 1.9 : 1.4;
+  return Math.round((weightKg * perKg) / 5) * 5;
+}
+
 export function proteinPerPortion(recipe, ingredients) {
   const ing = byId(ingredients);
   let p = 0;
@@ -233,18 +260,20 @@ export function sequence(countMap, rec, cap = 7) {
   return out;
 }
 
-export function gridStats(grid, recipes, ingredients, snackProtein = 0, days = [true, true, true, true, true, true, true]) {
+export function gridStats(grid, recipes, ingredients, extra = { protein: 0, kcal: 0 }, days = [true, true, true, true, true, true, true]) {
   const rec = byId(recipes);
-  const perDay = grid.map((d, i) => {
-    if (!days[i]) return 0;
-    let p = snackProtein;
-    for (const s of SLOTS) { const v = d[s]; const rid = isTub(v) ? tubRecipe(v) : v; if (rid && rec[rid]) p += proteinPerPortion(rec[rid], ingredients); }
-    return Math.round(p);
+  const ex = typeof extra === 'number' ? { protein: extra, kcal: 0 } : extra;
+  const perDay = [], kcalPerDay = [];
+  grid.forEach((d, i) => {
+    if (!days[i]) { perDay.push(0); kcalPerDay.push(0); return; }
+    let p = ex.protein || 0, k = ex.kcal || 0;
+    for (const s of SLOTS) { const v = d[s]; const rid = isTub(v) ? tubRecipe(v) : v; if (rid && rec[rid]) { p += proteinPerPortion(rec[rid], ingredients); k += kcalPerPortion(rec[rid], ingredients); } }
+    perDay.push(Math.round(p)); kcalPerDay.push(Math.round(k));
   });
   const filled = grid.reduce((n, d) => n + SLOTS.filter((s) => d[s]).length, 0);
   const distinct = new Set(grid.flatMap((d) => SLOTS.map((s) => (isTub(d[s]) ? tubRecipe(d[s]) : d[s])).filter((v) => v && v !== 'out'))).size;
   const active = days.filter(Boolean).length || 1;
-  return { perDay, filled, distinct, slots: active * 3, activeDays: active, avg: Math.round(perDay.reduce((a, b) => a + b, 0) / active) };
+  return { perDay, kcalPerDay, filled, distinct, slots: active * 3, activeDays: active, avg: Math.round(perDay.reduce((a, b) => a + b, 0) / active), avgKcal: Math.round(kcalPerDay.reduce((a, b) => a + b, 0) / active) };
 }
 
 // ---------- storage ----------
