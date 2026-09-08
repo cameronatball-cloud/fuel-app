@@ -219,3 +219,5 @@ html { scroll-behavior: auto; }
 .macro .lbl { width: 64px; font-weight: 700; color: var(--muted); font-size: 12px; }
 .macro .val { min-width: 54px; text-align: right; }
 .macro .budget.kcal i { background: linear-gradient(90deg, var(--sun), var(--coral)); }
+.budget.low i { background: linear-gradient(90deg, var(--sun), var(--warn)); }
+.macro .budget.kcal.low i { background: linear-gradient(90deg, var(--sun), var(--warn)); }

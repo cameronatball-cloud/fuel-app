@@ -1,7 +1,7 @@
 import * as P from './planner.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v16';
+const APP_VERSION = 'v17';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 
@@ -14,7 +14,7 @@ function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {}
 const ING = () => DATA.ingredients.concat(S.customIngredients);
 const RAW = () => DATA.recipes.concat(S.customRecipes);
 let SCALED = { f: null, list: null, n: 0 };
-const REC = () => { const f = S.settings.portion || 1; const raw = RAW(); if (SCALED.f !== f || SCALED.n !== raw.length) { SCALED = { f, n: raw.length, list: P.scaleRecipes(raw, f) }; META.clear(); } return SCALED.list; };
+const REC = () => { const raw = RAW(); if (SCALED.n !== raw.length) { SCALED = { f: 1, n: raw.length, list: raw }; META.clear(); } return SCALED.list; };
 const inLibrary = (id) => !S.library || S.library.includes(id);
 const ingById = (id) => ING().find((i) => i.id === id);
 // What actually gets bought for an ingredient id: the week's fruit pick, thighs instead of breast.
@@ -48,7 +48,7 @@ function setupWeeks() {
   S.thisSun = thisSun; S.nextSun = nextSun;
   // pantry used to be one global list; it now belongs to each week (a fresh week starts with nothing ticked)
   if (S.pantry) { const p = S.pantry; if (p.peppers_frozen !== undefined) { p.pepper = p.peppers_frozen; delete p.peppers_frozen; } S.weeks[thisSun].pantry = { ...(S.weeks[thisSun].pantry || {}), ...p }; delete S.pantry; }
-  S.tubs ||= {}; S.settings.avoid ||= []; S.settings.portion ||= 1; S.settings.weight ||= 85; S.settings.goal ||= 'build';
+  S.tubs ||= {}; S.settings.avoid ||= []; S.settings.portion = 1; S.settings.weight ||= 85; S.settings.goal ||= 'build'; S.settings.kcalTarget ||= P.kcalTargetFor(S.settings.weight, S.settings.goal);
   // Personal recipe library: existing users keep everything they had; new users start with the core set and add from Ideas.
   // Personal recipe library. Starts as the core set; everything else lives in "Find more meal ideas".
   if (!S.library) { S.library = RAW().filter((r) => r.core).map((r) => r.id); for (const wk of Object.values(S.weeks)) for (const id of Object.keys(wk.portions || {})) if (!S.library.includes(id)) S.library.push(id); }
@@ -170,7 +170,7 @@ function planTop(w) {
   const hasGrid = chosen.length || tubs.length || Object.keys(lockedCells(w)).length;
   return `<div class="card"><h3>${weekLabel(S.activeWeek)} <span class="muted small">from Sun ${fmtDate(S.activeWeek)}</span></h3>${summary}${tubHtml}
     <div class="stat-grid" style="margin-top:10px"><div class="stat"><b>${st.filled}<span>/${st.slots}</span></b><span>meal slots filled</span></div><div class="stat"><b>${st.distinct}</b><span>different meals</span></div><div class="stat"><b>${st.avg}g</b><span>avg protein/day</span></div></div>
-    <p class="small muted" style="margin-top:8px">About <b>${st.avgKcal} kcal</b> a day from meals and snacks, at ${S.settings.portion === 1 ? 'standard' : `${S.settings.portion}×`} portions. Change portion size in Pantry → Settings.</p>
+    <p class="small muted" style="margin-top:8px">About <b>${st.avgKcal.toLocaleString()} kcal</b> a day from meals and snacks, against a target of ${(S.settings.kcalTarget || 0).toLocaleString()}. ${st.avgKcal && st.avgKcal < (S.settings.kcalTarget || 0) * 0.9 ? 'Under: add a snack or a bigger dinner.' : ''} Targets live in Pantry → Settings.</p>
     <div class="bars" style="margin-top:26px">${bars}</div><div class="bars-labels">${P.DAYS.map((d) => `<div>${d}</div>`).join('')}</div>
     <p class="small muted">Target ${target}g a day, snacks included (${Math.round(snackExtra(w).protein)}g a day from snacks). Amber days are under.</p></div>
   ${hasGrid ? `<div class="card">${gridHtml}
@@ -416,23 +416,21 @@ function newIngredientForm() {
 }
 
 // ----- Pantry -----
-// Live "what this week would give me" at a given portion factor. Uses the active week's grid and snacks.
-function macroPreview(f) {
-  const w = W(); const ing = ING();
-  const recipes = P.scaleRecipes(RAW(), f);
-  const rec = Object.fromEntries(recipes.map((r) => [r.id, r]));
-  const active = w.days.filter(Boolean).length || 1;
-  let sp = 0, sk = 0;
-  for (const [id, n] of Object.entries(w.snacks || {})) { const r = rec[id]; if (r && n) { sp += P.proteinPerPortion(r, ing) * n; sk += P.kcalPerPortion(r, ing) * n; } }
-  const st = P.gridStats(w.grid, recipes, ing, { protein: sp / active, kcal: sk / active }, w.days);
-  const target = S.settings.proteinTarget || 1;
-  const pPct = Math.min(100, Math.round((st.avg / target) * 100));
-  const kPct = Math.min(100, Math.round((st.avgKcal / 3500) * 100));
-  const empty = !st.filled && !Object.keys(w.snacks || {}).length;
-  return `<div class="macro"><div class="row"><span class="grow">At <b>${f}×</b> this week averages</span></div>
-    <div class="row" style="margin-top:6px"><span class="lbl">Protein</span><div class="budget grow" style="margin:0"><i style="width:${pPct}%"></i></div><b class="val">${st.avg}g</b><span class="small muted">/ ${target}g</span></div>
-    <div class="row" style="margin-top:6px"><span class="lbl">Calories</span><div class="budget grow kcal" style="margin:0"><i style="width:${kPct}%"></i></div><b class="val">${st.avgKcal.toLocaleString()}</b><span class="small muted">kcal/day</span></div>
-    ${empty ? '<p class="small muted" style="margin:6px 0 0">Nothing picked this week yet, so these read zero. Pick meals on Plan and come back.</p>' : '<p class="small muted" style="margin:6px 0 0">Slide to see how portion size moves these. The shop list scales the same way.</p>'}</div>`;
+// This week's actual average (fixed recipes) shown against the targets being dragged.
+function weekAverages(w = W()) {
+  const st = P.gridStats(w.grid, REC(), ING(), snackExtra(w), w.days);
+  return { protein: st.avg, kcal: st.avgKcal, filled: st.filled };
+}
+function macroPreview(pTarget, kTarget) {
+  const w = W(); const a = weekAverages(w);
+  const pPct = Math.min(100, Math.round((a.protein / (pTarget || 1)) * 100));
+  const kPct = Math.min(100, Math.round((a.kcal / (kTarget || 1)) * 100));
+  const empty = !a.filled && !Object.keys(w.snacks || {}).length;
+  const gapP = Math.round(pTarget - a.protein), gapK = Math.round(kTarget - a.kcal);
+  return `<div class="macro"><div class="row"><span class="grow">${weekLabel(S.activeWeek)} averages, against these targets</span></div>
+    <div class="row" style="margin-top:6px"><span class="lbl">Protein</span><div class="budget grow ${pPct < 90 ? 'low' : ''}" style="margin:0"><i style="width:${pPct}%"></i></div><b class="val">${a.protein}g</b><span class="small muted">/ ${pTarget}g</span></div>
+    <div class="row" style="margin-top:6px"><span class="lbl">Calories</span><div class="budget grow kcal ${kPct < 90 ? 'low' : ''}" style="margin:0"><i style="width:${kPct}%"></i></div><b class="val">${a.kcal.toLocaleString()}</b><span class="small muted">/ ${(kTarget || 0).toLocaleString()}</span></div>
+    ${empty ? '<p class="small muted" style="margin:6px 0 0">Nothing picked this week yet, so the bars are empty. Pick meals on Plan and come back.</p>' : `<p class="small muted" style="margin:6px 0 0">${gapP > 0 ? `${gapP}g protein short of target` : `${-gapP}g over on protein`} · ${gapK > 0 ? `${gapK.toLocaleString()} kcal short` : `${(-gapK).toLocaleString()} kcal over`}. Meals don't change; slide to set what you're aiming for.</p>`}</div>`;
 }
 function renderPantry() {
   const groups = {};
@@ -448,10 +446,11 @@ function renderPantry() {
   <h2>Settings</h2><div class="card">
     <label class="field">Bodyweight (kg)<input type="number" data-setting="weight" value="${S.settings.weight}"></label>
     <label class="field">Goal<select data-setting-str="goal"><option value="build" ${S.settings.goal === 'build' ? 'selected' : ''}>Build muscle</option><option value="lean" ${S.settings.goal === 'lean' ? 'selected' : ''}>Stay lean and strong</option><option value="lose" ${S.settings.goal === 'lose' ? 'selected' : ''}>Lose fat, keep muscle</option><option value="eatwell" ${S.settings.goal === 'eatwell' ? 'selected' : ''}>Just eat well</option></select></label>
-    <label class="field">Protein target per day (g)<input type="number" data-setting="proteinTarget" value="${S.settings.proteinTarget}"></label>
-    <label class="field">Portion size: <b>${S.settings.portion}×</b> <span class="muted">(1× is the standard recipe; everything scales, including the shop list)</span><input class="range" type="range" min="0.6" max="1.4" step="0.05" data-setting="portion" value="${S.settings.portion}"></label>
-    <div id="macro-preview">${macroPreview(S.settings.portion)}</div>
-    <button class="btn ghost small" data-action="suggest-portion">Suggest from my weight and goal</button>
+    <h3 style="margin-top:14px">Daily targets</h3>
+    <label class="field">Protein target: <b data-val="proteinTarget">${S.settings.proteinTarget}g</b> a day<input class="range" type="range" min="80" max="260" step="5" data-setting="proteinTarget" value="${S.settings.proteinTarget}"></label>
+    <label class="field">Calorie target: <b data-val="kcalTarget">${(S.settings.kcalTarget || 0).toLocaleString()}</b> kcal a day<input class="range" type="range" min="1200" max="4500" step="50" data-setting="kcalTarget" value="${S.settings.kcalTarget || 2500}"></label>
+    <div id="macro-preview">${macroPreview(S.settings.proteinTarget, S.settings.kcalTarget)}</div>
+    <button class="btn ghost small" data-action="suggest-targets">Suggest from my weight and goal</button>
     <label class="field">Weekly food budget (£)<input type="number" data-setting="budget" value="${S.settings.budget}"></label>
     <div class="small muted" style="margin-top:8px">Things you don't eat (recipes with these are hidden)</div>
     <div class="chip-row">${Object.entries(AVOID).map(([k, v]) => `<button class="chip ${S.settings.avoid.includes(k) ? 'on' : ''}" data-action="avoid" data-id="${k}">${v.label}</button>`).join('')}</div>
@@ -485,19 +484,19 @@ function introStep(n) {
   INTRO.step = n;
   const el = document.getElementById('intro');
   const dots = `<div class="dots">${[1, 2, 3, 4, 5].map((k) => `<i class="${k <= n ? 'on' : ''}"></i>`).join('')}</div>`;
-  const goals = [['build', 'Build muscle', 'Rugby, lifting, bulking. Big portions, 2g protein per kilo.'], ['lean', 'Stay lean and strong', 'Training most days, not bulking.'], ['lose', 'Lose fat, keep muscle', 'Smaller portions, protein stays high so you stay full.'], ['eatwell', 'Just eat well', 'Healthy, cheap, sorted. No targets to chase.']];
+  const goals = [['build', 'Build muscle', 'Rugby, lifting, bulking. 2g protein per kilo, calories up.'], ['lean', 'Stay lean and strong', 'Training most days, not bulking.'], ['lose', 'Lose fat, keep muscle', 'Calories down, protein high so you stay full.'], ['eatwell', 'Just eat well', 'Healthy, cheap, sorted. No targets to chase.']];
   const wt = S.settings.weight || 85; const g = INTRO.goal || 'build';
   const budgets = [30, 40, 50, 60];
   const step = {
-    1: `<div class="logo">Fuel</div><h1>What's the goal?</h1><p>This sets your protein target and portion sizes. You can change it any time.</p>${goals.map(([k, t, d]) => `<button class="opt ${g === k ? 'on' : ''}" data-action="intro-goal" data-goal="${k}">${t}<small>${d}</small></button>`).join('')}`,
-    2: `<h1>How much do you weigh?</h1><p>Kilos, roughly. Portions and protein scale from this, so a 60kg and a 100kg person don't get the same plate.</p><input class="big" type="number" id="intro-weight" inputmode="numeric" value="${wt}" min="40" max="160"><div class="stat-row"><div><b id="iw-p">${P.proteinTargetFor(wt, g)}g</b><span>protein a day</span></div><div><b id="iw-f">${P.portionFactor(wt, g)}×</b><span>portion size</span></div></div><button class="go" data-action="intro-weight">Next</button><button class="back" data-action="intro-back">Back</button>`,
+    1: `<div class="logo">Fuel</div><h1>What's the goal?</h1><p>This sets your daily protein and calorie targets. You can change them any time.</p>${goals.map(([k, t, d]) => `<button class="opt ${g === k ? 'on' : ''}" data-action="intro-goal" data-goal="${k}">${t}<small>${d}</small></button>`).join('')}`,
+    2: `<h1>How much do you weigh?</h1><p>Kilos, roughly. Your daily protein and calorie targets come from this and your goal. Meals stay the same size; you hit the targets by what you pick.</p><input class="big" type="number" id="intro-weight" inputmode="numeric" value="${wt}" min="40" max="160"><div class="stat-row"><div><b id="iw-p">${P.proteinTargetFor(wt, g)}g</b><span>protein a day</span></div><div><b id="iw-f">${P.kcalTargetFor(wt, g).toLocaleString()}</b><span>kcal a day</span></div></div><button class="go" data-action="intro-weight">Next</button><button class="back" data-action="intro-back">Back</button>`,
     3: `<h1>Weekly food budget?</h1><p>The shop list always shows what's left against it.</p><div class="chips">${budgets.map((b) => `<button class="opt ${S.settings.budget === b ? 'on' : ''}" data-action="intro-budget" data-budget="${b}">£${b}</button>`).join('')}</div><p style="margin-bottom:6px">Or type your own</p><input class="big" type="number" id="intro-budget" inputmode="numeric" placeholder="£" min="10" max="300"><button class="go" data-action="intro-budget-custom">Next</button><button class="back" data-action="intro-back">Back</button>`,
     4: `<h1>Anything you don't eat?</h1><p>Recipes with these are hidden. Tap all that apply.</p><div class="chips">${Object.entries(AVOID).map(([k, v]) => `<button class="opt ${S.settings.avoid.includes(k) ? 'on' : ''}" data-action="intro-avoid" data-id="${k}">${v.label}</button>`).join('')}</div><button class="go" data-action="intro-next">Next</button><button class="back" data-action="intro-back">Back</button>`,
-    5: `<h1>You're set.</h1><p>Here's your setup. Snacks get picked on the Plan tab and count towards these numbers.</p><div class="stat-row"><div><b>${S.settings.proteinTarget}g</b><span>protein a day</span></div><div><b>${S.settings.portion}×</b><span>portions</span></div><div><b>£${S.settings.budget}</b><span>a week</span></div></div><p>Start by ticking meals. The week grid, the Sunday cook list and the cheapest shop fill themselves in.</p><button class="go" data-action="intro-done">Let's plan a week</button><button class="back" data-action="intro-back">Back</button>`,
+    5: `<h1>You're set.</h1><p>Here's your setup. Snacks get picked on the Plan tab and count towards these numbers.</p><div class="stat-row"><div><b>${S.settings.proteinTarget}g</b><span>protein a day</span></div><div><b>${(S.settings.kcalTarget || 0).toLocaleString()}</b><span>kcal a day</span></div><div><b>£${S.settings.budget}</b><span>a week</span></div></div><p>Start by ticking meals. The week grid, the Sunday cook list and the cheapest shop fill themselves in.</p><button class="go" data-action="intro-done">Let's plan a week</button><button class="back" data-action="intro-back">Back</button>`,
   }[n];
   el.innerHTML = `<div class="wrap">${dots}${step}</div>`; el.hidden = false;
   const wIn = document.getElementById('intro-weight');
-  if (wIn) wIn.addEventListener('input', () => { const v = +wIn.value || wt; document.getElementById('iw-p').textContent = P.proteinTargetFor(v, g) + 'g'; document.getElementById('iw-f').textContent = P.portionFactor(v, g) + '×'; });
+  if (wIn) wIn.addEventListener('input', () => { const v = +wIn.value || wt; document.getElementById('iw-p').textContent = P.proteinTargetFor(v, g) + 'g'; document.getElementById('iw-f').textContent = P.kcalTargetFor(v, g).toLocaleString(); });
 }
 function closeIntro() { const el = document.getElementById('intro'); el.hidden = true; el.innerHTML = ''; }
 document.getElementById('intro').addEventListener('click', onAction);
@@ -596,14 +595,14 @@ function onAction(e) {
   else if (a === 'avoid') { const i = S.settings.avoid.indexOf(id); if (i >= 0) S.settings.avoid.splice(i, 1); else S.settings.avoid.push(id); save(); render(); }
   else if (a === 'intro') openIntro();
   else if (a === 'intro-goal') { INTRO.goal = el.dataset.goal; S.settings.goal = INTRO.goal; save(); introStep(2); }
-  else if (a === 'intro-weight') { const v = +document.getElementById('intro-weight').value; if (!(v >= 30 && v <= 200)) { toast('Enter a weight between 30 and 200 kg'); return; } S.settings.weight = v; S.settings.proteinTarget = P.proteinTargetFor(v, INTRO.goal || S.settings.goal); S.settings.portion = P.portionFactor(v, INTRO.goal || S.settings.goal); META.clear(); save(); introStep(3); }
+  else if (a === 'intro-weight') { const v = +document.getElementById('intro-weight').value; if (!(v >= 30 && v <= 200)) { toast('Enter a weight between 30 and 200 kg'); return; } S.settings.weight = v; S.settings.proteinTarget = P.proteinTargetFor(v, INTRO.goal || S.settings.goal); S.settings.kcalTarget = P.kcalTargetFor(v, INTRO.goal || S.settings.goal); save(); introStep(3); }
   else if (a === 'intro-budget') { S.settings.budget = +el.dataset.budget; save(); introStep(4); }
   else if (a === 'intro-budget-custom') { const v = +document.getElementById('intro-budget').value; if (!(v >= 10 && v <= 300)) { toast('Type a budget between £10 and £300, or tap one above'); return; } S.settings.budget = v; save(); introStep(4); }
   else if (a === 'intro-avoid') { const i = S.settings.avoid.indexOf(id); if (i >= 0) S.settings.avoid.splice(i, 1); else S.settings.avoid.push(id); save(); el.classList.toggle('on'); }
   else if (a === 'intro-next') { introStep(INTRO.step + 1); }
   else if (a === 'intro-back') { introStep(Math.max(1, INTRO.step - 1)); }
   else if (a === 'intro-done') { S.settings.onboarded = true; save(); closeIntro(); S.tab = 'plan'; for (const wk of Object.values(S.weeks)) relayout(wk); render({ top: true }); }
-  else if (a === 'suggest-portion') { S.settings.portion = P.portionFactor(S.settings.weight, S.settings.goal); S.settings.proteinTarget = P.proteinTargetFor(S.settings.weight, S.settings.goal); META.clear(); save(); render(); toast(`Portions ${S.settings.portion}×, protein ${S.settings.proteinTarget}g`); }
+  else if (a === 'suggest-targets') { S.settings.proteinTarget = P.proteinTargetFor(S.settings.weight, S.settings.goal); S.settings.kcalTarget = P.kcalTargetFor(S.settings.weight, S.settings.goal); save(); render(); toast(`${S.settings.proteinTarget}g protein, ${S.settings.kcalTarget.toLocaleString()} kcal a day`); }
   else if (a === 'sinc' || a === 'sdec') { w.snacks[id] = Math.max(0, (w.snacks[id] || 0) + (a === 'sinc' ? 1 : -1)); if (!w.snacks[id]) delete w.snacks[id]; save(); refreshPlan(); }
   else if (a === 'ideas-toggle') { S.ideasOpen = !S.ideasOpen; save(); render(); }
   else if (a === 'idea-tag') { S.ideaTag = el.dataset.tag; save(); render(); }
@@ -682,10 +681,14 @@ function onChange(e) {
     if (!t.checked) { q?.nextElementSibling?.remove(); q?.remove(); }
   }
   else if (t.dataset.pantryQty !== undefined) { const v = parseFloat(t.value); w.pantry[t.dataset.pantryQty] = Number.isFinite(v) && v > 0 ? v : true; save(); }
-  else if (t.dataset.setting) { S.settings[t.dataset.setting] = +t.value || 0; save(); if (t.dataset.setting === 'portion') { META.clear(); for (const wk of Object.values(S.weeks)) relayout(wk); render(); } }
+  else if (t.dataset.setting) { S.settings[t.dataset.setting] = +t.value || 0; save(); if (t.dataset.setting === 'proteinTarget' || t.dataset.setting === 'kcalTarget') { const mp = document.getElementById('macro-preview'); if (mp) mp.innerHTML = macroPreview(S.settings.proteinTarget, S.settings.kcalTarget); } }
 }
 function onInput(e) {
-  if (e.target.dataset.setting === 'portion') { const f = +e.target.value; const b = e.target.closest('label').querySelector('b'); if (b) b.textContent = f + '×'; const mp = document.getElementById('macro-preview'); if (mp) mp.innerHTML = macroPreview(f); return; }
+  if (e.target.dataset.setting === 'proteinTarget' || e.target.dataset.setting === 'kcalTarget') {
+    const k = e.target.dataset.setting, v = +e.target.value; const b = e.target.closest('label').querySelector('b'); if (b) b.textContent = k === 'kcalTarget' ? v.toLocaleString() : v + 'g';
+    const p = k === 'proteinTarget' ? v : S.settings.proteinTarget, c = k === 'kcalTarget' ? v : S.settings.kcalTarget;
+    const mp = document.getElementById('macro-preview'); if (mp) mp.innerHTML = macroPreview(p, c); return;
+  }
   const t = e.target;
   if (t.dataset.search !== undefined) { S.search = t.value; refreshCard(renderRecipes); }
   else if (t.dataset.planSearch !== undefined) { S.planSearch = t.value; render(); const inp = document.querySelector('[data-plan-search]'); if (inp) { inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); } }

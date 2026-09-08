@@ -30,6 +30,12 @@ export function portionFactor(weightKg, goal) {
   if (goal === 'lose') f -= 0.1; if (goal === 'build') f += 0.1;
   return Math.round(Math.min(1.4, Math.max(0.6, f)) * 20) / 20;
 }
+// Rough daily calorie target for an active young adult: ~32 kcal/kg maintenance, shifted by goal.
+export function kcalTargetFor(weightKg, goal) {
+  const base = weightKg * 32;
+  const adj = goal === 'build' ? 300 : goal === 'lose' ? -400 : goal === 'eatwell' ? -100 : 0;
+  return Math.round((base + adj) / 50) * 50;
+}
 export function proteinTargetFor(weightKg, goal) {
   const perKg = goal === 'lose' ? 2.2 : goal === 'build' ? 2.0 : goal === 'lean' ? 1.9 : 1.4;
   return Math.round((weightKg * perKg) / 5) * 5;

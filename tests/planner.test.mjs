@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { kcalPerPortion, scaleRecipes, portionFactor, proteinTargetFor, freshCells, freeSlots, roomFor, gridCounts, costPerPortion, aggregateNeeds, netPantry, packsFor, basketAt, compareShops, cheapestSplit, autoLayout, gridStats, tubPlan, proteinPerPortion, runSheet } from '../planner.js';
+import { kcalTargetFor, kcalPerPortion, scaleRecipes, portionFactor, proteinTargetFor, freshCells, freeSlots, roomFor, gridCounts, costPerPortion, aggregateNeeds, netPantry, packsFor, basketAt, compareShops, cheapestSplit, autoLayout, gridStats, tubPlan, proteinPerPortion, runSheet } from '../planner.js';
 
 const ingredients = [
   { id: 'chicken', name: 'Chicken breast', unit: 'g', protein: 22.5, packs: [
@@ -188,3 +188,5 @@ test('kcal, scaling and targets', () => {
   assert.equal(s.perDay[0], 10 + 19 + 45);
   assert.equal(s.kcalPerDay[0], 100 + 210 + Math.round(175 * 1.06 + 75 * 3.5));
 });
+
+test('kcal target from weight and goal', () => { assert.equal(kcalTargetFor(85, 'build'), 3000); assert.equal(kcalTargetFor(68, 'lose'), 1800); });
