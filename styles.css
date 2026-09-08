@@ -212,3 +212,10 @@ html { scroll-behavior: auto; }
 #intro .logo { font-size: 15px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; opacity: .9; margin-bottom: 18px; }
 .range { width: 100%; accent-color: var(--accent); }
 .badge.snack { background: #fff1d6; color: #b45309; }
+
+.snackbar { margin-top: 10px; background: #fff7e0; border-radius: 12px; padding: 10px 12px; font-size: 14px; }
+.snackbar.empty { color: var(--muted); }
+.macro { background: var(--panel-2); border-radius: 12px; padding: 12px; margin: 6px 0 12px; font-size: 14px; }
+.macro .lbl { width: 64px; font-weight: 700; color: var(--muted); font-size: 12px; }
+.macro .val { min-width: 54px; text-align: right; }
+.macro .budget.kcal i { background: linear-gradient(90deg, var(--sun), var(--coral)); }

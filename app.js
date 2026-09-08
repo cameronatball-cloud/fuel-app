@@ -1,7 +1,7 @@
 import * as P from './planner.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v15';
+const APP_VERSION = 'v16';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 
@@ -50,7 +50,8 @@ function setupWeeks() {
   if (S.pantry) { const p = S.pantry; if (p.peppers_frozen !== undefined) { p.pepper = p.peppers_frozen; delete p.peppers_frozen; } S.weeks[thisSun].pantry = { ...(S.weeks[thisSun].pantry || {}), ...p }; delete S.pantry; }
   S.tubs ||= {}; S.settings.avoid ||= []; S.settings.portion ||= 1; S.settings.weight ||= 85; S.settings.goal ||= 'build';
   // Personal recipe library: existing users keep everything they had; new users start with the core set and add from Ideas.
-  if (!S.library) S.library = (S.settings.onboarded || Object.values(S.weeks).some((wk) => Object.keys(wk.portions || {}).length)) ? RAW().map((r) => r.id) : RAW().filter((r) => r.core).map((r) => r.id);
+  // Personal recipe library. Starts as the core set; everything else lives in "Find more meal ideas".
+  if (!S.library) { S.library = RAW().filter((r) => r.core).map((r) => r.id); for (const wk of Object.values(S.weeks)) for (const id of Object.keys(wk.portions || {})) if (!S.library.includes(id)) S.library.push(id); }
   for (const wk of Object.values(S.weeks)) wk.snacks ||= {};
   for (const w of Object.values(S.weeks)) { w.days ||= [true, true, true, true, true, true, true]; w.choices ||= {}; w.pantry ||= {}; w.fresh ||= {}; if (!w.grid) relayout(w); }
   if (!S.settings.onboarded && Object.values(S.weeks).some((w) => Object.keys(w.portions).length)) S.settings.onboarded = true;
@@ -105,7 +106,7 @@ function render(opts = {}) {
 
 // ----- Plan -----
 const AVOID = {
-  fish: { label: 'Fish & tuna', ids: ['tuna'] }, pork: { label: 'Pork', ids: ['pork_mince_5', 'nduja'] }, beef: { label: 'Beef', ids: ['beef_mince_5'] },
+  fish: { label: 'Fish & tuna', ids: ['tuna', 'salmon', 'prawns'] }, pork: { label: 'Pork', ids: ['pork_mince_5', 'nduja'] }, beef: { label: 'Beef', ids: ['beef_mince_5'] },
   thigh: { label: 'Chicken thighs', ids: ['chicken_thigh'] }, eggs: { label: 'Eggs', ids: ['egg'] }, dairy: { label: 'Dairy', ids: ['cheddar', 'skyr', 'cottage_cheese', 'milk', 'butter', 'parmesan'] },
   spicy: { label: 'Spicy food', ids: ['sriracha', 'chilli_powder', 'curry_paste'] }, nuts: { label: 'Peanuts', ids: ['peanut_butter'] }, coconut: { label: 'Coconut', ids: ['coconut_milk'] },
 };
@@ -130,6 +131,14 @@ function snackExtra(w) {
 }
 // Everything to buy/cook this week: grid portions plus snack counts.
 function weekCounts(w, opts) { const c = P.gridCounts(w.grid, opts); for (const [id, n] of Object.entries(w.snacks || {})) if (n > 0 && recById(id)) c[id] = (c[id] || 0) + n; return c; }
+function snackBar(w) {
+  const items = Object.entries(w.snacks || {}).filter(([id, n]) => n > 0 && recById(id));
+  const active = w.days.filter(Boolean).length || 1;
+  if (!items.length) return `<div class="snackbar empty"><span>Snacks this week: none yet.</span> <span class="muted">Pick some under the meal list and they'll show here.</span></div>`;
+  const total = items.reduce((a, [, n]) => a + n, 0);
+  const ex = snackExtra(w);
+  return `<div class="snackbar"><div class="row"><b class="grow">Snacks this week</b><span class="small muted">${total} total · about ${Math.round((total / active) * 10) / 10} a day · +${Math.round(ex.protein)}g protein</span></div><div class="chip-row" style="margin:6px 0 0">${items.map(([id, n]) => `<span class="chip meal" style="${cellStyle(id)}">${esc(shortName(recById(id)))} × ${n}</span>`).join('')}</div></div>`;
+}
 function planTop(w) {
   const recipes = REC(), ing = ING();
   const st = P.gridStats(w.grid, recipes, ing, snackExtra(w), w.days);
@@ -166,6 +175,7 @@ function planTop(w) {
     <p class="small muted">Target ${target}g a day, snacks included (${Math.round(snackExtra(w).protein)}g a day from snacks). Amber days are under.</p></div>
   ${hasGrid ? `<div class="card">${gridHtml}
     <p class="small muted" style="margin-top:10px">Press and hold a meal to pick it up, then tap where it goes (two meals swap). Tap a cell to change it, mark it "eating out", make it fresh that day, or use a freezer tub. ❄ from the freezer that day, thaw the night before. ⚠ past its fridge life and can't be frozen.</p>
+    ${snackBar(w)}
     <p class="small muted" style="margin:8px 0 2px">Cook day</p>
     <div class="day-pick">${P.DAYS.map((d, i) => `<button data-action="cookday" data-day="${i}" class="${w.cookDay === i ? 'on' : ''}">${d}</button>`).join('')}</div>
     <div class="row" style="margin-top:8px"><button class="btn ghost small" data-action="relayout">Re-lay out</button><button class="btn ghost small" data-action="clear-week">Clear week</button></div></div>` : ''}
@@ -406,6 +416,24 @@ function newIngredientForm() {
 }
 
 // ----- Pantry -----
+// Live "what this week would give me" at a given portion factor. Uses the active week's grid and snacks.
+function macroPreview(f) {
+  const w = W(); const ing = ING();
+  const recipes = P.scaleRecipes(RAW(), f);
+  const rec = Object.fromEntries(recipes.map((r) => [r.id, r]));
+  const active = w.days.filter(Boolean).length || 1;
+  let sp = 0, sk = 0;
+  for (const [id, n] of Object.entries(w.snacks || {})) { const r = rec[id]; if (r && n) { sp += P.proteinPerPortion(r, ing) * n; sk += P.kcalPerPortion(r, ing) * n; } }
+  const st = P.gridStats(w.grid, recipes, ing, { protein: sp / active, kcal: sk / active }, w.days);
+  const target = S.settings.proteinTarget || 1;
+  const pPct = Math.min(100, Math.round((st.avg / target) * 100));
+  const kPct = Math.min(100, Math.round((st.avgKcal / 3500) * 100));
+  const empty = !st.filled && !Object.keys(w.snacks || {}).length;
+  return `<div class="macro"><div class="row"><span class="grow">At <b>${f}×</b> this week averages</span></div>
+    <div class="row" style="margin-top:6px"><span class="lbl">Protein</span><div class="budget grow" style="margin:0"><i style="width:${pPct}%"></i></div><b class="val">${st.avg}g</b><span class="small muted">/ ${target}g</span></div>
+    <div class="row" style="margin-top:6px"><span class="lbl">Calories</span><div class="budget grow kcal" style="margin:0"><i style="width:${kPct}%"></i></div><b class="val">${st.avgKcal.toLocaleString()}</b><span class="small muted">kcal/day</span></div>
+    ${empty ? '<p class="small muted" style="margin:6px 0 0">Nothing picked this week yet, so these read zero. Pick meals on Plan and come back.</p>' : '<p class="small muted" style="margin:6px 0 0">Slide to see how portion size moves these. The shop list scales the same way.</p>'}</div>`;
+}
 function renderPantry() {
   const groups = {};
   for (const it of ING()) if (!it.hidden) (groups[it.category] ||= []).push(it);
@@ -422,6 +450,7 @@ function renderPantry() {
     <label class="field">Goal<select data-setting-str="goal"><option value="build" ${S.settings.goal === 'build' ? 'selected' : ''}>Build muscle</option><option value="lean" ${S.settings.goal === 'lean' ? 'selected' : ''}>Stay lean and strong</option><option value="lose" ${S.settings.goal === 'lose' ? 'selected' : ''}>Lose fat, keep muscle</option><option value="eatwell" ${S.settings.goal === 'eatwell' ? 'selected' : ''}>Just eat well</option></select></label>
     <label class="field">Protein target per day (g)<input type="number" data-setting="proteinTarget" value="${S.settings.proteinTarget}"></label>
     <label class="field">Portion size: <b>${S.settings.portion}×</b> <span class="muted">(1× is the standard recipe; everything scales, including the shop list)</span><input class="range" type="range" min="0.6" max="1.4" step="0.05" data-setting="portion" value="${S.settings.portion}"></label>
+    <div id="macro-preview">${macroPreview(S.settings.portion)}</div>
     <button class="btn ghost small" data-action="suggest-portion">Suggest from my weight and goal</button>
     <label class="field">Weekly food budget (£)<input type="number" data-setting="budget" value="${S.settings.budget}"></label>
     <div class="small muted" style="margin-top:8px">Things you don't eat (recipes with these are hidden)</div>
@@ -656,6 +685,7 @@ function onChange(e) {
   else if (t.dataset.setting) { S.settings[t.dataset.setting] = +t.value || 0; save(); if (t.dataset.setting === 'portion') { META.clear(); for (const wk of Object.values(S.weeks)) relayout(wk); render(); } }
 }
 function onInput(e) {
+  if (e.target.dataset.setting === 'portion') { const f = +e.target.value; const b = e.target.closest('label').querySelector('b'); if (b) b.textContent = f + '×'; const mp = document.getElementById('macro-preview'); if (mp) mp.innerHTML = macroPreview(f); return; }
   const t = e.target;
   if (t.dataset.search !== undefined) { S.search = t.value; refreshCard(renderRecipes); }
   else if (t.dataset.planSearch !== undefined) { S.planSearch = t.value; render(); const inp = document.querySelector('[data-plan-search]'); if (inp) { inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); } }

@@ -2847,6 +2847,481 @@
     }
    ],
    "kcal": 340
+  },
+  {
+   "id": "frozen_peas",
+   "name": "Frozen garden peas",
+   "unit": "g",
+   "protein": 5.5,
+   "kcal": 80,
+   "category": "veg",
+   "store": "freezer",
+   "packs": [
+    {
+     "shop": "aldi",
+     "name": "Four Seasons Garden Peas 900g",
+     "size": 900,
+     "price": 1.09,
+     "checked": "2026-09-08"
+    },
+    {
+     "shop": "tesco",
+     "name": "Grower's Harvest Garden Peas 900g",
+     "size": 900,
+     "price": 1.15,
+     "checked": "2026-09-08"
+    },
+    {
+     "shop": "asda",
+     "name": "ASDA Garden Peas 1kg",
+     "size": 1000,
+     "price": 1.64,
+     "checked": "2026-09-08"
+    },
+    {
+     "shop": "sainsburys",
+     "name": "Sainsbury's Garden Peas 910g",
+     "size": 910,
+     "price": 1.55,
+     "checked": "2026-09-08"
+    }
+   ]
+  },
+  {
+   "id": "sweetcorn",
+   "name": "Sweetcorn (tin, drained weight)",
+   "unit": "g",
+   "protein": 2.5,
+   "kcal": 90,
+   "category": "tin",
+   "store": "cupboard",
+   "packs": [
+    {
+     "shop": "aldi",
+     "name": "Four Seasons Supersweet Sweetcorn in Water 285g (~200g drained)",
+     "size": 200,
+     "price": 0.55,
+     "checked": "2026-09-08"
+    },
+    {
+     "shop": "tesco",
+     "name": "Tesco Naturally Sweet Sweetcorn 325g (~260g drained)",
+     "size": 260,
+     "price": 0.53,
+     "checked": "2026-09-08"
+    },
+    {
+     "shop": "asda",
+     "name": "ASDA Sweetcorn in Water 326g (~260g drained)",
+     "size": 260,
+     "price": 0.53,
+     "checked": "2026-09-08"
+    },
+    {
+     "shop": "sainsburys",
+     "name": "Sainsbury's Naturally Sweet Sweetcorn in Water 325g (260g drained)",
+     "size": 260,
+     "price": 0.5,
+     "checked": "2026-09-08"
+    }
+   ]
+  },
+  {
+   "id": "chickpeas",
+   "name": "Chickpeas (tin, drained weight)",
+   "unit": "g",
+   "protein": 7,
+   "kcal": 120,
+   "category": "tin",
+   "store": "cupboard",
+   "packs": [
+    {
+     "shop": "aldi",
+     "name": "Four Seasons Chickpeas 400g (270g drained)",
+     "size": 270,
+     "price": 0.41,
+     "checked": "2026-09-08"
+    },
+    {
+     "shop": "tesco",
+     "name": "Tesco Chickpeas in Water 400g (240g drained)",
+     "size": 240,
+     "price": 0.41,
+     "checked": "2026-09-08"
+    },
+    {
+     "shop": "asda",
+     "name": "ASDA Chickpeas in Water 400g (240g drained)",
+     "size": 240,
+     "price": 0.41,
+     "checked": "2026-09-08"
+    },
+    {
+     "shop": "sainsburys",
+     "name": "Sainsbury's Chickpeas in Water 400g (240g drained)",
+     "size": 240,
+     "price": 0.41,
+     "checked": "2026-09-08"
+    }
+   ]
+  },
+  {
+   "id": "black_beans",
+   "name": "Black beans (tin, drained weight)",
+   "unit": "g",
+   "protein": 8,
+   "kcal": 110,
+   "category": "tin",
+   "store": "cupboard",
+   "packs": [
+    {
+     "shop": "aldi",
+     "name": "Four Seasons Tinned Black Beans 400g (~240g drained)",
+     "size": 240,
+     "price": 0.45,
+     "checked": "2026-09-08"
+    },
+    {
+     "shop": "tesco",
+     "name": "Tesco Black Beans 400g (235g drained)",
+     "size": 235,
+     "price": 0.46,
+     "checked": "2026-09-08"
+    },
+    {
+     "shop": "asda",
+     "name": "ASDA Black Beans in Water 400g (235g drained)",
+     "size": 235,
+     "price": 0.46,
+     "checked": "2026-09-08"
+    },
+    {
+     "shop": "sainsburys",
+     "name": "Sainsbury's Black Beans in Water 400g (235g drained)",
+     "size": 235,
+     "price": 0.45,
+     "checked": "2026-09-08"
+    }
+   ]
+  },
+  {
+   "id": "spinach",
+   "name": "Spinach (frozen)",
+   "unit": "g",
+   "protein": 3,
+   "kcal": 25,
+   "category": "veg",
+   "store": "freezer",
+   "packs": [
+    {
+     "shop": "aldi",
+     "name": "Nature's Pick Baby Spinach 240g (fresh; no frozen spinach listed)",
+     "size": 240,
+     "price": 1.09,
+     "checked": "2026-09-08"
+    },
+    {
+     "shop": "tesco",
+     "name": "Tesco Leaf Spinach 900g (frozen)",
+     "size": 900,
+     "price": 1.6,
+     "checked": "2026-09-08"
+    },
+    {
+     "shop": "asda",
+     "name": "ASDA Chopped Spinach 900g (frozen)",
+     "size": 900,
+     "price": 1.65,
+     "checked": "2026-09-08"
+    },
+    {
+     "shop": "sainsburys",
+     "name": "Sainsbury's Chopped Spinach 900g (frozen)",
+     "size": 900,
+     "price": 1.6,
+     "checked": "2026-09-08"
+    }
+   ]
+  },
+  {
+   "id": "mushrooms",
+   "name": "Mushrooms",
+   "unit": "g",
+   "protein": 2,
+   "kcal": 20,
+   "category": "veg",
+   "store": "fridge",
+   "packs": [
+    {
+     "shop": "aldi",
+     "name": "Ready, Set…Cook! Sliced Mushrooms 500g",
+     "size": 500,
+     "price": 0.99,
+     "checked": "2026-09-08"
+    },
+    {
+     "shop": "tesco",
+     "name": "Tesco Frozen Sliced Mushrooms 500g",
+     "size": 500,
+     "price": 0.99,
+     "checked": "2026-09-08"
+    },
+    {
+     "shop": "tesco",
+     "name": "Tesco Sliced Mushrooms 250g",
+     "size": 250,
+     "price": 1.35,
+     "checked": "2026-09-08"
+    },
+    {
+     "shop": "asda",
+     "name": "ASDA Sliced Mushrooms 600g",
+     "size": 600,
+     "price": 1.5,
+     "checked": "2026-09-08"
+    },
+    {
+     "shop": "sainsburys",
+     "name": "Sainsbury's Sliced Mushrooms 500g (frozen)",
+     "size": 500,
+     "price": 1.2,
+     "checked": "2026-09-08"
+    }
+   ]
+  },
+  {
+   "id": "cherry_tomatoes",
+   "name": "Cherry tomatoes",
+   "unit": "g",
+   "protein": 1,
+   "kcal": 20,
+   "category": "veg",
+   "store": "fridge",
+   "packs": [
+    {
+     "shop": "aldi",
+     "name": "Everyday Essentials Cherry Tomatoes 250g",
+     "size": 250,
+     "price": 0.62,
+     "checked": "2026-09-08"
+    },
+    {
+     "shop": "tesco",
+     "name": "Tesco Baby Plum Tomatoes 300g",
+     "size": 300,
+     "price": 0.95,
+     "checked": "2026-09-08"
+    },
+    {
+     "shop": "asda",
+     "name": "ASDA Crunchy & Juicy Cherry Tomatoes 300g",
+     "size": 300,
+     "price": 0.97,
+     "checked": "2026-09-08"
+    },
+    {
+     "shop": "sainsburys",
+     "name": "Sainsbury's Cherry Tomatoes 330g",
+     "size": 330,
+     "price": 0.89,
+     "checked": "2026-09-08"
+    }
+   ]
+  },
+  {
+   "id": "pitta",
+   "name": "Wholemeal pitta",
+   "unit": "each",
+   "protein": 5,
+   "kcal": 150,
+   "category": "carb",
+   "store": "cupboard",
+   "packs": [
+    {
+     "shop": "aldi",
+     "name": "Village Bakery Wholemeal Pittas ×6",
+     "size": 6,
+     "price": 0.5,
+     "checked": "2026-09-08"
+    },
+    {
+     "shop": "tesco",
+     "name": "Tesco Wholemeal Pitta Bread ×6",
+     "size": 6,
+     "price": 0.5,
+     "checked": "2026-09-08"
+    },
+    {
+     "shop": "asda",
+     "name": "The Bakery at ASDA 6 Wholemeal Pittas",
+     "size": 6,
+     "price": 0.5,
+     "checked": "2026-09-08"
+    },
+    {
+     "shop": "sainsburys",
+     "name": "Sainsbury's Wholemeal Pittas ×6",
+     "size": 6,
+     "price": 0.5,
+     "checked": "2026-09-08"
+    }
+   ]
+  },
+  {
+   "id": "carrots",
+   "name": "Carrots",
+   "unit": "g",
+   "protein": 0.6,
+   "kcal": 35,
+   "category": "veg",
+   "store": "fridge",
+   "packs": [
+    {
+     "shop": "aldi",
+     "name": "Nature's Pick Carrots 1kg",
+     "size": 1000,
+     "price": 0.69,
+     "checked": "2026-09-08"
+    },
+    {
+     "shop": "tesco",
+     "name": "Tesco Carrots 1kg",
+     "size": 1000,
+     "price": 0.69,
+     "checked": "2026-09-08"
+    },
+    {
+     "shop": "asda",
+     "name": "ASDA Crunchy & Sweet Carrots 1kg",
+     "size": 1000,
+     "price": 0.69,
+     "checked": "2026-09-08"
+    },
+    {
+     "shop": "sainsburys",
+     "name": "Sainsbury's Carrots 1kg",
+     "size": 1000,
+     "price": 0.69,
+     "checked": "2026-09-08"
+    }
+   ]
+  },
+  {
+   "id": "turkey_mince",
+   "name": "Turkey mince 7%",
+   "unit": "g",
+   "protein": 21,
+   "kcal": 130,
+   "category": "protein",
+   "store": "fridge",
+   "packs": [
+    {
+     "shop": "aldi",
+     "name": "Ashfields British Turkey Mince 7% Fat 500g",
+     "size": 500,
+     "price": 2.99,
+     "checked": "2026-09-08"
+    },
+    {
+     "shop": "tesco",
+     "name": "Tesco Turkey Thigh Mince 7% Fat 500g",
+     "size": 500,
+     "price": 4.25,
+     "checked": "2026-09-08"
+    },
+    {
+     "shop": "asda",
+     "name": "ASDA Lean Turkey Mince 500g",
+     "size": 500,
+     "price": 4.17,
+     "checked": "2026-09-08"
+    },
+    {
+     "shop": "sainsburys",
+     "name": "Sainsbury's 7% Fat British Turkey Mince 500g",
+     "size": 500,
+     "price": 4.25,
+     "checked": "2026-09-08"
+    }
+   ]
+  },
+  {
+   "id": "salmon",
+   "name": "Salmon fillets (frozen)",
+   "unit": "g",
+   "protein": 20,
+   "kcal": 200,
+   "category": "protein",
+   "store": "freezer",
+   "packs": [
+    {
+     "shop": "aldi",
+     "name": "The Fishmonger Boneless Salmon Fillets 4 Pack 480g",
+     "size": 480,
+     "price": 6.85,
+     "checked": "2026-09-08"
+    },
+    {
+     "shop": "tesco",
+     "name": "Tesco Wild Salmon Fillets 500g (frozen)",
+     "size": 500,
+     "price": 6.5,
+     "checked": "2026-09-08"
+    },
+    {
+     "shop": "asda",
+     "name": "ASDA Skin-On Boneless Wild Salmon Fillets 330g (frozen)",
+     "size": 330,
+     "price": 4.5,
+     "checked": "2026-09-08"
+    },
+    {
+     "shop": "sainsburys",
+     "name": "Sainsbury's Salmon Fillets 360g (frozen)",
+     "size": 360,
+     "price": 6.0,
+     "checked": "2026-09-08"
+    }
+   ]
+  },
+  {
+   "id": "prawns",
+   "name": "King prawns (frozen)",
+   "unit": "g",
+   "protein": 18,
+   "kcal": 75,
+   "category": "protein",
+   "store": "freezer",
+   "packs": [
+    {
+     "shop": "aldi",
+     "name": "The Fishmonger Cooked & Peeled Jumbo King Prawns 170g",
+     "size": 170,
+     "price": 2.49,
+     "checked": "2026-09-08"
+    },
+    {
+     "shop": "tesco",
+     "name": "Tesco Cooked King Prawns 170g",
+     "size": 170,
+     "price": 2.49,
+     "checked": "2026-09-08"
+    },
+    {
+     "shop": "asda",
+     "name": "ASDA King Prawns 200g",
+     "size": 200,
+     "price": 4.0,
+     "checked": "2026-09-08"
+    },
+    {
+     "shop": "sainsburys",
+     "name": "Sainsbury's Frozen Large Raw Peeled King Prawns 180g",
+     "size": 180,
+     "price": 2.64,
+     "checked": "2026-09-08"
+    }
+   ]
   }
  ]
 }
