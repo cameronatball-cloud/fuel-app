@@ -1,7 +1,7 @@
 import * as P from './planner.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v17';
+const APP_VERSION = 'v18';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 
@@ -14,7 +14,7 @@ function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {}
 const ING = () => DATA.ingredients.concat(S.customIngredients);
 const RAW = () => DATA.recipes.concat(S.customRecipes);
 let SCALED = { f: null, list: null, n: 0 };
-const REC = () => { const raw = RAW(); if (SCALED.n !== raw.length) { SCALED = { f: 1, n: raw.length, list: raw }; META.clear(); } return SCALED.list; };
+const REC = () => { const f = S.settings.portion || 1; const raw = RAW(); if (SCALED.f !== f || SCALED.n !== raw.length) { SCALED = { f, n: raw.length, list: P.scaleRecipes(raw, f) }; META.clear(); } return SCALED.list; };
 const inLibrary = (id) => !S.library || S.library.includes(id);
 const ingById = (id) => ING().find((i) => i.id === id);
 // What actually gets bought for an ingredient id: the week's fruit pick, thighs instead of breast.
@@ -48,7 +48,7 @@ function setupWeeks() {
   S.thisSun = thisSun; S.nextSun = nextSun;
   // pantry used to be one global list; it now belongs to each week (a fresh week starts with nothing ticked)
   if (S.pantry) { const p = S.pantry; if (p.peppers_frozen !== undefined) { p.pepper = p.peppers_frozen; delete p.peppers_frozen; } S.weeks[thisSun].pantry = { ...(S.weeks[thisSun].pantry || {}), ...p }; delete S.pantry; }
-  S.tubs ||= {}; S.settings.avoid ||= []; S.settings.portion = 1; S.settings.weight ||= 85; S.settings.goal ||= 'build'; S.settings.kcalTarget ||= P.kcalTargetFor(S.settings.weight, S.settings.goal);
+  S.tubs ||= {}; S.settings.avoid ||= []; S.settings.portion ||= 1; S.settings.weight ||= 85; S.settings.goal ||= 'build'; S.settings.kcalTarget ||= P.kcalTargetFor(S.settings.weight, S.settings.goal);
   // Personal recipe library: existing users keep everything they had; new users start with the core set and add from Ideas.
   // Personal recipe library. Starts as the core set; everything else lives in "Find more meal ideas".
   if (!S.library) { S.library = RAW().filter((r) => r.core).map((r) => r.id); for (const wk of Object.values(S.weeks)) for (const id of Object.keys(wk.portions || {})) if (!S.library.includes(id)) S.library.push(id); }
@@ -170,7 +170,7 @@ function planTop(w) {
   const hasGrid = chosen.length || tubs.length || Object.keys(lockedCells(w)).length;
   return `<div class="card"><h3>${weekLabel(S.activeWeek)} <span class="muted small">from Sun ${fmtDate(S.activeWeek)}</span></h3>${summary}${tubHtml}
     <div class="stat-grid" style="margin-top:10px"><div class="stat"><b>${st.filled}<span>/${st.slots}</span></b><span>meal slots filled</span></div><div class="stat"><b>${st.distinct}</b><span>different meals</span></div><div class="stat"><b>${st.avg}g</b><span>avg protein/day</span></div></div>
-    <p class="small muted" style="margin-top:8px">About <b>${st.avgKcal.toLocaleString()} kcal</b> a day from meals and snacks, against a target of ${(S.settings.kcalTarget || 0).toLocaleString()}. ${st.avgKcal && st.avgKcal < (S.settings.kcalTarget || 0) * 0.9 ? 'Under: add a snack or a bigger dinner.' : ''} Targets live in Pantry → Settings.</p>
+    <p class="small muted" style="margin-top:8px">About <b>${st.avgKcal.toLocaleString()} kcal</b> a day from meals and snacks, against a target of ${(S.settings.kcalTarget || 0).toLocaleString()}${S.settings.portion !== 1 ? `, at ${S.settings.portion}× portions` : ''}. ${st.avgKcal && st.avgKcal < (S.settings.kcalTarget || 0) * 0.9 ? 'Under: add a snack or a bigger dinner.' : ''} Targets live in Pantry → Settings.</p>
     <div class="bars" style="margin-top:26px">${bars}</div><div class="bars-labels">${P.DAYS.map((d) => `<div>${d}</div>`).join('')}</div>
     <p class="small muted">Target ${target}g a day, snacks included (${Math.round(snackExtra(w).protein)}g a day from snacks). Amber days are under.</p></div>
   ${hasGrid ? `<div class="card">${gridHtml}
@@ -268,15 +268,19 @@ function renderCook() {
 }
 
 // ----- Shop -----
-function renderShop() {
-  const w = W(); const ing = ING(), recipes = REC();
+// What the week needs to buy, after the pantry: shared by the Shop tab and the settings preview.
+function shopNeeds(w, recipes) {
   const counts = weekCounts(w);
   const resolve = resolveFor(w);
   const rawNeeds = P.aggregateNeeds(counts, recipes);
   const needsAll = P.aggregateNeeds(counts, recipes, resolve);
   // pantry keys may be the generic id (e.g. frozen_fruit) or the resolved one
   const pantryFor = {}; for (const id of Object.keys(needsAll)) { const generic = Object.keys(rawNeeds).find((g) => resolve(g) === id); pantryFor[id] = w.pantry[id] !== undefined ? w.pantry[id] : (generic ? w.pantry[generic] : undefined); }
-  const needs = P.netPantry(needsAll, pantryFor);
+  return { counts, resolve, rawNeeds, needsAll, pantryFor, needs: P.netPantry(needsAll, pantryFor) };
+}
+function renderShop() {
+  const w = W(); const ing = ING(), recipes = REC();
+  const { counts, resolve, rawNeeds, needsAll, pantryFor, needs } = shopNeeds(w, recipes);
   const usedBy = {};
   for (const [rid, n] of Object.entries(counts)) { const r = recById(rid); if (!r) continue; for (const x of r.ingredients) (usedBy[resolve(x.id)] ||= []).push(`${r.short || r.name} ×${n}`); }
   const choiceHtml = Object.keys(rawNeeds).map(ingById).filter((it) => it?.choices?.length).map((it) => `<label class="field">${esc(it.name)}<select data-choice="${it.id}">${it.choices.map((c) => `<option value="${c}" ${resolve(it.id) === c ? 'selected' : ''}>${esc(ingById(c)?.name || c)}</option>`).join('')}</select></label>`).join('');
@@ -416,21 +420,27 @@ function newIngredientForm() {
 }
 
 // ----- Pantry -----
-// This week's actual average (fixed recipes) shown against the targets being dragged.
-function weekAverages(w = W()) {
-  const st = P.gridStats(w.grid, REC(), ING(), snackExtra(w), w.days);
-  return { protein: st.avg, kcal: st.avgKcal, filled: st.filled };
-}
-function macroPreview(pTarget, kTarget) {
-  const w = W(); const a = weekAverages(w);
-  const pPct = Math.min(100, Math.round((a.protein / (pTarget || 1)) * 100));
-  const kPct = Math.min(100, Math.round((a.kcal / (kTarget || 1)) * 100));
-  const empty = !a.filled && !Object.keys(w.snacks || {}).length;
-  const gapP = Math.round(pTarget - a.protein), gapK = Math.round(kTarget - a.kcal);
-  return `<div class="macro"><div class="row"><span class="grow">${weekLabel(S.activeWeek)} averages, against these targets</span></div>
-    <div class="row" style="margin-top:6px"><span class="lbl">Protein</span><div class="budget grow ${pPct < 90 ? 'low' : ''}" style="margin:0"><i style="width:${pPct}%"></i></div><b class="val">${a.protein}g</b><span class="small muted">/ ${pTarget}g</span></div>
-    <div class="row" style="margin-top:6px"><span class="lbl">Calories</span><div class="budget grow kcal ${kPct < 90 ? 'low' : ''}" style="margin:0"><i style="width:${kPct}%"></i></div><b class="val">${a.kcal.toLocaleString()}</b><span class="small muted">/ ${(kTarget || 0).toLocaleString()}</span></div>
-    ${empty ? '<p class="small muted" style="margin:6px 0 0">Nothing picked this week yet, so the bars are empty. Pick meals on Plan and come back.</p>' : `<p class="small muted" style="margin:6px 0 0">${gapP > 0 ? `${gapP}g protein short of target` : `${-gapP}g over on protein`} · ${gapK > 0 ? `${gapK.toLocaleString()} kcal short` : `${(-gapK).toLocaleString()} kcal over`}. Meals don't change; slide to set what you're aiming for.</p>`}</div>`;
+// Live preview for Settings: this week's averages and shop cost at a given portion factor, against the targets.
+function macroPreview(f, pTarget, kTarget) {
+  const w = W(); const ing = ING();
+  const recipes = f === S.settings.portion ? REC() : P.scaleRecipes(RAW(), f);
+  const rec = Object.fromEntries(recipes.map((r) => [r.id, r]));
+  const active = w.days.filter(Boolean).length || 1;
+  let sp = 0, sk = 0;
+  for (const [id, n] of Object.entries(w.snacks || {})) { const r = rec[id]; if (r && n) { sp += P.proteinPerPortion(r, ing) * n; sk += P.kcalPerPortion(r, ing) * n; } }
+  const st = P.gridStats(w.grid, recipes, ing, { protein: sp / active, kcal: sk / active }, w.days);
+  const empty = !st.filled && !Object.keys(w.snacks || {}).length;
+  let shop = null;
+  if (!empty) { const { needs } = shopNeeds(w, recipes); const ranked = P.compareShops(needs, ing).filter((b) => !b.missing.some((m) => !(ingById(m.id)?.unavailable || []).includes(b.shop))); shop = ranked.sort((a, b) => a.total - b.total)[0] || null; }
+  const pPct = Math.min(100, Math.round((st.avg / (pTarget || 1)) * 100));
+  const kPct = Math.min(100, Math.round((st.avgKcal / (kTarget || 1)) * 100));
+  const gapP = Math.round(pTarget - st.avg), gapK = Math.round(kTarget - st.avgKcal);
+  const budget = S.settings.budget || 0;
+  return `<div class="macro"><div class="row"><span class="grow">At <b>${f}×</b> portions, ${weekLabel(S.activeWeek).toLowerCase()} averages</span></div>
+    <div class="row" style="margin-top:6px"><span class="lbl">Protein</span><div class="budget grow ${pPct < 90 ? 'low' : ''}" style="margin:0"><i style="width:${pPct}%"></i></div><b class="val">${st.avg}g</b><span class="small muted">/ ${pTarget}g</span></div>
+    <div class="row" style="margin-top:6px"><span class="lbl">Calories</span><div class="budget grow kcal ${kPct < 90 ? 'low' : ''}" style="margin:0"><i style="width:${kPct}%"></i></div><b class="val">${st.avgKcal.toLocaleString()}</b><span class="small muted">/ ${(kTarget || 0).toLocaleString()}</span></div>
+    ${shop ? `<div class="row" style="margin-top:6px"><span class="lbl">Shop</span><div class="budget grow ${shop.total > budget ? 'over' : ''}" style="margin:0"><i style="width:${Math.min(100, Math.round((shop.total / (budget || 1)) * 100))}%"></i></div><b class="val">${P.gbp(shop.total)}</b><span class="small muted">at ${P.SHOP_NAMES[shop.shop]} / £${budget}</span></div>` : ''}
+    ${empty ? '<p class="small muted" style="margin:6px 0 0">Nothing picked this week yet, so the bars are empty. Pick meals on Plan and come back.</p>' : `<p class="small muted" style="margin:6px 0 0">${gapP > 0 ? `${gapP}g protein short` : `${-gapP}g over on protein`} · ${gapK > 0 ? `${gapK.toLocaleString()} kcal short` : `${(-gapK).toLocaleString()} kcal over`}. Slide portions to change what you eat; slide targets to change what you're aiming for.</p>`}</div>`;
 }
 function renderPantry() {
   const groups = {};
@@ -446,11 +456,12 @@ function renderPantry() {
   <h2>Settings</h2><div class="card">
     <label class="field">Bodyweight (kg)<input type="number" data-setting="weight" value="${S.settings.weight}"></label>
     <label class="field">Goal<select data-setting-str="goal"><option value="build" ${S.settings.goal === 'build' ? 'selected' : ''}>Build muscle</option><option value="lean" ${S.settings.goal === 'lean' ? 'selected' : ''}>Stay lean and strong</option><option value="lose" ${S.settings.goal === 'lose' ? 'selected' : ''}>Lose fat, keep muscle</option><option value="eatwell" ${S.settings.goal === 'eatwell' ? 'selected' : ''}>Just eat well</option></select></label>
-    <h3 style="margin-top:14px">Daily targets</h3>
+    <h3 style="margin-top:14px">Portions and targets</h3>
+    <label class="field">Portion size: <b data-val="portion">${S.settings.portion}×</b> <span class="muted">(every recipe scales, so protein, calories and the shop all move)</span><input class="range" type="range" min="0.6" max="1.4" step="0.05" data-setting="portion" value="${S.settings.portion}"></label>
     <label class="field">Protein target: <b data-val="proteinTarget">${S.settings.proteinTarget}g</b> a day<input class="range" type="range" min="80" max="260" step="5" data-setting="proteinTarget" value="${S.settings.proteinTarget}"></label>
     <label class="field">Calorie target: <b data-val="kcalTarget">${(S.settings.kcalTarget || 0).toLocaleString()}</b> kcal a day<input class="range" type="range" min="1200" max="4500" step="50" data-setting="kcalTarget" value="${S.settings.kcalTarget || 2500}"></label>
-    <div id="macro-preview">${macroPreview(S.settings.proteinTarget, S.settings.kcalTarget)}</div>
-    <button class="btn ghost small" data-action="suggest-targets">Suggest from my weight and goal</button>
+    <div id="macro-preview">${macroPreview(S.settings.portion, S.settings.proteinTarget, S.settings.kcalTarget)}</div>
+    <div class="row" style="flex-wrap:wrap;gap:8px"><button class="btn ghost small" data-action="suggest-targets">Suggest targets from my weight and goal</button><button class="btn ghost small" data-action="suggest-portion">Suggest portion size</button></div>
     <label class="field">Weekly food budget (£)<input type="number" data-setting="budget" value="${S.settings.budget}"></label>
     <div class="small muted" style="margin-top:8px">Things you don't eat (recipes with these are hidden)</div>
     <div class="chip-row">${Object.entries(AVOID).map(([k, v]) => `<button class="chip ${S.settings.avoid.includes(k) ? 'on' : ''}" data-action="avoid" data-id="${k}">${v.label}</button>`).join('')}</div>
@@ -602,6 +613,7 @@ function onAction(e) {
   else if (a === 'intro-next') { introStep(INTRO.step + 1); }
   else if (a === 'intro-back') { introStep(Math.max(1, INTRO.step - 1)); }
   else if (a === 'intro-done') { S.settings.onboarded = true; save(); closeIntro(); S.tab = 'plan'; for (const wk of Object.values(S.weeks)) relayout(wk); render({ top: true }); }
+  else if (a === 'suggest-portion') { S.settings.portion = P.portionFactor(S.settings.weight, S.settings.goal); META.clear(); for (const wk of Object.values(S.weeks)) relayout(wk); save(); render(); toast(`Portions set to ${S.settings.portion}×`); }
   else if (a === 'suggest-targets') { S.settings.proteinTarget = P.proteinTargetFor(S.settings.weight, S.settings.goal); S.settings.kcalTarget = P.kcalTargetFor(S.settings.weight, S.settings.goal); save(); render(); toast(`${S.settings.proteinTarget}g protein, ${S.settings.kcalTarget.toLocaleString()} kcal a day`); }
   else if (a === 'sinc' || a === 'sdec') { w.snacks[id] = Math.max(0, (w.snacks[id] || 0) + (a === 'sinc' ? 1 : -1)); if (!w.snacks[id]) delete w.snacks[id]; save(); refreshPlan(); }
   else if (a === 'ideas-toggle') { S.ideasOpen = !S.ideasOpen; save(); render(); }
@@ -681,13 +693,13 @@ function onChange(e) {
     if (!t.checked) { q?.nextElementSibling?.remove(); q?.remove(); }
   }
   else if (t.dataset.pantryQty !== undefined) { const v = parseFloat(t.value); w.pantry[t.dataset.pantryQty] = Number.isFinite(v) && v > 0 ? v : true; save(); }
-  else if (t.dataset.setting) { S.settings[t.dataset.setting] = +t.value || 0; save(); if (t.dataset.setting === 'proteinTarget' || t.dataset.setting === 'kcalTarget') { const mp = document.getElementById('macro-preview'); if (mp) mp.innerHTML = macroPreview(S.settings.proteinTarget, S.settings.kcalTarget); } }
+  else if (t.dataset.setting) { S.settings[t.dataset.setting] = +t.value || 0; save(); if (t.dataset.setting === 'portion') { META.clear(); for (const wk of Object.values(S.weeks)) relayout(wk); } const mp = document.getElementById('macro-preview'); if (mp) mp.innerHTML = macroPreview(S.settings.portion, S.settings.proteinTarget, S.settings.kcalTarget); }
 }
 function onInput(e) {
-  if (e.target.dataset.setting === 'proteinTarget' || e.target.dataset.setting === 'kcalTarget') {
-    const k = e.target.dataset.setting, v = +e.target.value; const b = e.target.closest('label').querySelector('b'); if (b) b.textContent = k === 'kcalTarget' ? v.toLocaleString() : v + 'g';
-    const p = k === 'proteinTarget' ? v : S.settings.proteinTarget, c = k === 'kcalTarget' ? v : S.settings.kcalTarget;
-    const mp = document.getElementById('macro-preview'); if (mp) mp.innerHTML = macroPreview(p, c); return;
+  if (['portion', 'proteinTarget', 'kcalTarget'].includes(e.target.dataset.setting)) {
+    const k = e.target.dataset.setting, v = +e.target.value; const b = e.target.closest('label').querySelector('b'); if (b) b.textContent = k === 'kcalTarget' ? v.toLocaleString() : k === 'portion' ? v + '×' : v + 'g';
+    const f = k === 'portion' ? v : S.settings.portion, p = k === 'proteinTarget' ? v : S.settings.proteinTarget, c = k === 'kcalTarget' ? v : S.settings.kcalTarget;
+    const mp = document.getElementById('macro-preview'); if (mp) mp.innerHTML = macroPreview(f, p, c); return;
   }
   const t = e.target;
   if (t.dataset.search !== undefined) { S.search = t.value; refreshCard(renderRecipes); }
