@@ -1,7 +1,10 @@
 import * as P from './planner.js';
+import { CONFIG } from './config.js';
+import { cloud, initCloud, onCloudChange, signIn, signOut, isPro, pullState, pushStateSoon } from './cloud.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v20';
+const APP_VERSION = 'v21';
+const FREE_LIBRARY_LIMIT = 8;
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 
@@ -9,7 +12,8 @@ function load() {
   const base = { tab: 'plan', activeWeek: null, weeks: {}, tubs: {}, customRecipes: [], customIngredients: [], inbox: [], settings: { portion: 1, weight: 85, goal: 'build', proteinTarget: 180, snackProtein: 24, budget: 50, avoid: [] } };
   try { return { ...base, ...JSON.parse(localStorage.getItem(KEY) || '{}') }; } catch { return base; }
 }
-function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {} }
+function syncable() { const { tab, search, planSearch, ideasOpen, ideaTag, ...rest } = S; return rest; }
+function save() { S.updatedAt = new Date().toISOString(); try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {} pushStateSoon(syncable); }
 
 const ING = () => DATA.ingredients.concat(S.customIngredients);
 const RAW = () => DATA.recipes.concat(S.customRecipes);
@@ -72,7 +76,8 @@ function setupWeeks() {
   S.tubs ||= {}; S.freshDefault ||= {}; S.settings.avoid ||= []; S.settings.weight ||= 85; S.settings.goal ||= 'build'; S.settings.kcalTarget ||= P.kcalTargetFor(S.settings.weight, S.settings.goal);
   // Personal recipe library: existing users keep everything they had; new users start with the core set and add from Ideas.
   // Personal recipe library. Starts as the core set; everything else lives in "Find more meal ideas".
-  if (!S.library) { S.library = RAW().filter((r) => r.core).map((r) => r.id); for (const wk of Object.values(S.weeks)) for (const id of Object.keys(wk.portions || {})) if (!S.library.includes(id)) S.library.push(id); }
+  // Free accounts (cloud on, not paid) start with the first 8 core recipes; everyone else with the full core set.
+  if (!S.library) { const core = RAW().filter((r) => r.core && !r.slots.includes('snack')).map((r) => r.id); const snacks = RAW().filter((r) => r.core && r.slots.includes('snack')).map((r) => r.id); S.library = (cloud.enabled && !isPro() ? core.slice(0, FREE_LIBRARY_LIMIT) : core).concat(snacks); for (const wk of Object.values(S.weeks)) for (const id of Object.keys(wk.portions || {})) if (!S.library.includes(id)) S.library.push(id); }
   for (const wk of Object.values(S.weeks)) wk.snacks ||= {};
   for (const w of Object.values(S.weeks)) { w.days ||= [true, true, true, true, true, true, true]; w.choices ||= {}; w.pantry ||= {}; w.fresh ||= {}; if (!w.grid) relayout(w); }
   if (!S.settings.onboarded && Object.values(S.weeks).some((w) => Object.keys(w.portions).length)) S.settings.onboarded = true;
@@ -95,7 +100,7 @@ function portionsFromGrid(w = W()) {
 }
 function weekLabel(k) { return k === S.thisSun ? 'This week' : k === S.nextSun ? 'Next week' : `Week of ${fmtDate(k)}`; }
 function weekSwitch() {
-  return `<div class="chip-row week-switch">${[S.thisSun, S.nextSun].map((k) => `<button class="chip ${S.activeWeek === k ? 'on' : ''}" data-action="week" data-week="${k}">${weekLabel(k)} <span class="muted small">${fmtDate(k)}</span></button>`).join('')}</div>`;
+  return `<div class="chip-row week-switch">${[S.thisSun, S.nextSun].map((k, i) => (i === 1 && !isPro()) ? `<button class="chip" data-action="upgrade" data-why="next">🔒 ${weekLabel(k)}</button>` : `<button class="chip ${S.activeWeek === k ? 'on' : ''}" data-action="week" data-week="${k}">${weekLabel(k)} <span class="muted small">${fmtDate(k)}</span></button>`).join('')}</div>`;
 }
 
 // ---------- boot ----------
@@ -115,6 +120,14 @@ async function boot() {
   v.addEventListener('contextmenu', (e) => { if (e.target.closest('.cell')) e.preventDefault(); });
   render();
   if (!S.settings.onboarded) openIntro();
+  onCloudChange(() => { if (S.tab === 'pantry' || S.tab === 'shop') render(); });
+  initCloud().then(async () => {
+    if (!cloud.user) return;
+    const remote = await pullState();
+    if (remote && remote.updated_at && (!S.updatedAt || remote.updated_at > S.updatedAt)) {
+      const keepTab = S.tab; Object.assign(S, remote.data, { tab: keepTab }); setupWeeks(); try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {} render(); toast('Synced from your account');
+    } else if (!remote) { pushStateSoon(syncable); }
+  });
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 }
 
@@ -332,7 +345,9 @@ function renderShop() {
   const budget = S.settings.budget;
   const pct = Math.min(100, Math.round((best.total / budget) * 100));
   // per-shop totals table
-  const totals = `<table class="tbl"><thead><tr><th>Shop</th><th class="r">Total</th><th class="r">Priced</th><th class="r">Not sold</th><th class="r">Unpriced</th></tr></thead><tbody>${ranked.map((b) => `<tr class="${b === best ? 'best' : ''}"><td>${P.SHOP_NAMES[b.shop]}${b === best ? ' <span class="badge ok">cheapest</span>' : ''}</td><td class="r"><b>${P.gbp(b.total)}</b></td><td class="r">${b.lines.length}</td><td class="r">${b.notSold.length ? `<span class="badge">${b.notSold.length}</span>` : '0'}</td><td class="r">${b.unpriced.length ? `<span class="badge warn">${b.unpriced.length} · not comparable</span>` : '0'}</td></tr>`).join('')}</tbody></table>
+  const shown = isPro() ? ranked : ranked.slice(0, 1);
+  const totals = `<table class="tbl"><thead><tr><th>Shop</th><th class="r">Total</th><th class="r">Priced</th><th class="r">Not sold</th><th class="r">Unpriced</th></tr></thead><tbody>${shown.map((b) => `<tr class="${b === best ? 'best' : ''}"><td>${P.SHOP_NAMES[b.shop]}${b === best ? ' <span class="badge ok">cheapest</span>' : ''}</td><td class="r"><b>${P.gbp(b.total)}</b></td><td class="r">${b.lines.length}</td><td class="r">${b.notSold.length ? `<span class="badge">${b.notSold.length}</span>` : '0'}</td><td class="r">${b.unpriced.length ? `<span class="badge warn">${b.unpriced.length} · not comparable</span>` : '0'}</td></tr>`).join('')}</tbody></table>
+    ${isPro() ? '' : `<p class="small"><button class="btn small" data-action="upgrade" data-why="shops">🔒 Compare all five shops</button> <span class="muted">Free shows the cheapest one.</span></p>`}
     <p class="small muted">Every price is read from that supermarket's own website (Tesco, ASDA, Sainsbury's and Aldi). "Not sold" means the shop doesn't stock it, so you'd get it elsewhere or already have it; the total leaves it out. "Unpriced" means no price exists online: Lidl publishes none for its everyday range, so Lidl stays blank until a shelf label is added.</p>`;
   // per-item comparison
   const ids = Object.keys(needs).filter((id) => ingById(id));
@@ -476,6 +491,23 @@ function macroPreview(kTarget, pTarget) {
     ${shop ? `<div class="row" style="margin-top:6px"><span class="lbl">Shop</span><div class="budget grow ${shop.total > budget ? 'over' : ''}" style="margin:0"><i style="width:${Math.min(100, Math.round((shop.total / (budget || 1)) * 100))}%"></i></div><b class="val">${P.gbp(shop.total)}</b><span class="small muted">at ${P.SHOP_NAMES[shop.shop]} / £${budget}</span></div>` : ''}
     <p class="small muted" style="margin:6px 0 0">${empty ? 'Pick meals on Plan and come back; the bars fill from what you pick.' : `${capped ? capped + ' ' : ''}${gapP > 0 ? `${gapP}g protein short: swap in a higher-protein meal or add a protein snack.` : `Protein covered (${-gapP}g over).`}`}</p></div>`;
 }
+function accountCard() {
+  if (!cloud.enabled) return `<p class="small muted">Everything is saved on this phone only. Sign-in and sync switch on once the app is connected to its cloud project.</p>`;
+  if (cloud.status === 'error') return `<div class="bad-box">Cloud problem: ${esc(cloud.error || 'unknown')}. The app keeps working on this phone.</div>`;
+  if (!cloud.user) return `<p class="small muted">Sign in to keep your plans safe and sync them between devices. No password: you get a link by email.</p>
+    <form id="signin-form"><label class="field">Email<input name="email" type="email" required placeholder="you@uni.ac.uk" autocomplete="email"></label><button class="btn block" type="submit">Send me a sign-in link</button></form>`;
+  const pro = isPro();
+  const until = cloud.planExpires ? ` until ${fmtDate(cloud.planExpires.slice(0, 10))}` : '';
+  return `<div class="row"><span class="grow"><b>${esc(cloud.user.email)}</b><span class="sub muted">${pro ? `Full access${until}` : 'Free plan'}${cloud.lastSync ? ` · synced ${new Date(cloud.lastSync).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''}</span></span><button class="btn ghost small" data-action="signout">Sign out</button></div>
+    ${pro ? '' : `<button class="btn block" data-action="upgrade" data-why="account" style="margin-top:10px">Unlock everything</button>`}`;
+}
+function openUpgrade(why) {
+  const reasons = { next: 'Planning next week is part of the full app.', shops: 'Comparing all five shops is part of the full app.', recipes: `The free plan holds ${FREE_LIBRARY_LIMIT} recipes. The full app has the whole catalogue.`, account: '' };
+  const url = CONFIG.CHECKOUT_URL ? `${CONFIG.CHECKOUT_URL}${CONFIG.CHECKOUT_URL.includes('?') ? '&' : '?'}checkout[custom][user_id]=${encodeURIComponent(cloud.user?.id || '')}` : '';
+  openSheet(`<h3>Unlock everything</h3><p class="small muted">${reasons[why] || ''}</p>
+    <ul class="clean"><li>All ${RAW().filter((r) => !r.slots.includes('snack')).length} recipes and every new one added</li><li>This week and next week, with freezer tubs carrying over</li><li>Prices at all five shops, item by item</li><li>Sync between your phone, laptop and a new phone</li></ul>
+    ${!cloud.user ? '<p class="small">Sign in first (Pantry → Account) so the pass attaches to your account.</p>' : url ? `<a class="btn block" href="${esc(url)}" target="_blank" rel="noopener" style="margin-top:10px">Buy a pass</a>` : '<p class="small muted">Passes aren\'t on sale yet. Ask for access and it can be switched on for your account.</p>'}`);
+}
 function renderPantry() {
   const groups = {};
   for (const it of ING()) if (!it.hidden) (groups[it.category] ||= []).push(it);
@@ -501,9 +533,10 @@ function renderPantry() {
     <div class="chip-row">${Object.entries(AVOID).map(([k, v]) => `<button class="chip ${S.settings.avoid.includes(k) ? 'on' : ''}" data-action="avoid" data-id="${k}">${v.label}</button>`).join('')}</div>
     <button class="btn ghost small" data-action="intro">Show the intro again</button>
     <label class="check"><input type="checkbox" data-setting-bool="preferThigh" ${S.settings.preferThigh ? 'checked' : ''}><span>Buy boneless thigh fillets instead of breast<span class="sub">Swaps every breast line on the shop list for thigh fillets. Breast is currently the cheaper per kilo at all four shops.</span></span></label></div>
+  <h2>Account</h2><div class="card">${accountCard()}</div>
   <h2>Backup</h2><div class="card"><div class="row"><button class="btn ghost grow" data-action="export">Copy backup</button><button class="btn ghost grow" data-action="import">Paste backup</button></div>
   <button class="btn danger block" data-action="reset" style="margin-top:10px">Reset everything</button></div>
-  <p class="small muted" style="text-align:center">Fuel ${APP_VERSION} · prices checked ${DATA.priceDate || ''}</p>`;
+  <p class="small muted" style="text-align:center">${esc(CONFIG.APP_NAME)} ${APP_VERSION} · prices checked ${DATA.priceDate || ''} · <a href="terms.html">Terms</a> · <a href="privacy.html">Privacy</a></p>`;
 }
 
 // ---------- sheet ----------
@@ -650,9 +683,11 @@ function onAction(e) {
   else if (a === 'suggest-targets') { S.settings.proteinTarget = P.proteinTargetFor(S.settings.weight, S.settings.goal); S.settings.kcalTarget = P.kcalTargetFor(S.settings.weight, S.settings.goal); save(); render(); toast(`${S.settings.proteinTarget}g protein, ${S.settings.kcalTarget.toLocaleString()} kcal a day`); }
   else if (a === 'sinc' || a === 'sdec') { w.snacks[id] = Math.max(0, (w.snacks[id] || 0) + (a === 'sinc' ? 1 : -1)); if (!w.snacks[id]) delete w.snacks[id]; save(); refreshPlan(); }
   else if (a === 'fresh-default') { if (el.dataset.on === '1') S.freshDefault[id] = true; else delete S.freshDefault[id]; save(); render(); toast(el.dataset.on === '1' ? 'Made fresh each time, not batched' : 'Back on the batch list'); }
+  else if (a === 'signout') { signOut().then(() => { render(); toast('Signed out. Your data stays on this phone.'); }); }
+  else if (a === 'upgrade') { openUpgrade(el.dataset.why); }
   else if (a === 'ideas-toggle') { S.ideasOpen = !S.ideasOpen; save(); render(); }
   else if (a === 'idea-tag') { S.ideaTag = el.dataset.tag; save(); render(); }
-  else if (a === 'lib-add') { if (!S.library.includes(id)) S.library.push(id); save(); closeSheet(); render(); toast('Added to your recipes'); }
+  else if (a === 'lib-add') { if (!isPro() && !S.library.includes(id) && S.library.filter((x) => !recById(x)?.slots.includes('snack')).length >= FREE_LIBRARY_LIMIT) { openUpgrade('recipes'); return; } if (!S.library.includes(id)) S.library.push(id); save(); closeSheet(); render(); toast('Added to your recipes'); }
   else if (a === 'lib-remove') { S.library = S.library.filter((x) => x !== id); for (const wk of Object.values(S.weeks)) { delete wk.portions[id]; delete wk.snacks?.[id]; relayout(wk); } save(); closeSheet(); render(); toast('Removed from your recipes'); }
   else if (a === 'clear-pantry') { ask(`Untick everything for ${weekLabel(S.activeWeek).toLowerCase()}? The shop list will then include every ingredient.`, 'Untick all').then((ok) => { if (ok) { w.pantry = {}; save(); render(); toast('Pantry cleared'); } }); }
   else if (a === 'clear-week') { ask(`Clear every meal from ${weekLabel(S.activeWeek).toLowerCase()}?`, 'Clear week', true).then((ok) => { if (ok) { w.portions = {}; w.ticks = {}; relayout(); render(); } }); }
@@ -743,6 +778,11 @@ function refreshCard(fn) { const v = document.getElementById('view'); const card
 function onSubmit(e) {
   e.preventDefault();
   const f = e.target; const fd = new FormData(f);
+  if (f.id === 'signin-form') {
+    const email = String(fd.get('email')).trim();
+    signIn(email).then(() => { closeSheet(); toast('Check your email for the sign-in link'); f.querySelector('button').disabled = true; }).catch((err) => toast(err.message || 'Could not send the link'));
+    return;
+  }
   if (f.id === 'link-form') {
     S.inbox = (S.inbox || []).concat([{ url: String(fd.get('url')).trim(), note: String(fd.get('note') || '').trim(), added: new Date().toISOString().slice(0, 10) }]);
     save(); closeSheet(); render(); return;
