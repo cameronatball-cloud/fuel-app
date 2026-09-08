@@ -221,3 +221,6 @@ html { scroll-behavior: auto; }
 .macro .budget.kcal i { background: linear-gradient(90deg, var(--sun), var(--coral)); }
 .budget.low i { background: linear-gradient(90deg, var(--sun), var(--warn)); }
 .macro .budget.kcal.low i { background: linear-gradient(90deg, var(--sun), var(--warn)); }
+.seg { display: flex; background: var(--panel-2); border-radius: 12px; padding: 3px; margin: 6px 0 10px; }
+.seg button { flex: 1; border: 0; background: none; border-radius: 10px; padding: 8px; font-size: 13px; font-weight: 800; color: var(--muted); }
+.seg button.on { background: #fff; color: var(--text); box-shadow: 0 2px 8px rgba(74,51,0,.12); }

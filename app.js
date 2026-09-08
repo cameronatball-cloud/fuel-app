@@ -1,7 +1,7 @@
 import * as P from './planner.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v19';
+const APP_VERSION = 'v20';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 
@@ -69,7 +69,7 @@ function setupWeeks() {
   S.thisSun = thisSun; S.nextSun = nextSun;
   // pantry used to be one global list; it now belongs to each week (a fresh week starts with nothing ticked)
   if (S.pantry) { const p = S.pantry; if (p.peppers_frozen !== undefined) { p.pepper = p.peppers_frozen; delete p.peppers_frozen; } S.weeks[thisSun].pantry = { ...(S.weeks[thisSun].pantry || {}), ...p }; delete S.pantry; }
-  S.tubs ||= {}; S.settings.avoid ||= []; S.settings.weight ||= 85; S.settings.goal ||= 'build'; S.settings.kcalTarget ||= P.kcalTargetFor(S.settings.weight, S.settings.goal);
+  S.tubs ||= {}; S.freshDefault ||= {}; S.settings.avoid ||= []; S.settings.weight ||= 85; S.settings.goal ||= 'build'; S.settings.kcalTarget ||= P.kcalTargetFor(S.settings.weight, S.settings.goal);
   // Personal recipe library: existing users keep everything they had; new users start with the core set and add from Ideas.
   // Personal recipe library. Starts as the core set; everything else lives in "Find more meal ideas".
   if (!S.library) { S.library = RAW().filter((r) => r.core).map((r) => r.id); for (const wk of Object.values(S.weeks)) for (const id of Object.keys(wk.portions || {})) if (!S.library.includes(id)) S.library.push(id); }
@@ -152,6 +152,12 @@ function snackExtra(w) {
 }
 // Everything to buy/cook this week: grid portions plus snack counts.
 function weekCounts(w, opts) { const c = P.gridCounts(w.grid, opts); for (const [id, n] of Object.entries(w.snacks || {})) if (n > 0 && recById(id)) c[id] = (c[id] || 0) + n; return c; }
+// Cells to make fresh: per-cell flags plus any recipe the user has set to "always fresh".
+function freshMap(w) {
+  const m = { ...(w.fresh || {}) };
+  (w.grid || []).forEach((d, i) => { for (const sl of P.SLOTS) { const v = d[sl]; if (P.isRecipeCell(v) && S.freshDefault?.[v]) m[`${i}-${sl}`] = true; } });
+  return m;
+}
 function snackBar(w) {
   const items = Object.entries(w.snacks || {}).filter(([id, n]) => n > 0 && recById(id));
   const active = w.days.filter(Boolean).length || 1;
@@ -174,8 +180,8 @@ function planTop(w) {
     if (P.isOut(v)) return `<button class="cell out" data-action="cell" data-day="${i}" data-slot="${s}"><span class="cname">Out</span><span class="cmeta shortn">🍽</span><span class="cmark full">eating out</span></button>`;
     if (P.isTub(v)) { const r = recById(P.tubRecipe(v)); return `<button class="cell tubcell" style="${cellStyle(P.tubRecipe(v))}" data-action="cell" data-day="${i}" data-slot="${s}"><span class="cname"><span class="full">${esc(r?.name || '')}</span><span class="shortn">${esc(shortName(r))}</span></span><span class="cmeta"><span class="full">${r ? metaFor(r).pp : 0}g · freezer tub</span><span class="shortn">${r ? metaFor(r).pp : 0}g 🧊</span></span><span class="cmark full">from the freezer</span></button>`; }
     const r = recById(v); if (!r) return `<button class="cell empty" data-action="cell" data-day="${i}" data-slot="${s}">+</button>`;
-    const isFresh = !!w.fresh[`${i}-${s}`];
-    const tp = P.tubPlan(r, w.grid, w.cookDay, w.fresh);
+    const fm = freshMap(w); const isFresh = !!fm[`${i}-${s}`];
+    const tp = P.tubPlan(r, w.grid, w.cookDay, fm);
     const cls = isFresh || tp.fresh ? 'freshcell' : tp.freezer.includes(i) ? 'frozen' : tp.late.includes(i) ? 'late' : '';
     const mark = isFresh ? 'make fresh' : cls === 'frozen' ? '❄ freezer' : cls === 'late' ? '⚠ fridge' : tp.fresh ? 'fresh' : 'fridge';
     const markShort = isFresh ? '🍳' : cls === 'frozen' ? '❄' : cls === 'late' ? '⚠' : '';
@@ -246,7 +252,7 @@ function lateWarnings(w) {
   const out = [];
   for (const [rid, n] of Object.entries(w.portions)) {
     const r = recById(rid); if (!r || !n || r.cookMinutes === 0) continue;
-    const tp = P.tubPlan(r, w.grid, w.cookDay, w.fresh);
+    const tp = P.tubPlan(r, w.grid, w.cookDay, freshMap(w));
     if (tp.late.length) out.push(`<div class="warn-box"><b>${esc(r.name)}</b> keeps ${r.fridgeDays} day${r.fridgeDays === 1 ? '' : 's'} and can't be frozen, so the ${tp.late.map((d) => P.DAYS[d]).join(', ')} portion${tp.late.length > 1 ? 's need' : ' needs'} a second cook midweek. Move ${tp.late.length > 1 ? 'them' : 'it'} earlier or swap for a freezer recipe.</div>`);
   }
   return out.join('');
@@ -257,21 +263,26 @@ function defaultPortions(r) { return r.slots[0] === 'breakfast' ? 4 : 3; }
 function renderCook() {
   const w = W(); const recipes = REC(), ing = ING();
   const all = weekCounts(w);
-  const counts = weekCounts(w, { fresh: w.fresh, skipFresh: true });
+  const fm = freshMap(w);
+  const counts = weekCounts(w, { fresh: fm, skipFresh: true });
   const rs = P.runSheet(counts, recipes);
   const fresh = Object.entries(all).filter(([rid, n]) => n > 0 && recById(rid)?.cookMinutes === 0).map(([rid, n]) => ({ recipe: recById(rid), portions: n }));
-  for (const c of P.freshCells(w.grid, w.fresh)) { const r = recById(c.id); if (r) fresh.push({ recipe: r, portions: 1, day: P.DAYS[c.day] }); }
+  for (const c of P.freshCells(w.grid, fm)) { const r = recById(c.id); if (r) fresh.push({ recipe: r, portions: 1, day: P.DAYS[c.day] }); }
   const head = `<h1>Cook</h1>${weekSwitch()}`;
   if (!rs.list.length && !fresh.length) return `${head}<div class="card"><p>Nothing picked for ${weekLabel(S.activeWeek).toLowerCase()} yet. Tick meals on the Plan tab.</p></div>`;
   const cookDay = P.DAYS[w.cookDay];
   const sheet = rs.list.map((x) => `<li><b>${esc(x.recipe.name)}</b> × ${x.portions} <span class="muted small">· ${x.recipe.cookMinutes} min · ${x.recipe.equipment.join(', ')}</span></li>`).join('');
-  const freshList = fresh.map((x) => `<li><b>${esc(x.recipe.name)}</b> × ${x.portions} <span class="muted small">· ${x.day ? `make fresh on ${x.day}` : `made fresh, ${x.recipe.slots[0]}`}</span></li>`).join('');
+  const grouped = {};
+  for (const x of fresh) { const g = (grouped[x.recipe.id] ||= { recipe: x.recipe, portions: 0, days: [] }); g.portions += x.portions; if (x.day && !g.days.includes(x.day)) g.days.push(x.day); }
+  const freshList = Object.values(grouped).map((g) => `<li><div class="row"><span class="grow"><b>${esc(g.recipe.name)}</b> × ${g.portions} <span class="muted small">· ${g.days.length ? `make fresh on ${g.days.join(', ')}` : `made fresh, ${g.recipe.slots[0]}`}${g.recipe.cookMinutes ? ` · ${g.recipe.cookMinutes} min` : ''}</span></span>${g.recipe.cookMinutes > 0 && S.freshDefault[g.recipe.id] ? `<button class="btn ghost small" data-action="fresh-default" data-id="${g.recipe.id}" data-on="0">Batch it instead</button>` : ''}</div>
+    ${g.recipe.cookMinutes > 0 ? `<p class="small muted" style="margin:4px 0 0">Per portion: ${P.scaleIngredients(g.recipe, 1, ing).map((i) => `${esc(i.name)} ${P.fmtQty(i.qty, i.unit)}`).join(', ')}.</p>` : ''}</li>`).join('');
   const cards = rs.list.map(({ recipe: r, portions: n }) => {
     const scaled = P.scaleIngredients(r, n, ing);
-    const tp = P.tubPlan(r, w.grid, w.cookDay, w.fresh);
+    const tp = P.tubPlan(r, w.grid, w.cookDay, fm);
     const reheat = { none: 'Eat cold', microwave: 'Microwave 2–3 min, stir halfway', hob: 'Reheat in a pan', 'air-fryer': 'Air-fryer 6 min at 180°C' }[r.reheat] || '';
     return `<div class="card"><h3>${esc(r.name)} <span class="muted">× ${n}</span></h3>
       <p class="small muted">${P.proteinPerPortion(r, ing)}g protein a portion · ${r.cookMinutes} min · ${r.equipment.join(', ')}</p>
+      <div class="seg"><button class="on">Batch on ${cookDay}</button><button data-action="fresh-default" data-id="${r.id}" data-on="1">Make fresh each time</button></div>
       <div class="ing-list">${scaled.map((s) => `<span>${esc(s.name)}</span><b>${P.fmtQty(s.qty, s.unit)}</b>`).join('')}</div>
       <ol class="steps">${r.method.map((m) => `<li>${esc(m)}</li>`).join('')}</ol>
       ${r.notes ? `<p class="small muted">${esc(r.notes)}</p>` : ''}
@@ -283,7 +294,7 @@ function renderCook() {
   }).join('');
   return `${head}
   <div class="card"><h3>Run sheet for ${cookDay}</h3><p class="small muted">Longest cook first. Start the oven or air-fryer items, then run the hob ones alongside. About ${rs.minutes} minutes if done back to back; less when they overlap.</p><ol class="steps">${sheet}</ol>
-  ${fresh.length ? `<hr><p class="small muted">Made on the day, not batched:</p><ul class="clean">${freshList}</ul>` : ''}
+  ${fresh.length ? `<hr><p class="small muted">Made on the day, not batched. Anything with an air-fryer and 20 minutes can live here.</p><ul class="clean">${freshList}</ul>` : ''}
   <p class="small muted" style="margin-top:8px">Rice rule: cooked rice goes in the freezer the same day unless it's eaten within 24 hours.</p></div>
   ${cards}`;
 }
@@ -638,6 +649,7 @@ function onAction(e) {
   else if (a === 'intro-done') { S.settings.onboarded = true; save(); closeIntro(); S.tab = 'plan'; for (const wk of Object.values(S.weeks)) relayout(wk); render({ top: true }); }
   else if (a === 'suggest-targets') { S.settings.proteinTarget = P.proteinTargetFor(S.settings.weight, S.settings.goal); S.settings.kcalTarget = P.kcalTargetFor(S.settings.weight, S.settings.goal); save(); render(); toast(`${S.settings.proteinTarget}g protein, ${S.settings.kcalTarget.toLocaleString()} kcal a day`); }
   else if (a === 'sinc' || a === 'sdec') { w.snacks[id] = Math.max(0, (w.snacks[id] || 0) + (a === 'sinc' ? 1 : -1)); if (!w.snacks[id]) delete w.snacks[id]; save(); refreshPlan(); }
+  else if (a === 'fresh-default') { if (el.dataset.on === '1') S.freshDefault[id] = true; else delete S.freshDefault[id]; save(); render(); toast(el.dataset.on === '1' ? 'Made fresh each time, not batched' : 'Back on the batch list'); }
   else if (a === 'ideas-toggle') { S.ideasOpen = !S.ideasOpen; save(); render(); }
   else if (a === 'idea-tag') { S.ideaTag = el.dataset.tag; save(); render(); }
   else if (a === 'lib-add') { if (!S.library.includes(id)) S.library.push(id); save(); closeSheet(); render(); toast('Added to your recipes'); }
