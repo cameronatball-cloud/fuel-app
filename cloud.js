@@ -37,8 +37,8 @@ async function loadEntitlement() {
   cloud.planExpires = data?.expires_at || null;
 }
 
-// Pro = paid and current. With no cloud configured, everything is unlocked so the app works for you as before.
-export function isPro() { return !cloud.enabled || !!cloud.plan; }
+// Access = signed in with an active plan. With no cloud configured, the app is open (that's how it runs on a dev machine).
+export function hasAccess() { return !cloud.enabled || !!cloud.plan; }
 
 // ---- state sync: one JSON document per user, last write wins by updated_at ----
 export async function pullState() {

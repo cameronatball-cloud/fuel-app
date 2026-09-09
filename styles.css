@@ -187,29 +187,32 @@ html { scroll-behavior: auto; }
 .btn.block .sub { display: block; font-weight: 500; font-size: 12px; }
 
 /* ---- intro ---- */
+#gate { position: fixed; inset: 0; z-index: 40; background: linear-gradient(160deg, #1b1a2e 0%, #4b2a8a 60%, #ff4f7b 130%); color: #fff; display: flex; flex-direction: column; overflow-y: auto; }
+#gate[hidden] { display: none; }
+#gate .wrap, #gate h1, #gate p, #gate .go, #gate .back, #gate .logo, #gate input.big { }
 #intro { position: fixed; inset: 0; z-index: 30; background: linear-gradient(160deg, #ffc531 0%, #ff4f7b 55%, #9b5cff 100%); color: #fff; display: flex; flex-direction: column; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 #intro[hidden] { display: none; }
-#intro .wrap { margin: auto; width: 100%; max-width: 560px; padding: 28px 22px calc(28px + env(safe-area-inset-bottom)); animation: introIn .45s cubic-bezier(.2,.8,.2,1) both; }
+#gate .wrap, #intro .wrap { margin: auto; width: 100%; max-width: 560px; padding: 28px 22px calc(28px + env(safe-area-inset-bottom)); animation: introIn .45s cubic-bezier(.2,.8,.2,1) both; }
 @keyframes introIn { from { opacity: 0; transform: translateY(28px) scale(.98); } to { opacity: 1; transform: none; } }
 #intro .dots { display: flex; gap: 8px; margin-bottom: 26px; }
 #intro .dots i { flex: 1; height: 6px; border-radius: 6px; background: rgba(255,255,255,.35); }
 #intro .dots i.on { background: #fff; }
-#intro h1 { font-size: 38px; line-height: 1.05; margin: 0 0 10px; letter-spacing: -.02em; text-shadow: 0 2px 12px rgba(0,0,0,.15); }
-#intro p { font-size: 17px; opacity: .92; margin: 0 0 22px; }
+#gate h1, #intro h1 { font-size: 38px; line-height: 1.05; margin: 0 0 10px; letter-spacing: -.02em; text-shadow: 0 2px 12px rgba(0,0,0,.15); }
+#gate p, #intro p { font-size: 17px; opacity: .92; margin: 0 0 22px; }
 #intro .opt { display: block; width: 100%; text-align: left; background: rgba(255,255,255,.16); border: 2px solid rgba(255,255,255,.35); color: #fff; border-radius: 18px; padding: 16px 18px; margin: 10px 0; font-size: 19px; font-weight: 900; backdrop-filter: blur(6px); transition: transform .12s, background .12s; }
 #intro .opt small { display: block; font-weight: 600; font-size: 14px; opacity: .9; margin-top: 3px; }
 #intro .opt:active { transform: scale(.98); }
 #intro .opt.on { background: #fff; color: #1b1a2e; border-color: #fff; }
 #intro .chips { display: flex; flex-wrap: wrap; gap: 10px; margin: 6px 0 16px; }
 #intro .chips .opt { width: auto; display: inline-block; padding: 12px 18px; margin: 0; font-size: 18px; }
-#intro input.big { width: 100%; font-size: 30px; font-weight: 900; padding: 14px 18px; border-radius: 18px; border: 0; background: #fff; color: #1b1a2e; text-align: center; margin: 6px 0 14px; }
-#intro .go { display: block; width: 100%; background: #1b1a2e; color: #fff; border: 0; border-radius: 18px; padding: 18px; font-size: 20px; font-weight: 900; margin-top: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
-#intro .back { background: none; border: 0; color: #fff; opacity: .85; font-weight: 800; padding: 12px 0; font-size: 15px; }
+#gate input.big, #intro input.big { width: 100%; font-size: 30px; font-weight: 900; padding: 14px 18px; border-radius: 18px; border: 0; background: #fff; color: #1b1a2e; text-align: center; margin: 6px 0 14px; }
+#gate .go, #intro .go { display: block; width: 100%; background: #1b1a2e; color: #fff; border: 0; border-radius: 18px; padding: 18px; font-size: 20px; font-weight: 900; margin-top: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+#gate .back, #intro .back { background: none; border: 0; color: #fff; opacity: .85; font-weight: 800; padding: 12px 0; font-size: 15px; }
 #intro .stat-row { display: flex; gap: 10px; margin: 8px 0 18px; }
 #intro .stat-row div { flex: 1; background: rgba(255,255,255,.18); border-radius: 16px; padding: 12px; text-align: center; }
 #intro .stat-row b { display: block; font-size: 28px; }
 #intro .stat-row span { font-size: 12px; opacity: .9; font-weight: 700; }
-#intro .logo { font-size: 15px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; opacity: .9; margin-bottom: 18px; }
+#gate .logo, #intro .logo { font-size: 15px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; opacity: .9; margin-bottom: 18px; }
 .range { width: 100%; accent-color: var(--accent); }
 .badge.snack { background: #fff1d6; color: #b45309; }
 
@@ -224,3 +227,4 @@ html { scroll-behavior: auto; }
 .seg { display: flex; background: var(--panel-2); border-radius: 12px; padding: 3px; margin: 6px 0 10px; }
 .seg button { flex: 1; border: 0; background: none; border-radius: 10px; padding: 8px; font-size: 13px; font-weight: 800; color: var(--muted); }
 .seg button.on { background: #fff; color: var(--text); box-shadow: 0 2px 8px rgba(74,51,0,.12); }
+#gate ul.clean li { border-color: rgba(255,255,255,.25); }
