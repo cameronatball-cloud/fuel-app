@@ -3,7 +3,7 @@ import { CONFIG } from './config.js';
 import { cloud, initCloud, onCloudChange, signIn, signOut, isPro, pullState, pushStateSoon } from './cloud.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v21';
+const APP_VERSION = 'v22';
 const FREE_LIBRARY_LIMIT = 8;
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
