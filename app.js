@@ -3,7 +3,7 @@ import { CONFIG } from './config.js';
 import { cloud, initCloud, onCloudChange, signIn, signOut, hasAccess, pullState, pushStateSoon } from './cloud.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v23';
+const APP_VERSION = 'v24';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 
@@ -506,7 +506,7 @@ function gateScreen() {
   if (cloud.status === 'error') { el.innerHTML = `<div class="wrap"><div class="logo">${name}</div><h1>Can't reach the cloud.</h1><p>${esc(cloud.error || '')}</p><button class="go" data-action="gate-retry">Try again</button></div>`; el.hidden = false; return true; }
   if (!cloud.user) {
     el.innerHTML = `<div class="wrap"><div class="logo">${name}</div><h1>Sign in to start.</h1><p>Batch-cook Sunday, sorted till Saturday, priced at the cheapest shop. No password: you get a link by email.</p>
-      <form id="signin-form"><input class="big" name="email" type="email" required placeholder="you@uni.ac.uk" autocomplete="email" style="font-size:20px;text-align:left"><button class="go" type="submit">Send me a sign-in link</button></form>
+      <form id="signin-form"><input class="big" name="email" type="email" required placeholder="you@uni.ac.uk" autocomplete="email" style="font-size:20px;text-align:left"><button class="go" type="submit">Send me a sign-in link</button><div id="signin-msg" class="signin-msg" hidden></div></form>
       <p class="small" style="opacity:.85;margin-top:16px"><a href="terms.html" style="color:#fff">Terms</a> · <a href="privacy.html" style="color:#fff">Privacy</a></p></div>`;
   } else {
     const url = CONFIG.CHECKOUT_URL ? `${CONFIG.CHECKOUT_URL}${CONFIG.CHECKOUT_URL.includes('?') ? '&' : '?'}checkout[custom][user_id]=${encodeURIComponent(cloud.user.id)}&checkout[email]=${encodeURIComponent(cloud.user.email)}` : '';
@@ -792,7 +792,10 @@ function onSubmit(e) {
   const f = e.target; const fd = new FormData(f);
   if (f.id === 'signin-form') {
     const email = String(fd.get('email')).trim();
-    signIn(email).then(() => { const b = f.querySelector('button'); b.disabled = true; b.textContent = 'Link sent. Check your email (and spam).'; }).catch((err) => { toast(err.message || 'Could not send the link'); });
+    const msg = f.querySelector('#signin-msg') || document.getElementById('signin-msg'); const b = f.querySelector('button');
+    b.disabled = true; b.textContent = 'Sending…';
+    signIn(email).then(() => { b.textContent = 'Link sent'; if (msg) { msg.hidden = false; msg.className = 'signin-msg ok'; msg.textContent = `Check ${email} for a message from Fuel (look in spam too). Tap the link in it and you're in.`; } })
+      .catch((err) => { b.disabled = false; b.textContent = 'Send me a sign-in link'; const m = String(err.message || ''); const friendly = /rate limit/i.test(m) ? 'Too many sign-in emails have been sent in the last hour. Wait a bit and try again; the first link that arrives still works.' : /invalid/i.test(m) ? 'That email address doesn\'t look right.' : `Couldn't send the link: ${m}`; if (msg) { msg.hidden = false; msg.className = 'signin-msg bad'; msg.textContent = friendly; } else toast(friendly); });
     return;
   }
   if (f.id === 'link-form') {

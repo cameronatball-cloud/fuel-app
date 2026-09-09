@@ -228,3 +228,6 @@ html { scroll-behavior: auto; }
 .seg button { flex: 1; border: 0; background: none; border-radius: 10px; padding: 8px; font-size: 13px; font-weight: 800; color: var(--muted); }
 .seg button.on { background: #fff; color: var(--text); box-shadow: 0 2px 8px rgba(74,51,0,.12); }
 #gate ul.clean li { border-color: rgba(255,255,255,.25); }
+.signin-msg { margin-top: 12px; padding: 12px 14px; border-radius: 14px; font-size: 15px; font-weight: 600; background: rgba(255,255,255,.18); }
+.signin-msg.ok { background: rgba(124,255,178,.25); }
+.signin-msg.bad { background: rgba(255,80,80,.35); }
