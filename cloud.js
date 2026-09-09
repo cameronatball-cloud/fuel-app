@@ -25,8 +25,22 @@ async function applySession(session) {
   set({ status: cloud.user ? 'signed-in' : 'signed-out' });
 }
 
-export async function signIn(email) {
-  const { error } = await cloud.client.auth.signInWithOtp({ email, options: { emailRedirectTo: location.href.split('#')[0] } });
+// Email + password. No confirmation email: "Confirm email" is off in the Supabase project, so sign-up logs you straight in.
+export async function signIn(email, password) {
+  const { error } = await cloud.client.auth.signInWithPassword({ email, password });
+  if (error) throw error;
+}
+export async function signUp(email, password) {
+  const { data, error } = await cloud.client.auth.signUp({ email, password });
+  if (error) throw error;
+  if (!data.session) throw new Error('Account created but not signed in. Try signing in.');
+}
+export async function resetPassword(email) {
+  const { error } = await cloud.client.auth.resetPasswordForEmail(email, { redirectTo: location.href.split('#')[0] });
+  if (error) throw error;
+}
+export async function updatePassword(password) {
+  const { error } = await cloud.client.auth.updateUser({ password });
   if (error) throw error;
 }
 export async function signOut() { await cloud.client.auth.signOut(); cloud.user = null; cloud.plan = null; set({ status: 'signed-out' }); }

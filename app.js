@@ -1,9 +1,9 @@
 import * as P from './planner.js';
 import { CONFIG } from './config.js';
-import { cloud, initCloud, onCloudChange, signIn, signOut, hasAccess, pullState, pushStateSoon } from './cloud.js';
+import { cloud, initCloud, onCloudChange, signIn, signUp, resetPassword, signOut, hasAccess, pullState, pushStateSoon } from './cloud.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v24';
+const APP_VERSION = 'v25';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 
@@ -505,8 +505,10 @@ function gateScreen() {
   if (cloud.status === 'off' || cloud.status === 'loading') { el.innerHTML = `<div class="wrap"><div class="logo">${name}</div><h1>One moment…</h1></div>`; el.hidden = false; return true; }
   if (cloud.status === 'error') { el.innerHTML = `<div class="wrap"><div class="logo">${name}</div><h1>Can't reach the cloud.</h1><p>${esc(cloud.error || '')}</p><button class="go" data-action="gate-retry">Try again</button></div>`; el.hidden = false; return true; }
   if (!cloud.user) {
-    el.innerHTML = `<div class="wrap"><div class="logo">${name}</div><h1>Sign in to start.</h1><p>Batch-cook Sunday, sorted till Saturday, priced at the cheapest shop. No password: you get a link by email.</p>
-      <form id="signin-form"><input class="big" name="email" type="email" required placeholder="you@uni.ac.uk" autocomplete="email" style="font-size:20px;text-align:left"><button class="go" type="submit">Send me a sign-in link</button><div id="signin-msg" class="signin-msg" hidden></div></form>
+    const mode = S.authMode || 'signin';
+    el.innerHTML = `<div class="wrap"><div class="logo">${name}</div><h1>${mode === 'signup' ? 'Create your account.' : 'Sign in.'}</h1><p>Batch-cook Sunday, sorted till Saturday, priced at the cheapest shop.</p>
+      <form id="signin-form" data-mode="${mode}"><input class="big" name="email" type="email" required placeholder="you@uni.ac.uk" autocomplete="email" style="font-size:20px;text-align:left"><input class="big" name="password" type="password" required minlength="8" placeholder="${mode === 'signup' ? 'Choose a password (8+ characters)' : 'Password'}" autocomplete="${mode === 'signup' ? 'new-password' : 'current-password'}" style="font-size:20px;text-align:left;margin-top:10px"><button class="go" type="submit">${mode === 'signup' ? 'Create account' : 'Sign in'}</button><div id="signin-msg" class="signin-msg" hidden></div></form>
+      <p class="small" style="margin-top:14px">${mode === 'signup' ? `Already have an account? <a href="#" data-action="auth-mode" data-mode="signin" style="color:#fff;font-weight:800">Sign in</a>` : `New here? <a href="#" data-action="auth-mode" data-mode="signup" style="color:#fff;font-weight:800">Create an account</a> · <a href="#" data-action="auth-forgot" style="color:#fff">Forgot password?</a>`}</p>
       <p class="small" style="opacity:.85;margin-top:16px"><a href="terms.html" style="color:#fff">Terms</a> · <a href="privacy.html" style="color:#fff">Privacy</a></p></div>`;
   } else {
     const url = CONFIG.CHECKOUT_URL ? `${CONFIG.CHECKOUT_URL}${CONFIG.CHECKOUT_URL.includes('?') ? '&' : '?'}checkout[custom][user_id]=${encodeURIComponent(cloud.user.id)}&checkout[email]=${encodeURIComponent(cloud.user.email)}` : '';
@@ -696,6 +698,13 @@ function onAction(e) {
   else if (a === 'fresh-default') { if (el.dataset.on === '1') S.freshDefault[id] = true; else delete S.freshDefault[id]; save(); render(); toast(el.dataset.on === '1' ? 'Made fresh each time, not batched' : 'Back on the batch list'); }
   else if (a === 'signout') { signOut().then(() => { gateScreen(); render(); }); }
   else if (a === 'gate-refresh') { location.reload(); }
+  else if (a === 'auth-mode') { e.preventDefault(); S.authMode = el.dataset.mode; gateScreen(); }
+  else if (a === 'auth-forgot') {
+    e.preventDefault(); const f = document.getElementById('signin-form'); const email = f?.email?.value?.trim(); const msg = f?.querySelector('#signin-msg');
+    const show = (cls, text) => { if (msg) { msg.hidden = false; msg.className = `signin-msg ${cls}`; msg.textContent = text; } else toast(text); };
+    if (!email) { show('bad', 'Type your email above first, then tap Forgot password.'); return; }
+    resetPassword(email).then(() => show('ok', `Reset link sent to ${email}. It can take a few minutes; check spam.`)).catch((err) => show('bad', `Couldn't send a reset link: ${err.message}`));
+  }
   else if (a === 'gate-retry') { location.reload(); }
   else if (a === 'ideas-toggle') { S.ideasOpen = !S.ideasOpen; save(); render(); }
   else if (a === 'idea-tag') { S.ideaTag = el.dataset.tag; save(); render(); }
@@ -791,11 +800,22 @@ function onSubmit(e) {
   e.preventDefault();
   const f = e.target; const fd = new FormData(f);
   if (f.id === 'signin-form') {
-    const email = String(fd.get('email')).trim();
-    const msg = f.querySelector('#signin-msg') || document.getElementById('signin-msg'); const b = f.querySelector('button');
-    b.disabled = true; b.textContent = 'Sending…';
-    signIn(email).then(() => { b.textContent = 'Link sent'; if (msg) { msg.hidden = false; msg.className = 'signin-msg ok'; msg.textContent = `Check ${email} for a message from Fuel (look in spam too). Tap the link in it and you're in.`; } })
-      .catch((err) => { b.disabled = false; b.textContent = 'Send me a sign-in link'; const m = String(err.message || ''); const friendly = /rate limit/i.test(m) ? 'Too many sign-in emails have been sent in the last hour. Wait a bit and try again; the first link that arrives still works.' : /invalid/i.test(m) ? 'That email address doesn\'t look right.' : `Couldn't send the link: ${m}`; if (msg) { msg.hidden = false; msg.className = 'signin-msg bad'; msg.textContent = friendly; } else toast(friendly); });
+    const email = String(fd.get('email')).trim(); const password = String(fd.get('password') || '');
+    const mode = f.dataset.mode || 'signin';
+    const msg = f.querySelector('#signin-msg'); const b = f.querySelector('button[type=submit]'); const label = b.textContent;
+    const show = (cls, text) => { if (msg) { msg.hidden = false; msg.className = `signin-msg ${cls}`; msg.textContent = text; } else toast(text); };
+    b.disabled = true; b.textContent = mode === 'signup' ? 'Creating…' : 'Signing in…';
+    (mode === 'signup' ? signUp(email, password) : signIn(email, password))
+      .then(() => { show('ok', mode === 'signup' ? 'Account created. Loading…' : 'Signed in. Loading…'); })
+      .catch((err) => {
+        b.disabled = false; b.textContent = label; const m = String(err.message || '');
+        const friendly = /invalid login/i.test(m) ? 'Wrong email or password. New here? Tap "Create an account".'
+          : /already registered|already exists/i.test(m) ? 'That email already has an account. Sign in instead.'
+          : /password.*(short|least|characters)/i.test(m) ? 'Password needs to be at least 8 characters.'
+          : /rate limit/i.test(m) ? 'Too many attempts. Wait a minute and try again.'
+          : /invalid/i.test(m) ? 'That email address doesn\'t look right.' : m;
+        show('bad', friendly);
+      });
     return;
   }
   if (f.id === 'link-form') {
