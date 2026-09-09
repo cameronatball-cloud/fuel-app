@@ -39,6 +39,13 @@ export async function resetPassword(email) {
   const { error } = await cloud.client.auth.resetPasswordForEmail(email, { redirectTo: location.href.split('#')[0] });
   if (error) throw error;
 }
+export async function redeemCode(code) {
+  const { data, error } = await cloud.client.rpc('redeem_code', { p_code: code });
+  if (error) throw error;
+  if (!data?.ok) throw new Error(data?.error || 'Code not accepted');
+  await loadEntitlement(); set({ status: 'signed-in' });
+  return data;
+}
 export async function updatePassword(password) {
   const { error } = await cloud.client.auth.updateUser({ password });
   if (error) throw error;

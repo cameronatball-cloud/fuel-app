@@ -1,9 +1,9 @@
 import * as P from './planner.js';
 import { CONFIG } from './config.js';
-import { cloud, initCloud, onCloudChange, signIn, signUp, resetPassword, signOut, hasAccess, pullState, pushStateSoon } from './cloud.js';
+import { cloud, initCloud, onCloudChange, signIn, signUp, resetPassword, redeemCode, signOut, hasAccess, pullState, pushStateSoon } from './cloud.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v25';
+const APP_VERSION = 'v26';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 
@@ -514,7 +514,8 @@ function gateScreen() {
     const url = CONFIG.CHECKOUT_URL ? `${CONFIG.CHECKOUT_URL}${CONFIG.CHECKOUT_URL.includes('?') ? '&' : '?'}checkout[custom][user_id]=${encodeURIComponent(cloud.user.id)}&checkout[email]=${encodeURIComponent(cloud.user.email)}` : '';
     el.innerHTML = `<div class="wrap"><div class="logo">${name}</div><h1>Nearly there.</h1><p>You're signed in as <b>${esc(cloud.user.email)}</b>. ${name} is a one-off purchase: pay once, get everything, forever.</p>
       <ul class="clean" style="margin:0 0 18px;opacity:.95"><li>${RAW().filter((r) => !r.slots.includes('snack')).length} recipes, priced at Aldi, Tesco, ASDA and Sainsbury's</li><li>Your week laid out, the Sunday cook list, the cheapest shop</li><li>Synced across your devices</li></ul>
-      ${url ? `<a class="go" href="${esc(url)}" target="_blank" rel="noopener" style="text-align:center;text-decoration:none">Buy ${name}</a>` : `<p>Access is switched on by hand for now. Ask for it, then tap refresh.</p>`}
+      ${url ? `<a class="go" href="${esc(url)}" target="_blank" rel="noopener" style="text-align:center;text-decoration:none">Buy ${name}</a>` : `<p>Passes aren't on sale yet.</p>`}
+      <form id="code-form" style="margin-top:14px"><p class="small" style="margin:0 0 6px">Have a code?</p><div class="row"><input class="big grow" name="code" required placeholder="Enter code" autocapitalize="characters" autocomplete="off" style="font-size:18px;text-align:left"><button class="go" type="submit" style="width:auto;padding:0 18px">Use it</button></div><div id="code-msg" class="signin-msg" hidden></div></form>
       <button class="back" data-action="gate-refresh">I've paid · refresh</button><button class="back" data-action="signout">Sign out</button></div>`;
   }
   el.hidden = false; return true;
@@ -816,6 +817,14 @@ function onSubmit(e) {
           : /invalid/i.test(m) ? 'That email address doesn\'t look right.' : m;
         show('bad', friendly);
       });
+    return;
+  }
+  if (f.id === 'code-form') {
+    const code = String(fd.get('code') || '').trim(); const msg = f.querySelector('#code-msg'); const b = f.querySelector('button[type=submit]');
+    const show = (cls, text) => { msg.hidden = false; msg.className = `signin-msg ${cls}`; msg.textContent = text; };
+    b.disabled = true;
+    redeemCode(code).then((d) => { show('ok', `Code accepted. You have ${d.plan === 'founder' ? 'founder access' : 'full access'}${d.expires_at ? ` until ${fmtDate(String(d.expires_at).slice(0, 10))}` : ''}.`); setTimeout(() => { gateScreen(); render(); }, 900); })
+      .catch((err) => { b.disabled = false; show('bad', err.message || 'Code not accepted'); });
     return;
   }
   if (f.id === 'link-form') {
