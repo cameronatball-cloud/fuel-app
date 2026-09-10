@@ -3,7 +3,7 @@
 export const CONFIG = {
   SUPABASE_URL: 'https://htdmdthyrehhvzflajuk.supabase.co',        // e.g. https://abcdefgh.supabase.co
   SUPABASE_ANON_KEY: 'sb_publishable_ghYVovG_UYVNy6fxnUFd8w_Au3Tryvm',   // the "anon public" key from Supabase → Project Settings → API
-  CHECKOUT_URL: '',        // your Stripe Payment Link (https://buy.stripe.com/...); empty hides the Buy button
+  CHECKOUT_URL: 'https://buy.stripe.com/4gM14neHZdovbwL83yebu00',        // your Stripe Payment Link (https://buy.stripe.com/...); empty hides the Buy button
   APP_NAME: 'Fuel',
   PRICE_LABEL: '£3.99',    // shown on the access screen; the real price lives in the checkout
 };

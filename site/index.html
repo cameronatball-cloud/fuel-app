@@ -114,26 +114,6 @@ footer { padding:40px 0 60px; border-top:1px solid var(--line); color:var(--mut)
 footer .wrap { display:flex; gap:20px; flex-wrap:wrap; align-items:center }
 footer .mark { color:var(--ink) }
 
-/* walkthrough */
-.tour { display:grid; grid-template-columns:auto 1fr; gap:48px; align-items:center }
-.tour-phone { position:relative }
-.tour-phone .phone { width:320px; height:693px }
-.tour-phone .phone .scr { transform:scale(.8347); transition:opacity .35s }
-.tour-phone .phone .scr.fade { opacity:0 }
-.tour-play { position:absolute; inset:0; margin:auto; width:92px; height:92px; border-radius:50%; border:0; background:var(--ink); color:var(--sun); font-size:34px; cursor:pointer; box-shadow:0 18px 40px rgba(21,19,43,.35); display:grid; place-items:center; transition:transform .15s }
-.tour-play:hover { transform:scale(1.06) }
-.tour-play span { margin-left:6px }
-.tour.playing .tour-play { display:none }
-.tour-cap b { display:block; font-family:"Bricolage Grotesque", sans-serif; font-size:32px; font-weight:800; letter-spacing:-.02em; margin-bottom:8px }
-.tour-cap p { color:var(--mut); font-size:18px; margin:0 0 22px; max-width:44ch; min-height:3.2em }
-.tour-steps { list-style:none; padding:0; margin:0 0 22px; display:flex; gap:8px; flex-wrap:wrap }
-.tour-steps li { padding:8px 14px; border-radius:999px; border:2px solid var(--line); color:var(--mut); font-weight:600; font-size:14px; cursor:pointer }
-.tour-steps li.on { background:var(--ink); color:var(--pg); border-color:var(--ink) }
-.tour-bar { height:8px; background:var(--line); border-radius:8px; overflow:hidden; margin-bottom:14px }
-.tour-bar i { display:block; height:100%; width:0; background:linear-gradient(90deg, var(--sun), var(--pink)) }
-.tour-ctl { display:flex; align-items:center; gap:16px; color:var(--mut) }
-@media (max-width: 900px) { .tour { grid-template-columns:1fr } .tour-phone .phone { margin:0 auto } }
-
 /* reveal */
 .rv { transform:translateY(22px); opacity:.35; transition:transform .7s cubic-bezier(.2,.8,.2,1), opacity .7s }
 .rv.in { transform:none; opacity:1 }
@@ -141,11 +121,11 @@ footer .mark { color:var(--ink) }
 @media (prefers-reduced-motion: reduce) { .rv { transform:none; opacity:1; transition:none } .hero .phone { animation:none } .sb-track i { transition:none } }
 @media (max-width: 900px) { .hero .wrap, .compare, .pricebox { grid-template-columns:1fr } .steps { grid-template-columns:1fr } .feats { grid-template-columns:1fr } .hero h1 { font-size:52px } nav.top .links { display:none } .phone-wrap { order:-1 } .phone { width:300px; height:650px } .phone .scr { transform:scale(.7826) } }
 </style>
-<nav class="top"><div class="wrap"><span class="mark">FU<b>£</b>L</span><div class="links"><a href="#how">How it works</a><a href="#watch">Watch</a><a href="#prices">Prices</a><a href="#recipes">Recipes</a><a href="#get">Get Fuel</a></div><a class="btn sun" href="#get" style="padding:10px 18px">£3.99, one-off</a></div></nav>
+<nav class="top"><div class="wrap"><span class="mark">FU<b>£</b>L</span><div class="links"><a href="#how">How it works</a><a href="#prices">Prices</a><a href="#recipes">Recipes</a><a href="#get">Get Fuel</a></div><a class="btn sun" href="#get" style="padding:10px 18px">£3.99, one-off</a></div></nav>
 <header class="hero"><div class="blob a"></div><div class="blob b"></div><div class="wrap">
 <div><div class="eyebrow">Meal prep for students</div><h1>Cook once.<br>Eat like an athlete.<br><em>Under £40.</em></h1>
 <p class="lead">Tick the meals you fancy. Fuel lays out your week, writes your Sunday cook list, and prices the whole shop at Aldi, Tesco, ASDA and Sainsbury's.</p>
-<div class="cta"><a class="btn" href="#get">Get Fuel for £3.99</a><a class="btn ghost" href="#how">See how it works</a><small>One-off. No subscription. Works on iPhone and Android from a link.</small></div>
+<div class="cta"><a class="btn" href="https://buy.stripe.com/4gM14neHZdovbwL83yebu00" target="_blank" rel="noopener">Get Fuel for £3.99</a><a class="btn ghost" href="#how">See how it works</a><small>One-off. No subscription. Works on iPhone and Android from a link.</small></div>
 <div class="stat-strip"><div><b>171g</b><span>protein a day, on the week shown</span></div><div><b>£39.03</b><span>for 24 meals at Aldi</span></div><div><b>101</b><span>recipes, every ingredient priced</span></div></div></div>
 <div class="phone-wrap"><div class="phone"><iframe class="scr" tabindex="-1" loading="lazy" title="Fuel screen" srcdoc="&lt;!doctype html&gt;&lt;html&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;style&gt;:root {
   --bg: #fffbf2; --panel: #ffffff; --panel-2: #fff3d6; --line: #ffe3a3;
@@ -1186,12 +1166,6 @@ html,body{overflow:hidden} #view{padding-top:12px} .cell{animation:pop .5s cubic
 &lt;label class=&quot;line&quot;&gt;&lt;input type=&quot;checkbox&quot;&gt;&lt;span class=&quot;grow&quot;&gt;&lt;span class=&quot;name&quot;&gt;The Fishmonger Tuna Chunks 4 Pack&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;Tuna pasta ×3&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;cost&quot;&gt;£2.49&lt;/span&gt;&lt;/label&gt;&lt;/div&gt;&lt;/main&gt;&lt;/body&gt;&lt;/html&gt;"></iframe></div><h3><span>3</span>Shop</h3><p>Everything added up, rounded to real packs, priced at every supermarket. Tick what you already have and the total drops. Tick things off in the aisle.</p></div>
 </div></div></section>
 
-
-<section class="alt" id="watch"><div class="wrap"><div class="sec-head rv"><div class="eyebrow">Walkthrough</div><h2>Forty seconds, start to finish.</h2><p>Press play. This is the app doing a real week, screen by screen.</p></div>
-<div class="tour rv"><div class="tour-phone"><div class="phone"><iframe class="scr" id="tour-scr" tabindex="-1" title="Fuel walkthrough"></iframe></div><button class="tour-play" id="tour-play" aria-label="Play walkthrough"><span>▶</span></button></div>
-<div class="tour-side"><div class="tour-cap" id="tour-cap"><b>Answer four questions</b><p>Goal, weight, weekly budget and anything you don't eat. That's your protein and calorie targets set.</p></div>
-<ol class="tour-steps" id="tour-steps"><li class="on">Set up</li><li>Pick meals</li><li>Cook on Sunday</li><li>Shop the cheapest</li></ol>
-<div class="tour-bar"><i id="tour-bar"></i></div><div class="tour-ctl"><button class="btn ghost" id="tour-toggle" style="padding:10px 16px">Play</button><span class="mono" id="tour-time">0:00 / 0:40</span></div></div></div></div></section>
 
 <section class="alt" id="prices"><div class="wrap"><div class="compare"><div class="rv"><div class="eyebrow">Real prices, read from the shops</div><h2 style="font-size:clamp(34px,4.6vw,56px);margin:10px 0 14px">Same 24 meals. Five shops. One clear winner.</h2><p style="color:var(--mut);font-size:19px">Fuel reads every ingredient's price from each supermarket's own website and stamps the date. This is the week on the phone above, 20 items, nothing you'd already have in the cupboard.</p>
 <div style="margin-top:28px"><div class="sb"><span class="sb-name">Aldi</span><div class="sb-track"><i style="--w:62.0%"></i></div><span class="sb-val">£39.03</span></div><div class="sb"><span class="sb-name">Tesco</span><div class="sb-track"><i style="--w:78.5%"></i></div><span class="sb-val">£49.47</span></div><div class="sb"><span class="sb-name">Sainsbury's</span><div class="sb-track"><i style="--w:79.2%"></i></div><span class="sb-val">£49.89</span></div><div class="sb"><span class="sb-name">ASDA</span><div class="sb-track"><i style="--w:100.0%"></i></div><span class="sb-val">£62.99</span></div><div class="sb"><span class="sb-name">Lidl</span><div class="sb-track"></div><span class="sb-val" style="color:var(--mut);font-size:13px">no prices online</span></div></div></div>
@@ -2479,7 +2453,7 @@ html,body{overflow:hidden} #view{padding-top:12px} .cell{animation:pop .5s cubic
 <section class="alt" id="get"><div class="wrap"><div class="pricebox">
 <div class="price-card rv"><div class="eyebrow" style="color:var(--sun)">Get Fuel</div><div class="big">£3.99<small>one-off</small></div>
 <ul><li>All 101 recipes and every new one added</li><li>This week and next, with tubs carrying over</li><li>Prices at Aldi, Tesco, ASDA and Sainsbury's, item by item</li><li>Synced across your phone, laptop and a new phone</li><li>No subscription. Ever.</li></ul>
-<a class="btn sun" href="https://cameronatball-cloud.github.io/fuel-app/">Open Fuel and create an account</a><p style="margin:14px 0 0;font-size:14px;opacity:.8">Got a code from a friend? Enter it on the first screen.</p></div>
+<a class="btn sun" href="https://cameronatball-cloud.github.io/fuel-app/">Open Fuel, create an account, then buy inside</a><p style="margin:14px 0 0;font-size:14px;opacity:.8">Got a code from a friend? Enter it on the first screen.</p></div>
 <div class="install rv"><h3>Put it on your phone</h3><p style="color:var(--mut);margin:0 0 6px">Fuel installs from the link, no app store needed. It gets its own icon, runs full screen and works without signal.</p>
 <h3 style="font-size:18px;margin-top:18px">iPhone</h3><ol><li>Open the link in Safari.</li><li>Tap Share, then <b>Add to Home Screen</b>.</li><li>Open Fuel from the icon.</li></ol>
 <h3 style="font-size:18px">Android</h3><ol><li>Open the link in Chrome.</li><li>Tap the menu, then <b>Add to Home screen</b> or <b>Install app</b>.</li></ol>
@@ -2496,29 +2470,4 @@ html,body{overflow:hidden} #view{padding-top:12px} .cell{animation:pop .5s cubic
   document.querySelectorAll('.ticket').forEach((t) => { t.classList.add('rv'); io.observe(t); });
 })();
 
-(function(){
-  const scenes = [
-    { src: () => document.querySelector('.strip .phone:first-child .scr'), t: 'Answer four questions', p: 'Goal, weight, weekly budget and anything you don\'t eat. That\'s your protein and calorie targets set.', d: 9 },
-    { src: () => document.querySelectorAll('.step .scr')[0], t: 'Tick the meals you fancy', p: 'Fuel fills the week grid, keeps short-life meals early and freezer ones late, and shows protein against your target every day.', d: 11 },
-    { src: () => document.querySelectorAll('.step .scr')[1], t: 'Cook once on Sunday', p: 'A run sheet, longest cook first. Every recipe scaled to your portions, with tubs for the fridge and the freezer.', d: 10 },
-    { src: () => document.querySelectorAll('.step .scr')[2], t: 'Shop at the cheapest', p: 'Everything totted up in real packs and priced at every supermarket. Tick off what you have, tick off as you shop.', d: 10 },
-  ];
-  const tour = document.querySelector('.tour'); if (!tour) return;
-  const scr = document.getElementById('tour-scr'), cap = document.getElementById('tour-cap'), steps = document.querySelectorAll('#tour-steps li'), bar = document.getElementById('tour-bar'), time = document.getElementById('tour-time'), toggle = document.getElementById('tour-toggle'), play = document.getElementById('tour-play');
-  const total = scenes.reduce((a, s) => a + s.d, 0);
-  let i = 0, elapsed = 0, timer = null, playing = false;
-  const mmss = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
-  function show(n) {
-    i = n; const sc = scenes[i]; const src = sc.src(); if (!src) return;
-    scr.classList.add('fade'); setTimeout(() => { scr.srcdoc = src.getAttribute('srcdoc'); scr.classList.remove('fade'); }, 350);
-    cap.innerHTML = `<b>${sc.t}</b><p>${sc.p}</p>`; steps.forEach((li, k) => li.classList.toggle('on', k === i));
-    elapsed = scenes.slice(0, i).reduce((a, s) => a + s.d, 0);
-  }
-  function tick() { elapsed += 0.1; const start = scenes.slice(0, i).reduce((a, s) => a + s.d, 0); if (elapsed >= start + scenes[i].d) { if (i + 1 < scenes.length) show(i + 1); else { stop(); show(0); return; } } bar.style.width = `${Math.min(100, elapsed / total * 100)}%`; time.textContent = `${mmss(elapsed)} / ${mmss(total)}`; }
-  function start() { if (playing) return; playing = true; tour.classList.add('playing'); toggle.textContent = 'Pause'; timer = setInterval(tick, 100); }
-  function stop() { playing = false; tour.classList.remove('playing'); toggle.textContent = 'Play'; clearInterval(timer); }
-  play.addEventListener('click', start); toggle.addEventListener('click', () => (playing ? stop() : start()));
-  steps.forEach((li, k) => li.addEventListener('click', () => { show(k); bar.style.width = `${elapsed / total * 100}%`; time.textContent = `${mmss(elapsed)} / ${mmss(total)}`; }));
-  show(0);
-})();
 </script>
