@@ -5,4 +5,5 @@ export const CONFIG = {
   SUPABASE_ANON_KEY: 'sb_publishable_ghYVovG_UYVNy6fxnUFd8w_Au3Tryvm',   // the "anon public" key from Supabase → Project Settings → API
   CHECKOUT_URL: '',        // your Lemon Squeezy or Stripe payment link; leave empty to hide the Upgrade button
   APP_NAME: 'Fuel',
+  PRICE_LABEL: '£3.99',    // shown on the access screen; the real price lives in the checkout
 };

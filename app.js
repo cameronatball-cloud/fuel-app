@@ -3,7 +3,7 @@ import { CONFIG } from './config.js';
 import { cloud, initCloud, onCloudChange, signIn, signUp, resetPassword, redeemCode, signOut, hasAccess, pullState, pushStateSoon } from './cloud.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v27';
+const APP_VERSION = 'v28';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 
@@ -528,7 +528,7 @@ function gateScreen() {
         <div class="perk"><span class="ico">🛒</span><div><b>The cheapest shop</b><small>Item by item, shop by shop, against your budget</small></div></div>
         <div class="perk"><span class="ico">☁️</span><div><b>Synced everywhere</b><small>Phone, laptop, new phone: same plan</small></div></div>
       </div>
-      ${url ? `<div class="gcard price"><div><b>One-off</b><small>Pay once, keep it forever. No subscription.</small></div><a class="go" href="${esc(url)}" target="_blank" rel="noopener">Buy ${name}</a></div>` : `<div class="gcard price"><div><b>Passes open soon</b><small>For now, access is by code.</small></div></div>`}
+      ${url ? `<div class="gcard price"><div><b>${esc(CONFIG.PRICE_LABEL || '')} one-off</b><small>Pay once, keep it forever. No subscription.</small></div><a class="go" href="${esc(url)}" target="_blank" rel="noopener">Buy ${name}</a></div>` : `<div class="gcard price"><div><b>${esc(CONFIG.PRICE_LABEL || '')} one-off, opening soon</b><small>Pay once, keep it forever. For now, access is by code.</small></div></div>`}
       <form id="code-form" class="gcard codecard"><label for="gate-code"><b>Have a code?</b><small>From a friend, a club, or the founder.</small></label><div class="row"><input id="gate-code" class="big grow" name="code" required placeholder="ENTER CODE" autocapitalize="characters" autocomplete="off" spellcheck="false"><button class="go" type="submit">Use it</button></div><div id="code-msg" class="signin-msg" hidden></div></form>
       <p class="gfoot"><button class="back" data-action="gate-refresh">I've paid, refresh</button><span>·</span><button class="back" data-action="signout">Sign out</button></p></div>`;
   }
