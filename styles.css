@@ -231,3 +231,22 @@ html { scroll-behavior: auto; }
 .signin-msg { margin-top: 12px; padding: 12px 14px; border-radius: 14px; font-size: 15px; font-weight: 600; background: rgba(255,255,255,.18); }
 .signin-msg.ok { background: rgba(124,255,178,.25); }
 .signin-msg.bad { background: rgba(255,80,80,.35); }
+
+/* access screen */
+#gate .gate-access h1 { font-size: 44px; }
+#gate .who { font-size: 15px; opacity: .85; margin: -4px 0 18px; }
+#gate .gcard { background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.22); border-radius: 20px; padding: 14px 16px; margin-bottom: 12px; backdrop-filter: blur(8px); }
+#gate .perk { display: flex; gap: 12px; align-items: center; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,.14); }
+#gate .perk:last-child { border-bottom: 0; }
+#gate .perk .ico { font-size: 26px; width: 36px; text-align: center; flex: none; }
+#gate .perk b { display: block; font-size: 16px; }
+#gate .perk small, #gate .price small, #gate .codecard small { display: block; font-size: 13px; opacity: .85; font-weight: 600; margin-top: 2px; }
+#gate .price { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: rgba(255,255,255,.92); color: #1b1a2e; }
+#gate .price b { font-size: 18px; }
+#gate .price .go { width: auto; margin: 0; padding: 14px 20px; text-decoration: none; text-align: center; background: #ff4f7b; }
+#gate .codecard label { display: block; margin-bottom: 10px; }
+#gate .codecard .row { gap: 8px; }
+#gate .codecard input.big { font-size: 20px; letter-spacing: .08em; text-align: left; padding: 14px 16px; margin: 0; }
+#gate .codecard .go { width: auto; margin: 0; padding: 0 18px; height: 56px; white-space: nowrap; }
+#gate .gfoot { display: flex; align-items: center; gap: 12px; justify-content: center; margin-top: 8px; opacity: .9; }
+#gate .gfoot .back { padding: 8px 0; }

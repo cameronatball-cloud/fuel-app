@@ -3,7 +3,7 @@ import { CONFIG } from './config.js';
 import { cloud, initCloud, onCloudChange, signIn, signUp, resetPassword, redeemCode, signOut, hasAccess, pullState, pushStateSoon } from './cloud.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v26';
+const APP_VERSION = 'v27';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 
@@ -119,16 +119,24 @@ async function boot() {
   v.addEventListener('contextmenu', (e) => { if (e.target.closest('.cell')) e.preventDefault(); });
   render();
   if (!cloud.enabled && !S.settings.onboarded) openIntro();
-  onCloudChange(() => { const gated = gateScreen(); if (!gated && !S.settings.onboarded) openIntro(); if (S.tab === 'pantry') render(); });
-  if (cloud.enabled) { cloud.status = 'loading'; gateScreen(); }
-  initCloud().then(async () => {
-    if (!cloud.user) return;
-    const remote = await pullState();
-    if (remote && remote.updated_at && (!S.updatedAt || remote.updated_at > S.updatedAt)) {
-      const keepTab = S.tab; Object.assign(S, remote.data, { tab: keepTab }); setupWeeks(); try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {} render(); toast('Synced from your account');
-    } else if (!remote) { pushStateSoon(syncable); }
+  onCloudChange(async () => {
+    const gated = gateScreen();
+    if (cloud.user && cloud.user.id !== syncedFor) { syncedFor = cloud.user.id; await syncOnSignIn(); }
+    if (!gated && !S.settings.onboarded) openIntro();
+    if (S.tab === 'pantry') render();
   });
+  if (cloud.enabled) { cloud.status = 'loading'; gateScreen(); }
+  initCloud();
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+// On any sign-in (at boot or from the gate): take the account's saved copy if it's newer, otherwise send this phone's copy up.
+let syncedFor = null;
+async function syncOnSignIn() {
+  const remote = await pullState();
+  if (remote && remote.updated_at && (!S.updatedAt || remote.updated_at > S.updatedAt)) {
+    const keepTab = S.tab; Object.assign(S, remote.data, { tab: keepTab }); setupWeeks(); save(); render(); toast('Synced from your account');
+  } else pushStateSoon(syncable);
 }
 
 function render(opts = {}) {
@@ -512,11 +520,17 @@ function gateScreen() {
       <p class="small" style="opacity:.85;margin-top:16px"><a href="terms.html" style="color:#fff">Terms</a> · <a href="privacy.html" style="color:#fff">Privacy</a></p></div>`;
   } else {
     const url = CONFIG.CHECKOUT_URL ? `${CONFIG.CHECKOUT_URL}${CONFIG.CHECKOUT_URL.includes('?') ? '&' : '?'}checkout[custom][user_id]=${encodeURIComponent(cloud.user.id)}&checkout[email]=${encodeURIComponent(cloud.user.email)}` : '';
-    el.innerHTML = `<div class="wrap"><div class="logo">${name}</div><h1>Nearly there.</h1><p>You're signed in as <b>${esc(cloud.user.email)}</b>. ${name} is a one-off purchase: pay once, get everything, forever.</p>
-      <ul class="clean" style="margin:0 0 18px;opacity:.95"><li>${RAW().filter((r) => !r.slots.includes('snack')).length} recipes, priced at Aldi, Tesco, ASDA and Sainsbury's</li><li>Your week laid out, the Sunday cook list, the cheapest shop</li><li>Synced across your devices</li></ul>
-      ${url ? `<a class="go" href="${esc(url)}" target="_blank" rel="noopener" style="text-align:center;text-decoration:none">Buy ${name}</a>` : `<p>Passes aren't on sale yet.</p>`}
-      <form id="code-form" style="margin-top:14px"><p class="small" style="margin:0 0 6px">Have a code?</p><div class="row"><input class="big grow" name="code" required placeholder="Enter code" autocapitalize="characters" autocomplete="off" style="font-size:18px;text-align:left"><button class="go" type="submit" style="width:auto;padding:0 18px">Use it</button></div><div id="code-msg" class="signin-msg" hidden></div></form>
-      <button class="back" data-action="gate-refresh">I've paid · refresh</button><button class="back" data-action="signout">Sign out</button></div>`;
+    const n = RAW().filter((r) => !r.slots.includes('snack')).length;
+    el.innerHTML = `<div class="wrap gate-access"><div class="logo">${name}</div><h1>You're in.<br>Nearly.</h1><p class="who">Signed in as <b>${esc(cloud.user.email)}</b></p>
+      <div class="gcard">
+        <div class="perk"><span class="ico">🍗</span><div><b>${n} recipes, all priced</b><small>Every ingredient read from Aldi, Tesco, ASDA and Sainsbury's</small></div></div>
+        <div class="perk"><span class="ico">📅</span><div><b>Your week, laid out</b><small>Tick meals, get the Sunday cook list and the tubs</small></div></div>
+        <div class="perk"><span class="ico">🛒</span><div><b>The cheapest shop</b><small>Item by item, shop by shop, against your budget</small></div></div>
+        <div class="perk"><span class="ico">☁️</span><div><b>Synced everywhere</b><small>Phone, laptop, new phone: same plan</small></div></div>
+      </div>
+      ${url ? `<div class="gcard price"><div><b>One-off</b><small>Pay once, keep it forever. No subscription.</small></div><a class="go" href="${esc(url)}" target="_blank" rel="noopener">Buy ${name}</a></div>` : `<div class="gcard price"><div><b>Passes open soon</b><small>For now, access is by code.</small></div></div>`}
+      <form id="code-form" class="gcard codecard"><label for="gate-code"><b>Have a code?</b><small>From a friend, a club, or the founder.</small></label><div class="row"><input id="gate-code" class="big grow" name="code" required placeholder="ENTER CODE" autocapitalize="characters" autocomplete="off" spellcheck="false"><button class="go" type="submit">Use it</button></div><div id="code-msg" class="signin-msg" hidden></div></form>
+      <p class="gfoot"><button class="back" data-action="gate-refresh">I've paid, refresh</button><span>·</span><button class="back" data-action="signout">Sign out</button></p></div>`;
   }
   el.hidden = false; return true;
 }
