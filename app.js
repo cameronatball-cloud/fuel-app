@@ -3,7 +3,7 @@ import { CONFIG } from './config.js';
 import { cloud, initCloud, onCloudChange, signIn, signUp, resetPassword, redeemCode, signOut, hasAccess, pullState, pushStateSoon } from './cloud.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v28';
+const APP_VERSION = 'v29';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 
@@ -519,7 +519,8 @@ function gateScreen() {
       <p class="small" style="margin-top:14px">${mode === 'signup' ? `Already have an account? <a href="#" data-action="auth-mode" data-mode="signin" style="color:#fff;font-weight:800">Sign in</a>` : `New here? <a href="#" data-action="auth-mode" data-mode="signup" style="color:#fff;font-weight:800">Create an account</a> · <a href="#" data-action="auth-forgot" style="color:#fff">Forgot password?</a>`}</p>
       <p class="small" style="opacity:.85;margin-top:16px"><a href="terms.html" style="color:#fff">Terms</a> · <a href="privacy.html" style="color:#fff">Privacy</a></p></div>`;
   } else {
-    const url = CONFIG.CHECKOUT_URL ? `${CONFIG.CHECKOUT_URL}${CONFIG.CHECKOUT_URL.includes('?') ? '&' : '?'}checkout[custom][user_id]=${encodeURIComponent(cloud.user.id)}&checkout[email]=${encodeURIComponent(cloud.user.email)}` : '';
+    // Stripe Payment Link: client_reference_id carries the account id to the webhook; prefilled_email saves typing.
+    const url = CONFIG.CHECKOUT_URL ? `${CONFIG.CHECKOUT_URL}${CONFIG.CHECKOUT_URL.includes('?') ? '&' : '?'}client_reference_id=${encodeURIComponent(cloud.user.id)}&prefilled_email=${encodeURIComponent(cloud.user.email)}` : '';
     const n = RAW().filter((r) => !r.slots.includes('snack')).length;
     el.innerHTML = `<div class="wrap gate-access"><div class="logo">${name}</div><h1>You're in.<br>Nearly.</h1><p class="who">Signed in as <b>${esc(cloud.user.email)}</b></p>
       <div class="gcard">
