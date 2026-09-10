@@ -212,7 +212,8 @@ html { scroll-behavior: auto; }
 #intro .stat-row div { flex: 1; background: rgba(255,255,255,.18); border-radius: 16px; padding: 12px; text-align: center; }
 #intro .stat-row b { display: block; font-size: 28px; }
 #intro .stat-row span { font-size: 12px; opacity: .9; font-weight: 700; }
-#gate .logo, #intro .logo { display: block; height: 30px; width: auto; margin-bottom: 20px; }
+#gate .logo, #intro .logo { font-family: "Bricolage Grotesque", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-weight: 800; font-size: 26px; letter-spacing: .01em; line-height: 1; margin-bottom: 22px; color: #fff; }
+#gate .logo b, #intro .logo b { color: #ff4f7b; font-weight: 800; }
 .range { width: 100%; accent-color: var(--accent); }
 .badge.snack { background: #fff1d6; color: #b45309; }
 
