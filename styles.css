@@ -212,7 +212,7 @@ html { scroll-behavior: auto; }
 #intro .stat-row div { flex: 1; background: rgba(255,255,255,.18); border-radius: 16px; padding: 12px; text-align: center; }
 #intro .stat-row b { display: block; font-size: 28px; }
 #intro .stat-row span { font-size: 12px; opacity: .9; font-weight: 700; }
-#gate .logo, #intro .logo { font-size: 15px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; opacity: .9; margin-bottom: 18px; }
+#gate .logo, #intro .logo { display: block; height: 30px; width: auto; margin-bottom: 20px; }
 .range { width: 100%; accent-color: var(--accent); }
 .badge.snack { background: #fff1d6; color: #b45309; }
 

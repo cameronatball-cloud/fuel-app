@@ -3,7 +3,7 @@ import { CONFIG } from './config.js';
 import { cloud, initCloud, onCloudChange, signIn, signUp, resetPassword, redeemCode, signOut, hasAccess, pullState, pushStateSoon } from './cloud.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v31';
+const APP_VERSION = 'v32';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 
@@ -510,11 +510,11 @@ function gateScreen() {
   const el = document.getElementById('gate');
   if (!cloud.enabled || hasAccess()) { el.hidden = true; el.innerHTML = ''; return false; }
   const name = esc(CONFIG.APP_NAME);
-  if (cloud.status === 'off' || cloud.status === 'loading') { el.innerHTML = `<div class="wrap"><div class="logo">${name}</div><h1>One moment…</h1></div>`; el.hidden = false; return true; }
-  if (cloud.status === 'error') { el.innerHTML = `<div class="wrap"><div class="logo">${name}</div><h1>Can't reach the cloud.</h1><p>${esc(cloud.error || '')}</p><button class="go" data-action="gate-retry">Try again</button></div>`; el.hidden = false; return true; }
+  if (cloud.status === 'off' || cloud.status === 'loading') { el.innerHTML = `<div class="wrap"><img class="logo" src="wordmark-light.svg" alt="${name}"><h1>One moment…</h1></div>`; el.hidden = false; return true; }
+  if (cloud.status === 'error') { el.innerHTML = `<div class="wrap"><img class="logo" src="wordmark-light.svg" alt="${name}"><h1>Can't reach the cloud.</h1><p>${esc(cloud.error || '')}</p><button class="go" data-action="gate-retry">Try again</button></div>`; el.hidden = false; return true; }
   if (!cloud.user) {
     const mode = S.authMode || 'signin';
-    el.innerHTML = `<div class="wrap"><div class="logo">${name}</div><h1>${mode === 'signup' ? 'Create your account.' : 'Sign in.'}</h1><p>Batch-cook Sunday, sorted till Saturday, priced at the cheapest shop.</p>
+    el.innerHTML = `<div class="wrap"><img class="logo" src="wordmark-light.svg" alt="${name}"><h1>${mode === 'signup' ? 'Create your account.' : 'Sign in.'}</h1><p>Batch-cook Sunday, sorted till Saturday, priced at the cheapest shop.</p>
       <form id="signin-form" data-mode="${mode}"><input class="big" name="email" type="email" required placeholder="you@uni.ac.uk" autocomplete="email" style="font-size:20px;text-align:left"><input class="big" name="password" type="password" required minlength="8" placeholder="${mode === 'signup' ? 'Choose a password (8+ characters)' : 'Password'}" autocomplete="${mode === 'signup' ? 'new-password' : 'current-password'}" style="font-size:20px;text-align:left;margin-top:10px"><button class="go" type="submit">${mode === 'signup' ? 'Create account' : 'Sign in'}</button><div id="signin-msg" class="signin-msg" hidden></div></form>
       <p class="small" style="margin-top:14px">${mode === 'signup' ? `Already have an account? <a href="#" data-action="auth-mode" data-mode="signin" style="color:#fff;font-weight:800">Sign in</a>` : `New here? <a href="#" data-action="auth-mode" data-mode="signup" style="color:#fff;font-weight:800">Create an account</a> · <a href="#" data-action="auth-forgot" style="color:#fff">Forgot password?</a>`}</p>
       <p class="small" style="opacity:.85;margin-top:16px"><a href="terms.html" style="color:#fff">Terms</a> · <a href="privacy.html" style="color:#fff">Privacy</a></p></div>`;
@@ -522,7 +522,7 @@ function gateScreen() {
     // Stripe Payment Link: client_reference_id carries the account id to the webhook; prefilled_email saves typing.
     const url = CONFIG.CHECKOUT_URL ? `${CONFIG.CHECKOUT_URL}${CONFIG.CHECKOUT_URL.includes('?') ? '&' : '?'}client_reference_id=${encodeURIComponent(cloud.user.id)}&prefilled_email=${encodeURIComponent(cloud.user.email)}` : '';
     const n = RAW().filter((r) => !r.slots.includes('snack')).length;
-    el.innerHTML = `<div class="wrap gate-access"><div class="logo">${name}</div><h1>You're in.<br>Nearly.</h1><p class="who">Signed in as <b>${esc(cloud.user.email)}</b></p>
+    el.innerHTML = `<div class="wrap gate-access"><img class="logo" src="wordmark-light.svg" alt="${name}"><h1>You're in.<br>Nearly.</h1><p class="who">Signed in as <b>${esc(cloud.user.email)}</b></p>
       <div class="gcard">
         <div class="perk"><span class="ico">🍗</span><div><b>${n} recipes, all priced</b><small>Every ingredient read from Aldi, Tesco, ASDA and Sainsbury's</small></div></div>
         <div class="perk"><span class="ico">📅</span><div><b>Your week, laid out</b><small>Tick meals, get the Sunday cook list and the tubs</small></div></div>
@@ -593,7 +593,7 @@ function introStep(n) {
   const wt = S.settings.weight || 85; const g = INTRO.goal || 'build';
   const budgets = [30, 40, 50, 60];
   const step = {
-    1: `<div class="logo">Fuel</div><h1>What's the goal?</h1><p>This sets your daily protein and calorie targets. You can change them any time.</p>${goals.map(([k, t, d]) => `<button class="opt ${g === k ? 'on' : ''}" data-action="intro-goal" data-goal="${k}">${t}<small>${d}</small></button>`).join('')}`,
+    1: `<img class="logo" src="wordmark-light.svg" alt="Fuel"><h1>What's the goal?</h1><p>This sets your daily protein and calorie targets. You can change them any time.</p>${goals.map(([k, t, d]) => `<button class="opt ${g === k ? 'on' : ''}" data-action="intro-goal" data-goal="${k}">${t}<small>${d}</small></button>`).join('')}`,
     2: `<h1>How much do you weigh?</h1><p>Kilos, roughly. Your daily protein and calorie targets come from this and your goal. Meals stay the same size; you hit the targets by what you pick.</p><input class="big" type="number" id="intro-weight" inputmode="numeric" value="${wt}" min="40" max="160"><div class="stat-row"><div><b id="iw-p">${P.proteinTargetFor(wt, g)}g</b><span>protein a day</span></div><div><b id="iw-f">${P.kcalTargetFor(wt, g).toLocaleString()}</b><span>kcal a day</span></div></div><button class="go" data-action="intro-weight">Next</button><button class="back" data-action="intro-back">Back</button>`,
     3: `<h1>Weekly food budget?</h1><p>The shop list always shows what's left against it.</p><div class="chips">${budgets.map((b) => `<button class="opt ${S.settings.budget === b ? 'on' : ''}" data-action="intro-budget" data-budget="${b}">£${b}</button>`).join('')}</div><p style="margin-bottom:6px">Or type your own</p><input class="big" type="number" id="intro-budget" inputmode="numeric" placeholder="£" min="10" max="300"><button class="go" data-action="intro-budget-custom">Next</button><button class="back" data-action="intro-back">Back</button>`,
     4: `<h1>Anything you don't eat?</h1><p>Recipes with these are hidden. Tap all that apply.</p><div class="chips">${Object.entries(AVOID).map(([k, v]) => `<button class="opt ${S.settings.avoid.includes(k) ? 'on' : ''}" data-action="intro-avoid" data-id="${k}">${v.label}</button>`).join('')}</div><button class="go" data-action="intro-next">Next</button><button class="back" data-action="intro-back">Back</button>`,
