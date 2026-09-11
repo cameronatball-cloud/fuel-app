@@ -3,7 +3,7 @@ import { CONFIG } from './config.js';
 import { cloud, initCloud, onCloudChange, signIn, signUp, resetPassword, redeemCode, signOut, hasAccess, pullState, pushStateSoon } from './cloud.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v35';
+const APP_VERSION = 'v36';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 
@@ -352,57 +352,65 @@ function renderShop() {
   const fullWeek = P.compareShops(needsAll, ing)[0];
   const head = `<h1>Shop</h1>${weekSwitch()}`;
   if (!Object.keys(needsAll).length) return `${head}<div class="card"><p>Nothing picked for ${weekLabel(S.activeWeek).toLowerCase()} yet. Tick meals on the Plan tab.</p></div>`;
-  // Rank: items a shop doesn't sell are not the app's fault and you'd buy them elsewhere, so only
-  // genuinely unpriced items make a shop "not comparable". Then cheapest total wins.
   const ranked = P.compareShops(needs, ing).map((b) => {
     const notSold = b.missing.filter((m) => (ingById(m.id)?.unavailable || []).includes(b.shop));
     const unpriced = b.missing.filter((m) => !(ingById(m.id)?.unavailable || []).includes(b.shop));
     return { ...b, notSold, unpriced };
   }).sort((a, b) => (a.unpriced.length - b.unpriced.length) || (a.total - b.total));
   const byShop = Object.fromEntries(ranked.map((b) => [b.shop, b]));
-  const split = P.cheapestSplit(needs, ing);
   const best = ranked[0];
+  const chosen = byShop[w.shop] ? byShop[w.shop] : best;
+  const split = P.cheapestSplit(needs, ing);
   const budget = S.settings.budget;
-  const pct = Math.min(100, Math.round((best.total / budget) * 100));
-  // per-shop totals table
-  const shown = ranked;
-  const totals = `<table class="tbl"><thead><tr><th>Shop</th><th class="r">Total</th><th class="r">Priced</th><th class="r">Not sold</th><th class="r">Unpriced</th></tr></thead><tbody>${shown.map((b) => `<tr class="${b === best ? 'best' : ''}"><td>${P.SHOP_NAMES[b.shop]}${b === best ? ' <span class="badge ok">cheapest</span>' : ''}</td><td class="r"><b>${P.gbp(b.total)}</b></td><td class="r">${b.lines.length}</td><td class="r">${b.notSold.length ? `<span class="badge">${b.notSold.length}</span>` : '0'}</td><td class="r">${b.unpriced.length ? `<span class="badge warn">${b.unpriced.length} · not comparable</span>` : '0'}</td></tr>`).join('')}</tbody></table>
-    <p class="small muted">Every price is read from that supermarket's own website (Tesco, ASDA, Sainsbury's and Aldi). "Not sold" means the shop doesn't stock it, so you'd get it elsewhere or already have it; the total leaves it out. "Unpriced" means no price exists online: Lidl publishes none for its everyday range, so Lidl stays blank until a shelf label is added.</p>`;
-  // per-item comparison
-  const ids = Object.keys(needs).filter((id) => ingById(id));
-  const cheapestFor = (id) => { let m = null; for (const s of P.SHOPS) { const l = byShop[s].lines.find((x) => x.id === id); if (l && (m === null || l.cost < m)) m = l.cost; } return m; };
-  const items = `<div class="scroll-x"><table class="tbl cmp"><thead><tr><th>Item</th>${P.SHOPS.map((s) => `<th class="r">${P.SHOP_NAMES[s].replace("Sainsbury's", 'Sains.')}</th>`).join('')}</tr></thead><tbody>${ids.map((id) => {
-    const it = ingById(id); const min = cheapestFor(id);
-    return `<tr><td>${esc(it.name)}<span class="sub">${P.fmtQty(P.round1(needs[id]), it.unit)}</span></td>${P.SHOPS.map((s) => { const l = byShop[s].lines.find((x) => x.id === id); return `<td class="r ${l && l.cost === min ? 'min' : ''}">${l ? P.gbp(l.cost) : '<span class="muted">—</span>'}</td>`; }).join('')}</tr>`;
-  }).join('')}</tbody></table></div>`;
-  const shopCard = (b, open) => {
-    const lines = b.lines.map((l) => {
-      const k = `${b.shop}:${l.id}`; const done = !!w.ticks[k];
-      return `<label class="line ${done ? 'done' : ''}"><input type="checkbox" data-tick="${k}" ${done ? 'checked' : ''}><span class="grow"><span class="name">${l.n > 1 ? `${l.n} × ` : ''}${esc(l.pack.name)}</span><span class="sub">${esc((usedBy[l.id] || []).join(', '))}</span></span><span class="cost">${P.gbp(l.cost)}</span></label>`;
-    }).join('');
-    const notSold = b.missing.filter((m) => (ingById(m.id)?.unavailable || []).includes(b.shop)).map((m) => esc(m.name));
-    const unpriced = b.missing.filter((m) => !(ingById(m.id)?.unavailable || []).includes(b.shop)).map((m) => esc(m.name));
-    const missing = (notSold.length ? `<div class="warn-box">Not sold at ${P.SHOP_NAMES[b.shop]}: ${notSold.join(', ')}.</div>` : '') + (unpriced.length ? `<div class="warn-box">No ${P.SHOP_NAMES[b.shop]} price on file for: ${unpriced.join(', ')}. ${b.shop === 'lidl' ? 'Lidl publishes no prices online; a shelf photo fixes this.' : b.shop === 'aldi' ? "Aldi's site lists nothing; the Aldi prices here come from Tesco and Sainsbury's price-match labels." : 'Tell Claude and it gets added.'}</div>` : '');
-    return `<details class="shop-card ${b === best ? 'best' : ''}" ${open ? 'open' : ''}><summary><span><b>${P.SHOP_NAMES[b.shop]}</b>${b === best ? ' <span class="badge ok">cheapest</span>' : ''}${b.missing.length ? ` <span class="badge warn">${b.missing.length} unpriced</span>` : ''}</span><span class="total">${P.gbp(b.total)}</span></summary>${missing}<div>${lines}</div></details>`;
-  };
-  const splitHtml = split ? `<div class="card"><h3>Two shops saves ${P.gbp(split.saving)}</h3><p class="small muted">${P.SHOP_NAMES[split.shops[0]]} + ${P.SHOP_NAMES[split.shops[1]]} = ${P.gbp(split.total)} against ${P.gbp(best.total)} at ${P.SHOP_NAMES[best.shop]}. Only worth it if you're passing both.</p>
-    ${split.baskets.map((b) => `<p class="small"><b>${P.SHOP_NAMES[b.shop]}</b> ${P.gbp(b.total)}: ${b.lines.map((l) => esc(l.name)).join(', ')}</p>`).join('')}</div>` : '';
-  const unpricedAll = ids.filter((id) => !(ingById(id)?.packs || []).length).map((id) => ingById(id)?.name);
-  const haveRows = Object.keys(needsAll).filter((id) => pantryFor[id] !== undefined).map((id) => { const it = ingById(id); const v = pantryFor[id]; return `<div class="line"><span class="grow"><span class="name">${esc(it?.name || id)}</span><span class="sub">${v === true ? 'plenty in' : `${P.fmtQty(v, it.unit)} in, need ${P.fmtQty(P.round1(needsAll[id]), it.unit)}`} · ${esc((usedBy[id] || []).join(', '))}</span></span><button class="btn ghost small" data-action="need" data-id="${id}">Need it</button></div>`; }).join('');
+  const pct = Math.min(100, Math.round((chosen.total / budget) * 100));
   const oldest = ranked.map((b) => b.oldest).filter(Boolean).sort()[0];
+  // shop picker: one chip per shop, total on it
+  const chips = ranked.map((b) => {
+    const dead = b.unpriced.length === b.missing.length && b.lines.length === 0;
+    return `<button class="shopchip ${b === chosen ? 'on' : ''} ${dead ? 'dead' : ''}" data-action="pick-shop" data-shop="${b.shop}"><span>${P.SHOP_NAMES[b.shop]}</span><b>${b.lines.length ? P.gbp(b.total) : '—'}</b>${b === best && b.lines.length ? '<i>cheapest</i>' : b.unpriced.length ? `<i>${b.unpriced.length} unpriced</i>` : b.notSold.length ? `<i>${b.notSold.length} not sold</i>` : '<i>&nbsp;</i>'}</button>`;
+  }).join('');
+  // the list for the chosen shop
+  const online = { tesco: (q) => `https://www.tesco.com/groceries/en-GB/search?query=${encodeURIComponent(q)}`, asda: (q) => `https://www.asda.com/groceries/search/${encodeURIComponent(q)}`, sainsburys: (q) => `https://www.sainsburys.co.uk/gol-ui/SearchResults/${encodeURIComponent(q)}` };
+  const cheapestFor = (id) => { let m = null; for (const s of P.SHOPS) { const l = byShop[s]?.lines.find((x) => x.id === id); if (l && (m === null || l.cost < m.cost)) m = { cost: l.cost, shop: s }; } return m; };
+  const lines = chosen.lines.map((l) => {
+    const k = `${chosen.shop}:${l.id}`; const done = !!w.ticks[k];
+    const cheap = cheapestFor(l.id); const elsewhere = cheap && cheap.shop !== chosen.shop && l.cost - cheap.cost >= 0.3 ? `<span class="sub alt">${P.gbp(cheap.cost)} at ${P.SHOP_NAMES[cheap.shop]}</span>` : '';
+    const link = online[chosen.shop] ? `<a class="find" href="${online[chosen.shop](l.pack.name)}" target="_blank" rel="noopener" aria-label="Find at ${P.SHOP_NAMES[chosen.shop]}">↗</a>` : '';
+    return `<label class="line ${done ? 'done' : ''}"><input type="checkbox" data-tick="${k}" ${done ? 'checked' : ''}><span class="grow"><span class="name">${l.n > 1 ? `${l.n} × ` : ''}${esc(l.pack.name)}</span><span class="sub">${esc((usedBy[l.id] || []).join(', '))}</span>${elsewhere}</span><span class="cost">${P.gbp(l.cost)}</span>${link}</label>`;
+  }).join('');
+  const notSold = chosen.notSold.map((m) => esc(m.name)); const unpriced = chosen.unpriced.map((m) => esc(m.name));
+  const missing = (notSold.length ? `<div class="warn-box">Not sold at ${P.SHOP_NAMES[chosen.shop]}: ${notSold.join(', ')}. Pick them up elsewhere.</div>` : '') + (unpriced.length ? `<div class="warn-box">No ${P.SHOP_NAMES[chosen.shop]} price on file for: ${unpriced.join(', ')}.${chosen.shop === 'lidl' ? ' Lidl publishes no prices online.' : ''}</div>` : '');
+  const done = chosen.lines.filter((l) => w.ticks[`${chosen.shop}:${l.id}`]).length;
+  // item-by-item, folded away
+  const ids = Object.keys(needs).filter((id) => ingById(id));
+  const cmpRows = ids.map((id) => { const it = ingById(id); const min = cheapestFor(id); return `<tr><td>${esc(it.name)}<span class="sub">${P.fmtQty(P.round1(needs[id]), it.unit)}</span></td>${P.SHOPS.map((s) => { const l = byShop[s]?.lines.find((x) => x.id === id); return `<td class="r ${l && min && s === min.shop ? 'min' : ''}">${l ? P.gbp(l.cost) : '<span class="muted">—</span>'}</td>`; }).join('')}</tr>`; }).join('');
+  const items = `<details class="fold"><summary><b>Compare item by item</b><span class="muted small">every shop, every line</span></summary><div class="scroll-x"><table class="tbl cmp"><thead><tr><th>Item</th>${P.SHOPS.map((s) => `<th class="r">${P.SHOP_NAMES[s].replace("Sainsbury's", 'Sains.')}</th>`).join('')}</tr></thead><tbody>${cmpRows}</tbody></table></div><p class="small muted">Green is the cheapest for that item. Swipe sideways.</p></details>`;
+  const splitHtml = split ? `<details class="fold"><summary><b>Two shops saves ${P.gbp(split.saving)}</b><span class="muted small">${P.SHOP_NAMES[split.shops[0]]} + ${P.SHOP_NAMES[split.shops[1]]}</span></summary>${split.baskets.map((b) => `<p class="small"><b>${P.SHOP_NAMES[b.shop]}</b> ${P.gbp(b.total)}: ${b.lines.map((l) => esc(l.name)).join(', ')}</p>`).join('')}<p class="small muted">Only worth it if you're passing both.</p></details>` : '';
+  const unpricedAll = ids.filter((id) => !(ingById(id)?.packs || []).length).map((id) => ingById(id)?.name);
+  const haveIds = Object.keys(needsAll).filter((id) => pantryFor[id] !== undefined);
+  const haveRows = haveIds.map((id) => { const it = ingById(id); const v = pantryFor[id]; return `<div class="line"><span class="grow"><span class="name">${esc(it?.name || id)}</span><span class="sub">${v === true ? 'plenty' : `you have ${P.fmtQty(v, it?.unit || 'g')}`} · ${esc((usedBy[id] || []).join(', '))}</span></span><button class="btn ghost small" data-action="need" data-id="${id}">Need it</button></div>`; }).join('');
   return `${head}
   ${choiceHtml ? `<div class="card">${choiceHtml}</div>` : ''}
-  <div class="card"><div class="row"><span class="grow"><b style="font-size:22px">${P.gbp(best.total)}</b> at ${P.SHOP_NAMES[best.shop]}</span><span class="muted small">budget ${P.gbp(budget)}</span></div>
-    <div class="budget ${best.total > budget ? 'over' : ''}"><i style="width:${pct}%"></i></div>
-    ${haveRows ? `<p class="small"><b>${Object.keys(needsAll).filter((id) => pantryFor[id] !== undefined).length} ingredients are left off because they're ticked in Pantry</b> (see the bottom of this page). A new week starts with nothing ticked.</p>` : ''}
-    <p class="small muted">${best.total > budget ? `Over budget by ${P.gbp(best.total - budget)}. Drop a portion or two of the priciest meal.` : `${P.gbp(budget - best.total)} left for coffees.`} Prices checked ${oldest || 'n/a'}.</p></div>
-  <h2>Price by shop</h2><div class="card">${totals}</div>
-  <h2>Item by item</h2><div class="card">${items}<p class="small muted">Green is the cheapest for that item. Swipe sideways for more shops.</p></div>
-  ${splitHtml}
-  <h2>Tick-off list</h2><div class="shop-rank">${ranked.map((b, i) => shopCard(b, i === 0)).join('')}</div>
+  <div class="card shophead"><div class="row"><span class="grow"><b class="bigtotal">${P.gbp(chosen.total)}</b> <span class="muted">at ${P.SHOP_NAMES[chosen.shop]}</span></span><span class="muted small">budget ${P.gbp(budget)}</span></div>
+    <div class="budget ${chosen.total > budget ? 'over' : ''}"><i style="width:${pct}%"></i></div>
+    <p class="small muted">${chosen.total > budget ? `Over budget by ${P.gbp(chosen.total - budget)}.` : `${P.gbp(budget - chosen.total)} left.`}${haveIds.length ? ` ${haveIds.length} ingredient${haveIds.length > 1 ? 's' : ''} left off because ${haveIds.length > 1 ? "they're" : "it's"} ticked in Pantry.` : ''} Prices checked ${oldest || 'n/a'}.</p>
+    <div class="row" style="gap:8px;margin-top:6px"><button class="btn small grow" data-action="share-list">Share list</button><button class="btn ghost small grow" data-action="copy-list">Copy</button>${online[chosen.shop] ? `<a class="btn ghost small grow" style="text-align:center" href="${online[chosen.shop]('')}" target="_blank" rel="noopener">Shop online</a>` : ''}</div></div>
+  <h2>Where to shop</h2><div class="shopchips">${chips}</div>
+  <h2>${P.SHOP_NAMES[chosen.shop]} list <span class="muted" style="text-transform:none;letter-spacing:0;font-weight:600">${done}/${chosen.lines.length} ticked</span></h2>
+  <div class="card list">${missing}${lines || '<p class="muted">Nothing priced at this shop.</p>'}${chosen.lines.length ? `<p class="small muted" style="margin-top:8px">Tap ↗ to find that item online. A lower price shown under a line is where it's cheaper.</p>` : ''}</div>
+  ${items}${splitHtml}
   ${unpricedAll.length ? `<div class="card" style="margin-top:10px"><h3>No price anywhere yet</h3><p class="small muted">${unpricedAll.map(esc).join(', ')}. Left out of the totals until priced.</p></div>` : ''}
-  ${haveRows ? `<h2>Already in your pantry</h2><div class="card"><p class="small muted">Left off the list because it's ticked in Pantry. Tap "Need it" to put it back on. Buying everything would be ${P.gbp(fullWeek.total)} at ${P.SHOP_NAMES[fullWeek.shop]}.</p>${haveRows}</div>` : ''}
+  ${haveRows ? `<h2>Already in your pantry</h2><div class="card"><p class="small muted">Left off the list because it's ticked in Pantry. Tap "Need it" to put it back. Buying everything would be ${P.gbp(fullWeek.total)} at ${P.SHOP_NAMES[fullWeek.shop]}.</p>${haveRows}</div>` : ''}
   <p class="small muted">${esc(DATA.priceNote || '')}</p>`;
+}
+// Plain-text version of the chosen shop's list, for sharing or pasting into an online basket.
+function shopListText() {
+  const w = W(); const ing = ING(), recipes = REC();
+  const { needs } = shopNeeds(w, recipes);
+  const ranked = P.compareShops(needs, ing).map((b) => ({ ...b, unpriced: b.missing.filter((m) => !(ingById(m.id)?.unavailable || []).includes(b.shop)) })).sort((a, b) => (a.unpriced.length - b.unpriced.length) || (a.total - b.total));
+  const b = ranked.find((x) => x.shop === w.shop) || ranked[0];
+  const lines = b.lines.map((l) => `${w.ticks[`${b.shop}:${l.id}`] ? '☑' : '☐'} ${l.n > 1 ? `${l.n} × ` : ''}${l.pack.name} — ${P.gbp(l.cost)}`);
+  return `Fuel shop, ${weekLabel(S.activeWeek).toLowerCase()} at ${P.SHOP_NAMES[b.shop]}: ${P.gbp(b.total)}\n${lines.join('\n')}\n\nMade with Fuel · fuel app`;
 }
 
 // ----- Recipes -----
@@ -711,6 +719,12 @@ function onAction(e) {
   else if (a === 'relayout') { relayout(); refreshPlan(); }
   else if (a === 'dayx') { const i = +el.dataset.day; w.days[i] = !w.days[i]; relayout(w); refreshPlan(); }
   else if (a === 'need') { delete w.pantry[id]; save(); render(); }
+  else if (a === 'pick-shop') { w.shop = el.dataset.shop; save(); render(); }
+  else if (a === 'share-list' || a === 'copy-list') {
+    const txt = shopListText();
+    if (a === 'share-list' && navigator.share) { navigator.share({ title: 'Fuel shopping list', text: txt }).catch(() => {}); return; }
+    (navigator.clipboard?.writeText(txt) || Promise.reject()).then(() => toast('List copied. Paste it anywhere.'), () => askText('Copy this list', txt));
+  }
   else if (a === 'avoid') { const i = S.settings.avoid.indexOf(id); if (i >= 0) S.settings.avoid.splice(i, 1); else S.settings.avoid.push(id); save(); render(); }
   else if (a === 'intro') openIntro();
   else if (a === 'intro-goal') { INTRO.goal = el.dataset.goal; S.settings.goal = INTRO.goal; save(); introStep(2); }
