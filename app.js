@@ -3,7 +3,7 @@ import { CONFIG } from './config.js';
 import { cloud, initCloud, onCloudChange, signIn, signUp, resetPassword, redeemCode, signOut, hasAccess, pullState, pushStateSoon } from './cloud.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v34';
+const APP_VERSION = 'v35';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 
@@ -127,7 +127,19 @@ async function boot() {
   });
   if (cloud.enabled) { cloud.status = 'loading'; gateScreen(); }
   initCloud();
+  // Coming back from Stripe: re-check access without a manual refresh, and keep checking for a minute after a Buy tap.
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') recheckAccess(false); });
+  window.addEventListener('focus', () => recheckAccess(false));
+  setInterval(() => { if (S.buyStarted && Date.now() - S.buyStarted < 90000 && !hasAccess()) recheckAccess(false); }, 4000);
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+let recheckBusy = false;
+async function recheckAccess(manual) {
+  if (!cloud.enabled || !cloud.user || hasAccess() || recheckBusy) return;
+  recheckBusy = true;
+  try { await refreshAccess(); } catch {} finally { recheckBusy = false; }
+  if (hasAccess()) { S.buyStarted = 0; save(); gateScreen(); toast('Payment received. Welcome to Fuel.'); if (!S.settings.onboarded) openIntro(); else render({ top: true }); }
+  else if (manual) toast('Not unlocked yet. Give it a few seconds and try again.');
 }
 
 // On any sign-in (at boot or from the gate): take the account's saved copy if it's newer, otherwise send this phone's copy up.
@@ -529,7 +541,7 @@ function gateScreen() {
         <div class="perk"><span class="ico">🛒</span><div><b>The cheapest shop</b><small>Item by item, shop by shop, against your budget</small></div></div>
         <div class="perk"><span class="ico">☁️</span><div><b>Synced everywhere</b><small>Phone, laptop, new phone: same plan</small></div></div>
       </div>
-      ${url ? `<div class="gcard price"><div><b>${esc(CONFIG.PRICE_LABEL || '')} one-off</b><small>Pay once, keep it forever. No subscription.</small></div><a class="go" href="${esc(url)}" target="_blank" rel="noopener">Buy ${name}</a></div>` : `<div class="gcard price"><div><b>${esc(CONFIG.PRICE_LABEL || '')} one-off, opening soon</b><small>Pay once, keep it forever. For now, access is by code.</small></div></div>`}
+      ${url ? `<div class="gcard price"><div><b>${esc(CONFIG.PRICE_LABEL || '')} one-off</b><small>Pay once, keep it forever. No subscription.</small></div><a class="go" href="${esc(url)}" target="_blank" rel="noopener" data-action="buy">Buy ${name}</a></div>` : `<div class="gcard price"><div><b>${esc(CONFIG.PRICE_LABEL || '')} one-off, opening soon</b><small>Pay once, keep it forever. For now, access is by code.</small></div></div>`}
       <form id="code-form" class="gcard codecard"><label for="gate-code"><b>Have a code?</b><small>From a friend, a club, or the founder.</small></label><div class="row"><input id="gate-code" class="big grow" name="code" required placeholder="ENTER CODE" autocapitalize="characters" autocomplete="off" spellcheck="false"><button class="go" type="submit">Use it</button></div><div id="code-msg" class="signin-msg" hidden></div></form>
       <p class="gfoot"><button class="back" data-action="gate-refresh">I've paid, refresh</button><span>·</span><button class="back" data-action="signout">Sign out</button></p></div>`;
   }
@@ -713,7 +725,8 @@ function onAction(e) {
   else if (a === 'sinc' || a === 'sdec') { w.snacks[id] = Math.max(0, (w.snacks[id] || 0) + (a === 'sinc' ? 1 : -1)); if (!w.snacks[id]) delete w.snacks[id]; save(); refreshPlan(); }
   else if (a === 'fresh-default') { if (el.dataset.on === '1') S.freshDefault[id] = true; else delete S.freshDefault[id]; save(); render(); toast(el.dataset.on === '1' ? 'Made fresh each time, not batched' : 'Back on the batch list'); }
   else if (a === 'signout') { signOut().then(() => { gateScreen(); render(); }); }
-  else if (a === 'gate-refresh') { location.reload(); }
+  else if (a === 'gate-refresh') { recheckAccess(true); }
+  else if (a === 'buy') { S.buyStarted = Date.now(); save(); }
   else if (a === 'auth-mode') { e.preventDefault(); S.authMode = el.dataset.mode; gateScreen(); }
   else if (a === 'auth-forgot') {
     e.preventDefault(); const f = document.getElementById('signin-form'); const email = f?.email?.value?.trim(); const msg = f?.querySelector('#signin-msg');
