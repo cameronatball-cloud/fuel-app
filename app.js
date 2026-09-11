@@ -3,7 +3,7 @@ import { CONFIG } from './config.js';
 import { cloud, initCloud, onCloudChange, signIn, signUp, resetPassword, redeemCode, signOut, hasAccess, pullState, pushStateSoon } from './cloud.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v33';
+const APP_VERSION = 'v34';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 
@@ -142,7 +142,7 @@ async function syncOnSignIn() {
 function render(opts = {}) {
   const view = document.getElementById('view'); const y = view.scrollTop;
   document.querySelectorAll('#tabs button').forEach((b) => b.classList.toggle('active', b.dataset.tab === S.tab));
-  document.getElementById('view').innerHTML = ({ plan: renderPlan, cook: renderCook, shop: renderShop, recipes: renderRecipes, pantry: renderPantry })[S.tab]();
+  document.getElementById('view').innerHTML = `<div class="brandbar"><span class="wordmark" aria-label="Fuel">FU<b>£</b>L</span></div>` + ({ plan: renderPlan, cook: renderCook, shop: renderShop, recipes: renderRecipes, pantry: renderPantry })[S.tab]();
   view.scrollTop = opts.top ? 0 : y;
 }
 

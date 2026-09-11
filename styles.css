@@ -251,3 +251,8 @@ html { scroll-behavior: auto; }
 #gate .codecard .go { width: auto; margin: 0; padding: 0 18px; height: 56px; white-space: nowrap; }
 #gate .gfoot { display: flex; align-items: center; gap: 12px; justify-content: center; margin-top: 8px; opacity: .9; }
 #gate .gfoot .back { padding: 8px 0; }
+
+/* wordmark inside the app */
+.brandbar { display: flex; justify-content: flex-end; padding: 2px 0 0; margin-bottom: -22px; }
+.brandbar .wordmark { font-family: "Bricolage Grotesque", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-weight: 800; font-size: 17px; letter-spacing: .01em; color: var(--text); opacity: .9; }
+.brandbar .wordmark b { color: var(--accent); }
