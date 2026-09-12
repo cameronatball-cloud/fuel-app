@@ -3,7 +3,7 @@ import { CONFIG } from './config.js';
 import { cloud, initCloud, onCloudChange, signIn, signUp, resetPassword, redeemCode, signOut, hasAccess, pullState, pushStateSoon } from './cloud.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v37';
+const APP_VERSION = 'v38';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 
@@ -66,7 +66,8 @@ function setupWeeks() {
   if (S.portions) { S.weeks[thisSun] = { portions: S.portions, grid: S.grid, overflow: S.overflow || [], cookDay: S.cookDay || 0, ticks: S.ticks || {} }; delete S.portions; delete S.grid; delete S.overflow; delete S.cookDay; delete S.ticks; }
   for (const k of Object.keys(S.weeks)) if (k < thisSun) delete S.weeks[k];
   S.weeks[thisSun] ||= blankWeek(); S.weeks[nextSun] ||= blankWeek();
-  if (!S.weeks[S.activeWeek]) S.activeWeek = thisSun;
+  // First open late in the week (Fri/Sat): the week worth planning is the one that starts on Sunday.
+  if (!S.weeks[S.activeWeek]) S.activeWeek = !S.activeWeek && new Date().getDay() >= 5 ? nextSun : thisSun;
   S.thisSun = thisSun; S.nextSun = nextSun;
   // pantry used to be one global list; it now belongs to each week (a fresh week starts with nothing ticked)
   if (S.pantry) { const p = S.pantry; if (p.peppers_frozen !== undefined) { p.pepper = p.peppers_frozen; delete p.peppers_frozen; } S.weeks[thisSun].pantry = { ...(S.weeks[thisSun].pantry || {}), ...p }; delete S.pantry; }
@@ -116,11 +117,11 @@ async function boot() {
   v.addEventListener('pointerdown', onDragStart);
   v.addEventListener('contextmenu', (e) => { if (e.target.closest('.cell')) e.preventDefault(); });
   render();
-  if (!cloud.enabled && !S.settings.onboarded) openIntro();
+  if (!cloud.enabled) ensureIntro();
   onCloudChange(async () => {
     const gated = gateScreen();
     if (cloud.user && cloud.user.id !== syncedFor) { syncedFor = cloud.user.id; await syncOnSignIn(); }
-    if (!gated && !S.settings.onboarded) openIntro();
+    if (!gated) ensureIntro();
     if (S.tab === 'pantry') render();
   });
   if (cloud.enabled) { cloud.status = 'loading'; gateScreen(); }
@@ -136,7 +137,7 @@ async function recheckAccess(manual) {
   if (!cloud.enabled || !cloud.user || hasAccess() || recheckBusy) return;
   recheckBusy = true;
   try { await refreshAccess(); } catch {} finally { recheckBusy = false; }
-  if (hasAccess()) { S.buyStarted = 0; save(); gateScreen(); toast('Payment received. Welcome to Fuel.'); if (!S.settings.onboarded) openIntro(); else render({ top: true }); }
+  if (hasAccess()) { S.buyStarted = 0; save(); gateScreen(); toast('Payment received. Welcome to Fuel.'); if (!S.settings.onboarded) ensureIntro(); else render({ top: true }); }
   else if (manual) toast('Not unlocked yet. Give it a few seconds and try again.');
 }
 
@@ -146,6 +147,7 @@ async function syncOnSignIn() {
   const remote = await pullState();
   if (remote && remote.updated_at && (!S.updatedAt || remote.updated_at > S.updatedAt)) {
     const keepTab = S.tab; Object.assign(S, remote.data, { tab: keepTab }); setupWeeks(); save(); render(); toast('Synced from your account');
+    if (S.settings.onboarded && introOpen()) closeIntro();
   } else pushStateSoon(syncable);
 }
 
@@ -406,7 +408,7 @@ function renderShop() {
   const haveRows = haveIds.map((id) => { const it = ingById(id); const v = pantryFor[id]; return `<div class="line"><span class="grow"><span class="name">${esc(it?.name || id)}</span><span class="sub">${v === true ? 'plenty' : `you have ${P.fmtQty(v, it?.unit || 'g')}`} · ${esc((usedBy[id] || []).join(', '))}</span></span><button class="btn ghost small" data-action="need" data-id="${id}">Need it</button></div>`; }).join('');
   return `${head}
   ${choiceHtml ? `<div class="card">${choiceHtml}</div>` : ''}
-  <div class="card shophead"><div class="row"><span class="grow"><b class="bigtotal">${P.gbp(chosen.total)}</b> <span class="muted">at ${P.SHOP_NAMES[chosen.shop]}</span>${chosen.elsewhere ? `<span class="sub muted">+ ${P.gbp(chosen.elsewhere)} for ${chosen.notSold.length} item${chosen.notSold.length > 1 ? 's' : ''} it doesn't sell = ${P.gbp(chosen.comparable)}</span>` : ''}</span><span class="muted small">budget ${P.gbp(budget)}</span></div>
+  <div class="card shophead"><div class="row"><span class="grow"><b class="bigtotal">${P.gbp(chosen.total)}</b> <span class="muted">at ${P.SHOP_NAMES[chosen.shop]}</span>${chosen.elsewhere ? `<span class="sub muted"> + ${P.gbp(chosen.elsewhere)} for ${chosen.notSold.length} item${chosen.notSold.length > 1 ? 's' : ''} it doesn't sell = ${P.gbp(chosen.comparable)}</span>` : ''}</span><span class="muted small">budget ${P.gbp(budget)}</span></div>
     <div class="budget ${chosen.comparable > budget ? 'over' : ''}"><i style="width:${pct}%"></i></div>
     <p class="small muted">${chosen.comparable > budget ? `Over budget by ${P.gbp(chosen.comparable - budget)}.` : `${P.gbp(budget - chosen.comparable)} left.`}${haveIds.length ? ` ${haveIds.length} ingredient${haveIds.length > 1 ? 's' : ''} left off because ${haveIds.length > 1 ? "they're" : "it's"} ticked in Pantry.` : ''} Prices checked ${oldest || 'n/a'}.</p>
     <div class="row" style="gap:8px;margin-top:6px"><button class="btn small grow" data-action="share-list">Share list</button><button class="btn ghost small grow" data-action="copy-list">Copy</button>${online[chosen.shop] ? `<a class="btn ghost small grow" style="text-align:center" href="${online[chosen.shop]('')}" target="_blank" rel="noopener">Shop online</a>` : ''}</div></div>
@@ -543,7 +545,10 @@ function accountCard() {
 // The door: with cloud on, you sign in, and your account has to be active. Inside, nothing is locked.
 function gateScreen() {
   const el = document.getElementById('gate');
-  if (!cloud.enabled || hasAccess()) { el.hidden = true; el.innerHTML = ''; return false; }
+  if (!cloud.enabled || hasAccess()) { el.hidden = true; el.innerHTML = ''; el.dataset.key = ''; return false; }
+  const key = [cloud.status, cloud.user?.id || '', S.authMode || 'signin', cloud.error || ''].join('|');
+  if (!el.hidden && el.dataset.key === key) return true;
+  el.dataset.key = key;
   const name = esc(CONFIG.APP_NAME);
   if (cloud.status === 'off' || cloud.status === 'loading') { el.innerHTML = `<div class="wrap"><div class="logo wordmark" aria-label="${name}">FU<b>£</b>L</div><h1>One moment…</h1></div>`; el.hidden = false; return true; }
   if (cloud.status === 'error') { el.innerHTML = `<div class="wrap"><div class="logo wordmark" aria-label="${name}">FU<b>£</b>L</div><h1>Can't reach the cloud.</h1><p>${esc(cloud.error || '')}</p><button class="go" data-action="gate-retry">Try again</button></div>`; el.hidden = false; return true; }
@@ -619,6 +624,9 @@ function askText(title, placeholder) {
 }
 // First-open questionnaire, full screen: goal → weight → budget → dislikes → summary.
 const INTRO = { step: 1, goal: null };
+function introOpen() { return !document.getElementById('intro').hidden; }
+// Open the questionnaire for a first-time user, but never restart one that's already under way (sync ticks call this too).
+function ensureIntro() { if (!S.settings.onboarded && !introOpen()) openIntro(); }
 function openIntro() { INTRO.step = 1; INTRO.goal = S.settings.goal || null; introStep(1); }
 function introStep(n) {
   INTRO.step = n;
@@ -637,6 +645,9 @@ function introStep(n) {
   el.innerHTML = `<div class="wrap">${dots}${step}</div>`; el.hidden = false;
   const wIn = document.getElementById('intro-weight');
   if (wIn) wIn.addEventListener('input', () => { const v = +wIn.value || wt; document.getElementById('iw-p').textContent = P.proteinTargetFor(v, g) + 'g'; document.getElementById('iw-f').textContent = P.kcalTargetFor(v, g).toLocaleString(); });
+  // Enter / Go on a keyboard behaves like the Next button.
+  el.querySelectorAll('input.big').forEach((inp) => inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); el.querySelector('button.go')?.click(); } }));
+  if (wIn) { wIn.focus(); wIn.select(); }
 }
 function closeIntro() { const el = document.getElementById('intro'); el.hidden = true; el.innerHTML = ''; }
 document.getElementById('intro').addEventListener('click', onAction);
