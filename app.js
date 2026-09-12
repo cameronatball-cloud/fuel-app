@@ -3,7 +3,7 @@ import { CONFIG } from './config.js';
 import { cloud, initCloud, onCloudChange, signIn, signUp, resetPassword, redeemCode, signOut, hasAccess, pullState, pushStateSoon } from './cloud.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v38';
+const APP_VERSION = 'v39';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 
@@ -410,7 +410,7 @@ function renderShop() {
   ${choiceHtml ? `<div class="card">${choiceHtml}</div>` : ''}
   <div class="card shophead"><div class="row"><span class="grow"><b class="bigtotal">${P.gbp(chosen.total)}</b> <span class="muted">at ${P.SHOP_NAMES[chosen.shop]}</span>${chosen.elsewhere ? `<span class="sub muted"> + ${P.gbp(chosen.elsewhere)} for ${chosen.notSold.length} item${chosen.notSold.length > 1 ? 's' : ''} it doesn't sell = ${P.gbp(chosen.comparable)}</span>` : ''}</span><span class="muted small">budget ${P.gbp(budget)}</span></div>
     <div class="budget ${chosen.comparable > budget ? 'over' : ''}"><i style="width:${pct}%"></i></div>
-    <p class="small muted">${chosen.comparable > budget ? `Over budget by ${P.gbp(chosen.comparable - budget)}.` : `${P.gbp(budget - chosen.comparable)} left.`}${haveIds.length ? ` ${haveIds.length} ingredient${haveIds.length > 1 ? 's' : ''} left off because ${haveIds.length > 1 ? "they're" : "it's"} ticked in Pantry.` : ''} Prices checked ${oldest || 'n/a'}.</p>
+    <p class="small muted">${chosen.comparable > budget ? `Over budget by ${P.gbp(chosen.comparable - budget)}.` : `${P.gbp(budget - chosen.comparable)} left.`}${haveIds.length ? ` ${haveIds.length} ingredient${haveIds.length > 1 ? 's' : ''} left off because ${haveIds.length > 1 ? "they're" : "it's"} ticked in Pantry.` : ''} Prices checked ${oldest ? fmtDate(oldest) : 'n/a'}.</p>
     <div class="row" style="gap:8px;margin-top:6px"><button class="btn small grow" data-action="share-list">Share list</button><button class="btn ghost small grow" data-action="copy-list">Copy</button>${online[chosen.shop] ? `<a class="btn ghost small grow" style="text-align:center" href="${online[chosen.shop]('')}" target="_blank" rel="noopener">Shop online</a>` : ''}</div></div>
   <h2>Where to shop</h2><div class="shopchips">${chips}</div>
   <h2>${P.SHOP_NAMES[chosen.shop]} list <span class="muted" style="text-transform:none;letter-spacing:0;font-weight:600">${done}/${chosen.lines.length} ticked</span></h2>
@@ -556,7 +556,7 @@ function gateScreen() {
     const mode = S.authMode || 'signin';
     el.innerHTML = `<div class="wrap"><div class="logo wordmark" aria-label="${name}">FU<b>£</b>L</div><h1>${mode === 'signup' ? 'Create your account.' : 'Sign in.'}</h1><p>Batch-cook Sunday, sorted till Saturday, priced at the cheapest shop.</p>
       <form id="signin-form" data-mode="${mode}"><input class="big" name="email" type="email" required placeholder="you@uni.ac.uk" autocomplete="email" style="font-size:20px;text-align:left"><input class="big" name="password" type="password" required minlength="8" placeholder="${mode === 'signup' ? 'Choose a password (8+ characters)' : 'Password'}" autocomplete="${mode === 'signup' ? 'new-password' : 'current-password'}" style="font-size:20px;text-align:left;margin-top:10px"><button class="go" type="submit">${mode === 'signup' ? 'Create account' : 'Sign in'}</button><div id="signin-msg" class="signin-msg" hidden></div></form>
-      <p class="small" style="margin-top:14px">${mode === 'signup' ? `Already have an account? <a href="#" data-action="auth-mode" data-mode="signin" style="color:#fff;font-weight:800">Sign in</a>` : `New here? <a href="#" data-action="auth-mode" data-mode="signup" style="color:#fff;font-weight:800">Create an account</a> · <a href="#" data-action="auth-forgot" style="color:#fff">Forgot password?</a>`}</p>
+      <p class="small" style="margin-top:14px">${mode === 'signup' ? `Already have an account? <a href="#" data-action="auth-mode" data-mode="signin" style="color:#fff;font-weight:600">Sign in</a>` : `New here? <a href="#" data-action="auth-mode" data-mode="signup" style="color:#fff;font-weight:600">Create an account</a> · <a href="#" data-action="auth-forgot" style="color:#fff">Forgot password?</a>`}</p>
       <p class="small" style="opacity:.85;margin-top:16px"><a href="terms.html" style="color:#fff">Terms</a> · <a href="privacy.html" style="color:#fff">Privacy</a></p></div>`;
   } else {
     // Stripe Payment Link: client_reference_id carries the account id to the webhook; prefilled_email saves typing.
