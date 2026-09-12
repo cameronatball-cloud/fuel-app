@@ -2,7 +2,7 @@
 
 export const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 export const SLOTS = ['breakfast', 'lunch', 'dinner'];
-export const SHOPS = ['aldi', 'lidl', 'asda', 'tesco', 'sainsburys'];
+export const SHOPS = ['aldi', 'asda', 'tesco', 'sainsburys']; // Lidl publishes no prices online, so it can't be compared
 export const SHOP_NAMES = { aldi: 'Aldi', lidl: 'Lidl', asda: 'ASDA', tesco: 'Tesco', sainsburys: "Sainsbury's", any: 'Any shop' };
 
 const byId = (list) => Object.fromEntries(list.map((x) => [x.id, x]));

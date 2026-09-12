@@ -3,7 +3,7 @@ import { CONFIG } from './config.js';
 import { cloud, initCloud, onCloudChange, signIn, signUp, resetPassword, redeemCode, signOut, hasAccess, pullState, pushStateSoon } from './cloud.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v43';
+const APP_VERSION = 'v44';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 
@@ -206,7 +206,7 @@ async function syncOnSignIn() {
 function render(opts = {}) {
   const view = document.getElementById('view'); const y = view.scrollTop;
   document.querySelectorAll('#tabs button').forEach((b) => b.classList.toggle('active', b.dataset.tab === S.tab));
-  document.getElementById('view').innerHTML = `<div class="brandbar"><span class="wordmark" aria-label="Fuel">FU<b>£</b>L</span></div>` + ({ plan: renderPlan, cook: renderCook, shop: renderShop, recipes: renderRecipes, pantry: renderPantry })[S.tab]();
+  document.getElementById('view').innerHTML = `<div class="brandbar"><button class="gear" data-action="settings" aria-label="Settings" title="Settings">⚙</button><span class="wordmark" aria-label="Fuel">FU<b>£</b>L</span></div>` + ({ plan: renderPlan, cook: renderCook, shop: renderShop, recipes: renderRecipes, pantry: renderPantry })[S.tab]();
   view.scrollTop = opts.top ? 0 : y;
 }
 
@@ -328,6 +328,7 @@ function renderPlan() {
     const list = visible.filter((r) => (slot === 'breakfast' ? r.slots[0] === 'breakfast' : r.slots[0] !== 'breakfast') && (!q || r.name.toLowerCase().includes(q)));
     return list.length ? `<h2>${title}</h2><div class="card">${list.map((r) => pickRow(r, w, free)).join('')}</div>` : '';
   };
+  const nothing = q && !visible.some((r) => r.name.toLowerCase().includes(q)) && !snacks.length ? `<p class="muted">Nothing called "${esc(S.planSearch)}" in your recipes. Try Recipes → Find more meal ideas.</p>` : '';
   const sug = !Object.keys(w.portions).length ? suggestions(6) : [];
   const upIds = Object.keys(w.useUp || {});
   const usesUp = (r) => upIds.filter((u) => r.ingredients.some((x) => x.id === u || (ingById(x.id)?.choices || []).includes(u)));
@@ -339,11 +340,13 @@ function renderPlan() {
   <p class="small muted" style="margin:0 0 8px">Tick a meal to add it. Use − and + for how many portions this week.</p>
   <input class="search" placeholder="Search meals" value="${esc(S.planSearch || '')}" data-plan-search>
   ${upHtml}${sugHtml}
-  <div id="plan-pick">${group('breakfast', 'Breakfasts')}${group('mains', 'Mains (lunch or dinner)')}
+  <div id="plan-pick">${nothing}${group('breakfast', 'Breakfasts')}${group('mains', 'Mains (lunch or dinner)')}
   ${snackHtml}
-  ${hidden ? `<p class="small muted">${hidden} recipe${hidden > 1 ? 's' : ''} hidden because of what you don't eat (Pantry → Settings).</p>` : ''}
+  ${hidden ? `<p class="small muted">${hidden} recipe${hidden > 1 ? 's' : ''} hidden because of what you don't eat (Settings).</p>` : ''}
   <p class="small muted">Missing something? Recipes → <b>Find more meal ideas</b>.</p></div>`;
 }
+// Just the inside of #plan-pick, for the search box to refresh without redrawing the page.
+function planPickHtml() { const tmp = document.createElement('div'); tmp.innerHTML = renderPlan(); return tmp.querySelector('#plan-pick').innerHTML; }
 // Re-draw only what changed on the Plan tab: the top card/grid and the state of each pick row.
 function refreshPlan() {
   const top = document.getElementById('plan-top'); const w = W();
@@ -681,9 +684,9 @@ function renderPantry() {
     return `<div class="check"><input type="checkbox" data-pantry="${it.id}" ${on ? 'checked' : ''}><span class="grow">${esc(it.name)}${(it.packs || []).length ? '' : '<span class="sub">no price on file</span>'}${up ? '<span class="sub">using it up this week</span>' : ''}</span>${on ? `<button class="chip small useup ${up ? 'on' : ''}" data-action="useup" data-id="${it.id}" title="Plan meals that use this up">${up ? 'Using up' : 'Use up'}</button>` : ''}${on && !it.staple ? `<input class="qty" type="number" step="any" placeholder="plenty" data-pantry-qty="${it.id}" value="${typeof v === 'number' ? v : ''}"><span class="small muted">${it.unit === 'each' ? '' : it.unit}</span>` : ''}</div>`; };
   const html = order.filter((g) => groups[g]).map((g) => `<h2>${g}</h2><div class="card">${groups[g].map(row).join('')}</div>`).join('');
   const ticked = Object.keys(w.pantry).length;
-  return `<h1>Pantry</h1>${weekSwitch()}<p class="small muted">What's in the cupboard for <b>${weekLabel(S.activeWeek).toLowerCase()}</b>. Every week starts blank so the shop list shows everything; tick what you already have before you shop. Got leftovers that need eating? Tap <b>Use up</b> on them and Plan will suggest meals that use them. Leave the amount blank for "plenty", or type how much and the list buys only the difference. ${ticked} ticked.</p>
+  return `<h1>Pantry</h1>${weekSwitch()}<p class="small muted">Tick what you already have for <b>${weekLabel(S.activeWeek).toLowerCase()}</b> and it comes off the shop list. Leftovers that need eating? Tap <b>Use up</b> and Plan suggests meals for them. Leave the amount blank for "plenty", or type how much and the list buys only the difference. ${ticked} ticked.</p>
   <div class="row" style="margin-bottom:12px; flex-wrap:wrap"><button class="btn ghost" data-action="clear-pantry">Untick all</button></div>${html}
-  <h2>Settings</h2><div class="card">
+  <h2 id="settings">Settings</h2><div class="card">
     <label class="field">Bodyweight (kg)<input type="number" data-setting="weight" value="${S.settings.weight}"></label>
     <label class="field">Goal<select data-setting-str="goal"><option value="build" ${S.settings.goal === 'build' ? 'selected' : ''}>Build muscle</option><option value="lean" ${S.settings.goal === 'lean' ? 'selected' : ''}>Stay lean and strong</option><option value="lose" ${S.settings.goal === 'lose' ? 'selected' : ''}>Lose fat, keep muscle</option><option value="eatwell" ${S.settings.goal === 'eatwell' ? 'selected' : ''}>Just eat well</option></select></label>
     <h3 style="margin-top:14px">Daily targets</h3>
@@ -725,7 +728,7 @@ const INTRO = { step: 1, goal: null };
 function introOpen() { return !document.getElementById('intro').hidden; }
 // Open the questionnaire for a first-time user, but never restart one that's already under way (sync ticks call this too).
 function ensureIntro() { if (!S.settings.onboarded && !introOpen()) openIntro(); }
-function openIntro() { INTRO.step = 1; INTRO.goal = S.settings.goal || null; introStep(1); }
+function openIntro() { INTRO.step = 1; INTRO.goal = S.settings.onboarded ? (S.settings.goal || null) : null; introStep(1); }
 function introStep(n) {
   INTRO.step = n;
   const el = document.getElementById('intro');
@@ -885,6 +888,7 @@ function onAction(e) {
     (navigator.clipboard?.writeText(txt) || Promise.reject()).then(() => toast('List copied. Paste it anywhere.'), () => askText('Copy this list', txt));
   }
   else if (a === 'avoid') { const i = S.settings.avoid.indexOf(id); if (i >= 0) S.settings.avoid.splice(i, 1); else S.settings.avoid.push(id); save(); render(); }
+  else if (a === 'settings') { S.tab = 'pantry'; save(); render(); const v = document.getElementById('view'), h = document.getElementById('settings'); if (h) v.scrollTo({ top: v.scrollTop + h.getBoundingClientRect().top - v.getBoundingClientRect().top - 6 }); }
   else if (a === 'tip-done') { S.tips ||= {}; S.tips[el.dataset.tip] = true; save(); render(); }
   else if (a === 'scroll-pick') { const v = document.getElementById('view'), h = document.getElementById('pick-head'); if (h) v.scrollTo({ top: v.scrollTop + h.getBoundingClientRect().top - v.getBoundingClientRect().top - 6 }); }
   else if (a === 'intro') openIntro();
@@ -944,7 +948,8 @@ function onAction(e) {
       if (freshBox && val === cur) { if (freshBox.checked) w.fresh[key] = true; else delete w.fresh[key]; } else delete w.fresh[key];
       portionsFromGrid(); closeSheet(); refreshPlan();
     };
-    if (P.isOut(val) && P.isRecipeCell(cur) && recById(cur)?.cookMinutes > 0) {
+    const cooked = cookDate(w, S.activeWeek) <= iso(new Date()); // the batch cook for this week has been and gone
+    if (P.isOut(val) && P.isRecipeCell(cur) && recById(cur)?.cookMinutes > 0 && cooked) {
       closeSheet();
       ask(`Have you already cooked that ${shortName(recById(cur)).toLowerCase()}? Yes puts the spare portion in your freezer for another week.`, 'Yes, it\'s cooked').then((cooked) => { if (cooked) { S.tubs[cur] = (S.tubs[cur] || 0) + 1; w.grid[day][slot] = 'out'; delete w.fresh[key]; portionsFromGrid(); refreshPlan(); } else apply(); });
       return;
@@ -1014,7 +1019,7 @@ function onInput(e) {
   }
   const t = e.target;
   if (t.dataset.search !== undefined) { S.search = t.value; refreshCard(renderRecipes); }
-  else if (t.dataset.planSearch !== undefined) { S.planSearch = t.value; render(); const inp = document.querySelector('[data-plan-search]'); if (inp) { inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); } }
+  else if (t.dataset.planSearch !== undefined) { S.planSearch = t.value; const pick = document.getElementById('plan-pick'); if (pick) pick.innerHTML = planPickHtml(); else render(); }
 }
 function refreshCard(fn) { const v = document.getElementById('view'); const card = v.querySelector('.card'); if (card) { const tmp = document.createElement('div'); tmp.innerHTML = fn(); card.innerHTML = tmp.querySelector('.card').innerHTML; } }
 function onSubmit(e) {
@@ -1063,7 +1068,7 @@ function onSubmit(e) {
     if (!ings.length) { toast('Add at least one ingredient.'); return; }
     const method = String(fd.get('method')).split('\n').map((s) => s.trim()).filter(Boolean);
     const r = { id, name, slots, cold: !!fd.get('cold'), reheat: fd.get('reheat'), fridgeDays: +fd.get('fridgeDays') || 0, freezer: !!fd.get('freezer'), cookMinutes: +fd.get('cookMinutes') || 0, equipment: [], source: fd.get('source') || 'yours', ingredients: ings, method, notes: '' };
-    S.customRecipes = S.customRecipes.filter((x) => x.id !== id).concat([r]); META.clear(); save(); closeSheet(); render();
+    S.customRecipes = S.customRecipes.filter((x) => x.id !== id).concat([r]); if (S.library && !S.library.includes(id)) S.library.push(id); META.clear(); save(); closeSheet(); render(); toast('Saved to your recipes');
   }
 }
 
