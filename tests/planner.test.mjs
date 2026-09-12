@@ -79,7 +79,7 @@ test('autoLayout respects slot types and places short-life recipes first', () =>
   const all = grid.flatMap((d) => [d.lunch, d.dinner]);
   assert.equal(dinners.filter((x) => x === 'curry').length, 4);
   assert.equal(all.filter((x) => x === 'wrap').length, 3); // wrap may sit at lunch or dinner
-  // wraps keep 2 days and can't be frozen: every wrap lands on Sun or Mon
+  // wraps keep 2 days and can't be frozen: every wrap lands on the cook day or the day after
   grid.forEach((d, i) => { if (d.lunch === 'wrap' || d.dinner === 'wrap') assert.ok(i <= 1, `wrap on day ${i}`); });
   assert.equal(grid.every((d) => d.breakfast === 'eggs'), true);
   assert.equal(grid.filter((d) => d.lunch === 'salad').length, 3);
@@ -119,11 +119,20 @@ test('tubPlan splits fridge/freezer around cook day and flags unfreezable late p
   const t = tubPlan(recipes[0], grid, 0);
   assert.deepEqual(t.fridge, [0, 1]);
   assert.deepEqual(t.freezer, [3, 5]);
-  assert.equal(t.eatBy, 'Tue');
+  assert.equal(t.eatBy, 'Wed'); // cooked Monday, keeps 3 days
   [0, 2, 4].forEach((d) => (grid[d].lunch = 'salad'));
   const s = tubPlan(recipes[1], grid, 0);
   assert.deepEqual(s.fridge, [0, 2]);
   assert.deepEqual(s.late, [4]);
+});
+
+test('tubPlan with a Sunday cook (index 6) feeds the Mon–Sun week that follows', () => {
+  const grid = Array.from({ length: 7 }, () => ({ breakfast: null, lunch: null, dinner: null }));
+  [0, 1, 3, 6].forEach((d) => (grid[d].dinner = 'curry')); // Mon, Tue, Thu, Sun
+  const t = tubPlan(recipes[0], grid, 6);
+  assert.deepEqual(t.fridge, [0, 1, 6]); // Mon and Tue are 1–2 days after the Sunday cook; Sunday itself is cooked that day
+  assert.deepEqual(t.freezer, [3]);
+  assert.equal(t.eatBy, 'Tue');
 });
 
 test('runSheet orders longest cook first and skips no-cook recipes', () => {

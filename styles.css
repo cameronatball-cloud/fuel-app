@@ -298,3 +298,7 @@ ul.store li:last-child { border-bottom: 0; }
 ul.store li b { display: inline-block; min-width: 64px; color: #5b3fb8; }
 .gridcard { padding: 12px; }
 
+
+#view.dragging { touch-action: none; }
+.cell.ghost { transition: none; opacity: .96; transform-origin: center; }
+.cell.over { background: #fff; }

@@ -3,7 +3,7 @@ import { CONFIG } from './config.js';
 import { cloud, initCloud, onCloudChange, signIn, signUp, resetPassword, redeemCode, signOut, hasAccess, pullState, pushStateSoon } from './cloud.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v40';
+const APP_VERSION = 'v41';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 
@@ -55,22 +55,38 @@ const cellStyle = (id) => `background:hsl(${hue(id)} 90% 82%);color:hsl(${hue(id
 
 // ---------- weeks ----------
 const iso = (d) => d.toISOString().slice(0, 10);
-function sundayOf(date) { const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())); d.setUTCDate(d.getUTCDate() - d.getUTCDay()); return iso(d); }
+function mondayOf(date) { const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())); d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7)); return iso(d); }
+const DAY_FULL = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+// The date you actually cook for this week: a Sunday cook is the Sunday before the week starts.
+function cookDate(w, key) { return w.cookDay === 6 ? addDays(key, -1) : addDays(key, w.cookDay); }
 function addDays(isoDate, n) { const d = new Date(isoDate + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return iso(d); }
 function fmtDate(isoDate) { const d = new Date(isoDate + 'T00:00:00Z'); return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' }); }
 const W = () => S.weeks[S.activeWeek];
-function blankWeek() { return { portions: {}, grid: null, overflow: [], cookDay: 0, ticks: {}, days: [true, true, true, true, true, true, true], choices: {}, pantry: {}, fresh: {} }; }
+function blankWeek() { return { portions: {}, grid: null, overflow: [], cookDay: 6, ticks: {}, days: [true, true, true, true, true, true, true], choices: {}, pantry: {}, fresh: {} }; }
 function setupWeeks() {
-  const thisSun = sundayOf(new Date()), nextSun = addDays(thisSun, 7);
+  const thisMon = mondayOf(new Date()), nextMon = addDays(thisMon, 7);
+  // Weeks used to start on Sunday (index 0 = Sun). They now run Mon–Sun: shift saved weeks one day and rotate their grids.
+  if (!S.monFirst) {
+    const moved = {};
+    for (const [k, wk] of Object.entries(S.weeks)) {
+      const rot = (i) => (i + 6) % 7; // old Sun(0)→6, Mon(1)→0 …
+      if (wk.grid) wk.grid = Array.from({ length: 7 }, (_, j) => wk.grid[(j + 1) % 7]);
+      if (wk.days) wk.days = Array.from({ length: 7 }, (_, j) => wk.days[(j + 1) % 7]);
+      wk.cookDay = rot(wk.cookDay || 0);
+      const fr = {}; for (const [kk, v] of Object.entries(wk.fresh || {})) { const [d, sl] = kk.split('-'); fr[`${rot(+d)}-${sl}`] = v; } wk.fresh = fr;
+      moved[addDays(k, 1)] = wk;
+    }
+    S.weeks = moved; if (S.activeWeek) S.activeWeek = addDays(S.activeWeek, 1); S.monFirst = true;
+  }
   // migrate v1 single-week state
-  if (S.portions) { S.weeks[thisSun] = { portions: S.portions, grid: S.grid, overflow: S.overflow || [], cookDay: S.cookDay || 0, ticks: S.ticks || {} }; delete S.portions; delete S.grid; delete S.overflow; delete S.cookDay; delete S.ticks; }
-  for (const k of Object.keys(S.weeks)) if (k < thisSun) delete S.weeks[k];
-  S.weeks[thisSun] ||= blankWeek(); S.weeks[nextSun] ||= blankWeek();
+  if (S.portions) { S.weeks[thisMon] = { portions: S.portions, grid: S.grid, overflow: S.overflow || [], cookDay: S.cookDay || 0, ticks: S.ticks || {} }; delete S.portions; delete S.grid; delete S.overflow; delete S.cookDay; delete S.ticks; }
+  for (const k of Object.keys(S.weeks)) if (k < thisMon) delete S.weeks[k];
+  S.weeks[thisMon] ||= blankWeek(); S.weeks[nextMon] ||= blankWeek();
   // First open late in the week (Fri/Sat): the week worth planning is the one that starts on Sunday.
-  if (!S.weeks[S.activeWeek]) S.activeWeek = !S.activeWeek && new Date().getDay() >= 5 ? nextSun : thisSun;
-  S.thisSun = thisSun; S.nextSun = nextSun;
+  if (!S.weeks[S.activeWeek]) S.activeWeek = !S.activeWeek && [0, 5, 6].includes(new Date().getDay()) ? nextMon : thisMon;
+  S.thisMon = thisMon; S.nextMon = nextMon;
   // pantry used to be one global list; it now belongs to each week (a fresh week starts with nothing ticked)
-  if (S.pantry) { const p = S.pantry; if (p.peppers_frozen !== undefined) { p.pepper = p.peppers_frozen; delete p.peppers_frozen; } S.weeks[thisSun].pantry = { ...(S.weeks[thisSun].pantry || {}), ...p }; delete S.pantry; }
+  if (S.pantry) { const p = S.pantry; if (p.peppers_frozen !== undefined) { p.pepper = p.peppers_frozen; delete p.peppers_frozen; } S.weeks[thisMon].pantry = { ...(S.weeks[thisMon].pantry || {}), ...p }; delete S.pantry; }
   S.tubs ||= {}; S.freshDefault ||= {}; S.settings.avoid ||= []; S.settings.weight ||= 85; S.settings.goal ||= 'build'; S.settings.kcalTarget ||= P.kcalTargetFor(S.settings.weight, S.settings.goal);
   // Personal recipe library: existing users keep everything they had; new users start with the core set and add from Ideas.
   // Personal recipe library. Starts as the core set; everything else lives in "Find more meal ideas".
@@ -98,9 +114,9 @@ function portionsFromGrid(w = W()) {
 }
 // [1,1,3] -> "Mon ×2, Wed"
 function dayList(days) { const c = {}; for (const d of days) c[d] = (c[d] || 0) + 1; return Object.keys(c).map(Number).sort((x, y) => x - y).map((d) => c[d] > 1 ? `${P.DAYS[d]} ×${c[d]}` : P.DAYS[d]).join(', '); }
-function weekLabel(k) { return k === S.thisSun ? 'This week' : k === S.nextSun ? 'Next week' : `Week of ${fmtDate(k)}`; }
+function weekLabel(k) { return k === S.thisMon ? 'This week' : k === S.nextMon ? 'Next week' : `Week of ${fmtDate(k)}`; }
 function weekSwitch() {
-  return `<div class="chip-row week-switch">${[S.thisSun, S.nextSun].map((k) => `<button class="chip ${S.activeWeek === k ? 'on' : ''}" data-action="week" data-week="${k}">${weekLabel(k)} <span class="muted small">${fmtDate(k)}</span></button>`).join('')}</div>`;
+  return `<div class="chip-row week-switch">${[S.thisMon, S.nextMon].map((k) => `<button class="chip ${S.activeWeek === k ? 'on' : ''}" data-action="week" data-week="${k}">${weekLabel(k)} <span class="muted small">${fmtDate(k)}</span></button>`).join('')}</div>`;
 }
 
 // ---------- boot ----------
@@ -117,6 +133,7 @@ async function boot() {
   const v = document.getElementById('view');
   v.addEventListener('click', onAction); v.addEventListener('change', onChange); v.addEventListener('input', onInput);
   v.addEventListener('pointerdown', onDragStart);
+  v.addEventListener('touchmove', (e) => { if (drag.active) e.preventDefault(); }, { passive: false });
   v.addEventListener('contextmenu', (e) => { if (e.target.closest('.cell')) e.preventDefault(); });
   render();
   if (!cloud.enabled) ensureIntro();
@@ -232,9 +249,9 @@ function planTop(w) {
   const tubs = Object.entries(S.tubs).filter(([, n]) => n > 0);
   const tubHtml = tubs.length ? `<p class="small" style="margin-top:8px"><b>In the freezer:</b> ${tubs.map(([id, n]) => `${esc(recById(id)?.name)} ×${n}`).join(', ')}. Tap an empty slot to use one.</p>` : '';
   const hasGrid = chosen.length || tubs.length || Object.keys(lockedCells(w)).length;
-  const tips = (S.tips && S.tips.plan) ? '' : `<div class="card tipcard"><h3>How Fuel works</h3><ol class="tips"><li><b>Tick meals</b> in the list below. They're placed into your week for you.</li><li><b>Cook</b> shows what to batch cook on ${['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][w.cookDay]} and how to store it.</li><li><b>Shop</b> prices it all and finds the cheapest supermarket.</li></ol><button class="btn small" data-action="tip-done" data-tip="plan">Got it</button></div>`;
+  const tips = (S.tips && S.tips.plan) ? '' : `<div class="card tipcard"><h3>How Fuel works</h3><ol class="tips"><li><b>Tick meals</b> in the list below. They're placed into your week for you.</li><li><b>Cook</b> shows what to batch cook on ${DAY_FULL[w.cookDay]} and how to store it.</li><li><b>Shop</b> prices it all and finds the cheapest supermarket.</li></ol><button class="btn small" data-action="tip-done" data-tip="plan">Got it</button></div>`;
   const limitNote = weekFactor(w) >= 1.6 ? `Portions are as big as they go. Add snacks to get nearer ${kcalT.toLocaleString()} kcal.` : weekFactor(w) <= 0.6 ? `Portions are as small as they go. Drop a snack or a meal to get nearer ${kcalT.toLocaleString()} kcal.` : '';
-  const head = `<div class="card"><h3>${weekLabel(S.activeWeek)} <span class="muted small">from Sun ${fmtDate(S.activeWeek)}</span></h3>` + (chosen.length
+  const head = `<div class="card"><h3>${weekLabel(S.activeWeek)} <span class="muted small">Mon ${fmtDate(S.activeWeek)} – Sun ${fmtDate(addDays(S.activeWeek, 6))}</span></h3>` + (chosen.length
     ? `<div class="stat-grid"><div class="stat"><b>${st.filled}<span>/${st.slots}</span></b><span>meals planned</span></div><div class="stat"><b>${st.avg}g</b><span>protein a day<br>target ${target}g</span></div><div class="stat"><b>${st.avgKcal.toLocaleString()}</b><span>kcal a day<br>target ${kcalT.toLocaleString()}</span></div></div>
     ${limitNote ? `<p class="small muted" style="margin-top:8px">${limitNote}</p>` : ''}
     <div class="bars" style="margin-top:26px">${bars}</div><div class="bars-labels">${P.DAYS.map((d) => `<div>${d}</div>`).join('')}</div>
@@ -312,7 +329,7 @@ function renderCook() {
   const head = `<h1>Cook</h1>${weekSwitch()}`;
   if (!rs.list.length && !fresh.length) return `${head}<div class="card"><p>Nothing to cook for ${weekLabel(S.activeWeek).toLowerCase()} yet.</p><p class="small muted">Tick meals on the Plan tab and the cook list fills itself in.</p></div>`;
   const cookDay = P.DAYS[w.cookDay];
-  const dayFull = { Sun: 'Sunday', Mon: 'Monday', Tue: 'Tuesday', Wed: 'Wednesday', Thu: 'Thursday', Fri: 'Friday', Sat: 'Saturday' }[cookDay] || cookDay;
+  const dayFull = DAY_FULL[w.cookDay]; const cookOn = fmtDate(cookDate(w, S.activeWeek));
   const sheet = rs.list.map((x) => `<li><b>${esc(x.recipe.name)}</b><span class="muted small">${x.portions} portion${x.portions > 1 ? 's' : ''} · ${x.recipe.cookMinutes} min · ${x.recipe.equipment.join(', ')}</span></li>`).join('');
   const grouped = {};
   for (const x of fresh) { const g = (grouped[x.recipe.id] ||= { recipe: x.recipe, portions: 0, days: [] }); g.portions += x.portions; if (x.day && !g.days.includes(x.day)) g.days.push(x.day); }
@@ -343,7 +360,7 @@ function renderCook() {
     </div>`;
   }).join('');
   return `${head}
-  <div class="card"><h3>Batch cook on ${dayFull}</h3><p class="small muted" style="margin:0 0 8px">About ${rs.minutes} minutes. Start the longest one first and run the others alongside.</p><ol class="steps cooklist">${sheet}</ol>
+  <div class="card"><h3>Batch cook on ${dayFull} ${cookOn}</h3><p class="small muted" style="margin:0 0 8px">${w.cookDay === 6 ? 'The Sunday before the week starts. ' : ''}About ${rs.minutes} minutes. Start the longest one first and run the others alongside.</p><ol class="steps cooklist">${sheet}</ol>
   ${fresh.length ? `<h4 class="sub">Made fresh on the day</h4><ul class="clean">${freshList}</ul>` : ''}
   ${usesRice ? `<p class="small muted" style="margin-top:10px">Rice: freeze cooked rice the same day unless it's eaten within 24 hours.</p>` : ''}</div>
   ${cards}`;
@@ -676,7 +693,7 @@ document.getElementById('sheet').addEventListener('submit', onSubmit);
 document.getElementById('sheet').addEventListener('change', (e) => { const chip = e.target.closest('.chip'); if (chip && e.target.type === 'checkbox') chip.classList.toggle('on', e.target.checked); });
 
 // ---------- drag and drop between grid cells ----------
-const drag = { src: null, ghost: null, over: null, active: false, x: 0, y: 0, timer: null };
+const drag = { src: null, ghost: null, over: null, active: false, x: 0, y: 0, lx: 0, ly: 0, timer: null, touch: false, raf: null, scrollDir: 0 };
 let picked = null; // { d, s } after a press-and-hold on touch
 function cellAt(d, s) { return document.querySelector(`.cell[data-day="${d}"][data-slot="${s}"]`); }
 function pickUp(cell) {
@@ -701,46 +718,74 @@ function hideHint() { document.getElementById('hint')?.classList.remove('on'); }
 function onDragStart(e) {
   const cell = e.target.closest('.cell'); if (!cell || cell.classList.contains('empty') || cell.classList.contains('off') || e.button > 0 || drag.src) return;
   if (picked) return; // a tap while holding something is handled by the click handler
-  drag.src = cell; drag.x = e.clientX; drag.y = e.clientY; drag.active = false;
-  if (e.pointerType === 'mouse') { try { cell.setPointerCapture(e.pointerId); } catch {} }
-  else { clearTimeout(drag.timer); drag.timer = setTimeout(() => { if (drag.src === cell && !drag.active) { pickUp(cell); drag.src = null; suppressClick(); } }, 350); }
+  drag.src = cell; drag.x = drag.lx = e.clientX; drag.y = drag.ly = e.clientY; drag.active = false; drag.touch = e.pointerType !== 'mouse';
+  try { cell.setPointerCapture(e.pointerId); } catch {}
+  if (drag.touch) {
+    // Hold still for a moment and the meal lifts under your finger; move before that and it's just a scroll.
+    clearTimeout(drag.timer);
+    drag.timer = setTimeout(() => { if (drag.src === cell && !drag.active) { drag.active = true; startGhost({ clientX: drag.lx, clientY: drag.ly }); navigator.vibrate?.(12); showHint('Drag it onto another meal to swap, or onto an empty slot.'); } }, 280);
+  }
   cell.addEventListener('pointermove', onDragMove); cell.addEventListener('pointerup', onDragEnd); cell.addEventListener('pointercancel', onDragEnd);
 }
 function onDragMove(e) {
   if (!drag.src) return;
-  const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
-  if (e.pointerType !== 'mouse') { if (Math.hypot(dx, dy) > 10) { clearTimeout(drag.timer); cleanupDrag(drag.src); } return; } // finger moved: it's a scroll
-  if (!drag.active) { if (Math.hypot(dx, dy) < 8) return; drag.active = true; startGhost(e); }
-  drag.ghost.style.transform = `translate(${e.clientX - drag.ghost.offsetWidth / 2}px, ${e.clientY - drag.ghost.offsetHeight / 2}px)`;
-  drag.ghost.style.display = 'none';
-  const under = document.elementFromPoint(e.clientX, e.clientY)?.closest('.cell');
-  drag.ghost.style.display = '';
-  if (drag.over && drag.over !== under) drag.over.classList.remove('over');
-  if (under && under !== drag.src) { under.classList.add('over'); drag.over = under; } else drag.over = null;
+  drag.lx = e.clientX; drag.ly = e.clientY;
+  const dist = Math.hypot(e.clientX - drag.x, e.clientY - drag.y);
+  if (!drag.active) {
+    if (drag.touch) { if (dist > 10) { clearTimeout(drag.timer); cleanupDrag(drag.src); } return; } // finger moved early: it's a scroll
+    if (dist < 8) return; drag.active = true; startGhost(e);
+  }
+  moveGhost(e.clientX, e.clientY);
   e.preventDefault();
 }
+function moveGhost(x, y) {
+  if (!drag.ghost) return;
+  drag.ghost.style.transform = `translate(${x - drag.ghost.offsetWidth / 2}px, ${y - drag.ghost.offsetHeight * 0.65}px)`;
+  drag.ghost.style.display = 'none';
+  const under = document.elementFromPoint(x, y)?.closest('.cell');
+  drag.ghost.style.display = '';
+  const ok = under && under !== drag.src && !under.classList.contains('off');
+  if (drag.over && drag.over !== under) drag.over.classList.remove('over');
+  if (ok) { under.classList.add('over'); drag.over = under; } else drag.over = null;
+  autoScroll(y);
+}
+// Dragging near the top or bottom edge scrolls the page so the whole week is reachable.
+function autoScroll(y) {
+  const v = document.getElementById('view'); const r = v.getBoundingClientRect();
+  drag.scrollDir = y < r.top + 72 ? -1 : y > r.bottom - 72 ? 1 : 0;
+  if (drag.scrollDir && !drag.raf) {
+    const step = () => { if (!drag.active || !drag.scrollDir) { drag.raf = null; return; } v.scrollTop += drag.scrollDir * 9; moveGhost(drag.lx, drag.ly); drag.raf = requestAnimationFrame(step); };
+    drag.raf = requestAnimationFrame(step);
+  }
+}
 function startGhost(e) {
-  document.querySelectorAll('.ghost').forEach((x) => x.remove());
+  document.querySelectorAll('.cell.ghost').forEach((x) => x.remove());
   const g = drag.src.cloneNode(true); g.classList.add('ghost'); g.style.width = drag.src.offsetWidth + 'px'; g.style.height = drag.src.offsetHeight + 'px';
-  document.body.appendChild(g); drag.ghost = g; drag.src.classList.add('lifted');
+  document.body.appendChild(g); drag.ghost = g; drag.src.classList.add('lifted'); document.getElementById('view').classList.add('dragging');
+  moveGhost(e.clientX, e.clientY);
 }
 function cleanupDrag(src) {
   src.removeEventListener('pointermove', onDragMove); src.removeEventListener('pointerup', onDragEnd); src.removeEventListener('pointercancel', onDragEnd);
-  document.querySelectorAll('.ghost').forEach((x) => x.remove()); drag.over?.classList.remove('over'); if (!picked) src.classList.remove('lifted');
-  drag.src = null; drag.ghost = null; drag.over = null; drag.active = false;
+  document.querySelectorAll('.cell.ghost').forEach((x) => x.remove()); drag.over?.classList.remove('over'); if (!picked) src.classList.remove('lifted');
+  if (drag.raf) cancelAnimationFrame(drag.raf);
+  document.getElementById('view').classList.remove('dragging');
+  drag.src = null; drag.ghost = null; drag.over = null; drag.active = false; drag.raf = null; drag.scrollDir = 0;
 }
 function onDragEnd(e) {
   clearTimeout(drag.timer);
   const src = drag.src; if (!src) return;
-  const target = drag.over; const wasActive = drag.active;
-  cleanupDrag(src);
+  const target = drag.over; const wasActive = drag.active; const touch = drag.touch;
+  const moved = Math.hypot(e.clientX - drag.x, e.clientY - drag.y) > 8;
+  cleanupDrag(src); hideHint();
   if (!wasActive) return; // a plain tap: the click handler opens the sheet
   suppressClick();
-  if (!target || e.type === 'pointercancel') return;
+  if (e.type === 'pointercancel') return;
+  if (!target) { if (touch && !moved) pickUp(src); return; } // held but not dragged: tap where it should go instead
   const w = W();
   const a = { d: +src.dataset.day, s: src.dataset.slot }, b = { d: +target.dataset.day, s: target.dataset.slot };
   const tmp = w.grid[a.d][a.s]; w.grid[a.d][a.s] = w.grid[b.d][b.s]; w.grid[b.d][b.s] = tmp;
-  portionsFromGrid(); render();
+  navigator.vibrate?.(8);
+  portionsFromGrid(); refreshPlan();
 }
 function suppressClick() { const stop = (ev) => { ev.stopPropagation(); ev.preventDefault(); }; document.addEventListener('click', stop, { capture: true, once: true }); setTimeout(() => document.removeEventListener('click', stop, { capture: true }), 400); }
 

@@ -1,6 +1,6 @@
 // Pure planning logic. No DOM, no storage. Unit-tested in tests/planner.test.mjs.
 
-export const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+export const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 export const SLOTS = ['breakfast', 'lunch', 'dinner'];
 export const SHOPS = ['aldi', 'lidl', 'asda', 'tesco', 'sainsburys'];
 export const SHOP_NAMES = { aldi: 'Aldi', lidl: 'Lidl', asda: 'ASDA', tesco: 'Tesco', sainsburys: "Sainsbury's", any: 'Any shop' };
@@ -283,7 +283,7 @@ export function gridStats(grid, recipes, ingredients, extra = { protein: 0, kcal
 }
 
 // ---------- storage ----------
-// cookDay: index into DAYS (0 = Sunday). Portions eaten within fridgeDays of cooking go in the fridge.
+// cookDay: index into DAYS (0 = Monday, 6 = Sunday). Ages wrap, so a Sunday cook feeds Mon–Sat and the Sunday itself. Portions eaten within fridgeDays of cooking go in the fridge.
 export function tubPlan(recipe, grid, cookDay = 0, fresh = {}) {
   const days = [];
   if (recipe.cookMinutes === 0) return { total: 0, fridge: [], freezer: [], late: [], eatBy: null, fresh: true };
