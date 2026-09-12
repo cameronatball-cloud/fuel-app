@@ -3,7 +3,7 @@ import { CONFIG } from './config.js';
 import { cloud, initCloud, onCloudChange, signIn, signUp, resetPassword, redeemCode, signOut, hasAccess, pullState, pushStateSoon } from './cloud.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v42';
+const APP_VERSION = 'v43';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 
@@ -16,11 +16,34 @@ function save() { S.updatedAt = new Date().toISOString(); try { localStorage.set
 
 const ING = () => DATA.ingredients.concat(S.customIngredients);
 // Personal tweaks: S.tweaks[recipeId] = { drop: [ingredientId], add: [{ id, qty }] } (qty per portion). Applied to the user's copy of any recipe.
+// Sensible stand-ins offered when an ingredient is left out (same unit only, checked at render time).
+const SWAPS = {
+  breadcrumbs: ['oats', 'parmesan', 'flour'], cottage_cheese: ['skyr', 'cheddar'], skyr: ['cottage_cheese'], cheddar: ['parmesan', 'cottage_cheese'], parmesan: ['cheddar'],
+  chicken_breast: ['chicken_thigh', 'chicken_mince', 'turkey_mince', 'salmon', 'prawns'], chicken_thigh: ['chicken_breast'], chicken_mince: ['turkey_mince', 'pork_mince_5', 'beef_mince_5'],
+  beef_mince_5: ['turkey_mince', 'pork_mince_5', 'chicken_mince', 'red_lentils'], pork_mince_5: ['turkey_mince', 'beef_mince_5', 'chicken_mince'], turkey_mince: ['chicken_mince', 'beef_mince_5', 'pork_mince_5'],
+  tuna: ['salmon', 'prawns', 'chicken_breast'], salmon: ['tuna', 'prawns', 'chicken_breast'], prawns: ['chicken_breast', 'salmon'],
+  penne: ['basmati', 'rice_noodles', 'baby_potatoes', 'sweet_potato'], basmati: ['penne', 'rice_noodles', 'baby_potatoes'], rice_noodles: ['basmati', 'penne'],
+  sweet_potato: ['baby_potatoes', 'basmati'], baby_potatoes: ['sweet_potato', 'basmati'], bread: ['wrap', 'pitta'], wrap: ['pitta', 'bread'], pitta: ['wrap', 'bread'], corn_tortilla: ['wrap'],
+  mushrooms: ['pepper', 'spinach', 'broccoli'], spinach: ['broccoli', 'frozen_peas', 'mixed_veg'], broccoli: ['mixed_veg', 'frozen_peas', 'spinach'], frozen_peas: ['sweetcorn', 'mixed_veg'], mixed_veg: ['broccoli', 'frozen_peas'],
+  kidney_beans: ['black_beans', 'chickpeas'], black_beans: ['kidney_beans', 'chickpeas'], chickpeas: ['black_beans', 'kidney_beans', 'red_lentils'], red_lentils: ['chickpeas'],
+  light_mayo: ['skyr'], coconut_milk: ['milk'], banana: ['frozen_blueberries', 'frozen_mango'],
+};
+function swapsFor(fromId) { const from = ingById(fromId); return (SWAPS[fromId] || []).map(ingById).filter((it) => it && from && it.unit === from.unit); }
+const KW_STOP = new Set(['frozen', 'fresh', 'dried', 'low', 'fat', 'grated', 'chunks', 'tin', 'tins', 'mature', 'lean', 'fillets', 'fillet', 'paste', 'powder', 'plain', 'golden', 'light', 'mixed', 'baby', 'red', 'green', 'cherry', 'boneless', 'chopped', 'your', 'pick', 'skinless', 'whole', 'large', 'small', 'tinned', 'canned']);
+// The word a method step would use for an ingredient: first meaningful word of its name, singular. "Golden breadcrumbs" → breadcrumb.
+function keywordFor(it) { const words = (it?.name || '').toLowerCase().replace(/\(.*?\)/g, '').split(/[^a-z]+/).filter((w) => w.length >= 4 && !KW_STOP.has(w)); const w = words[0] || ''; return w.endsWith('oes') ? w.slice(0, -2) : w.replace(/s$/, ''); }
 function applyTweak(r) {
   const t = S.tweaks && S.tweaks[r.id]; if (!t || (!(t.drop || []).length && !(t.add || []).length)) return r;
   const drop = new Set(t.drop || []);
-  const ingredients = r.ingredients.filter((x) => !drop.has(x.id)).concat((t.add || []).map((x) => ({ id: x.id, qty: x.qty })));
-  return { ...r, ingredients, tweaked: true };
+  // A stand-in takes the place of what it replaces; anything else added goes on the end.
+  const ingredients = r.ingredients.flatMap((x) => { if (!drop.has(x.id)) return [x]; const sw = (t.add || []).find((a) => a.for === x.id); return sw ? [{ id: sw.id, qty: sw.qty }] : []; }).concat((t.add || []).filter((x) => !x.for).map((x) => ({ id: x.id, qty: x.qty })));
+  // Rewrite the method so it still reads right: steps that mention a dropped ingredient say so; a swap says what to use instead; extras get a step of their own.
+  const notes = (t.drop || []).map((d) => { const from = ingById(d); const sw = (t.add || []).find((x) => x.for === d); const to = sw && ingById(sw.id); return { kw: keywordFor(from), text: to ? `use ${to.name.toLowerCase()} instead of ${(from?.name || d).toLowerCase()}` : `skip the ${(from?.name || d).toLowerCase()}` }; }).filter((n) => n.kw);
+  let touched = false;
+  const method = r.method.map((step) => { const low = step.toLowerCase(); const hits = notes.filter((n) => low.includes(n.kw)); if (!hits.length) return step; touched = true; return `${step} (${hits.map((h) => h.text).join('; ')})`; });
+  for (const n of notes) if (!r.method.some((st) => st.toLowerCase().includes(n.kw))) { method.push(`${n.text[0].toUpperCase()}${n.text.slice(1)}.`); touched = true; }
+  for (const x of (t.add || []).filter((x) => !x.for)) { const it = ingById(x.id); method.push(`Add the ${(it?.name || x.id).toLowerCase()} (${P.fmtQty(x.qty, it?.unit || '')} a portion): stir it in at the end, or put it on top when eating.`); touched = true; }
+  return { ...r, ingredients, method, tweaked: true, tweakedMethod: touched };
 }
 const RAW = () => DATA.recipes.concat(S.customRecipes).map(applyTweak);
 const RAW_ORIGINAL = (id) => DATA.recipes.concat(S.customRecipes).find((r) => r.id === id);
@@ -154,11 +177,13 @@ async function boot() {
   if (cloud.enabled) { cloud.status = 'loading'; gateScreen(); }
   initCloud();
   // Coming back from Stripe: re-check access without a manual refresh, and keep checking for a minute after a Buy tap.
-  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') recheckAccess(false); });
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { recheckAccess(false); rollWeeks(); } });
   window.addEventListener('focus', () => recheckAccess(false));
   setInterval(() => { if (S.buyStarted && Date.now() - S.buyStarted < 90000 && !hasAccess()) recheckAccess(false); }, 4000);
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 }
+// A new Monday: next week becomes this week and a fresh next week appears. Runs at boot (setupWeeks) and whenever the app is brought back.
+function rollWeeks() { const before = S.thisMon; setupWeeks(); if (S.thisMon !== before) { if (!S.weeks[S.activeWeek]) S.activeWeek = S.thisMon; save(); render({ top: true }); toast('New week: your plan has moved along.'); } }
 let recheckBusy = false;
 async function recheckAccess(manual) {
   if (!cloud.enabled || !cloud.user || hasAccess() || recheckBusy) return;
@@ -304,12 +329,16 @@ function renderPlan() {
     return list.length ? `<h2>${title}</h2><div class="card">${list.map((r) => pickRow(r, w, free)).join('')}</div>` : '';
   };
   const sug = !Object.keys(w.portions).length ? suggestions(6) : [];
+  const upIds = Object.keys(w.useUp || {});
+  const usesUp = (r) => upIds.filter((u) => r.ingredients.some((x) => x.id === u || (ingById(x.id)?.choices || []).includes(u)));
+  const upList = upIds.length ? recipes.filter((r) => !r.slots.includes('snack') && !isAvoided(r)).map((r) => ({ r, u: usesUp(r) })).filter((x) => x.u.length).sort((a, b) => b.u.length - a.u.length || (metaFor(b.r).pp / (metaFor(b.r).c.cost || 1)) - (metaFor(a.r).pp / (metaFor(a.r).c.cost || 1))).slice(0, 8) : [];
+  const upHtml = upIds.length ? `<div class="card"><h3>Use up what you've got</h3><p class="small muted">You marked ${upIds.map((u) => esc((ingById(u)?.name || u).toLowerCase())).join(', ')} to use up (Pantry). ${upList.length ? 'Tap a meal to add it to the week.' : 'No recipe uses those yet.'}</p>${upList.length ? `<div class="chip-row">${upList.map(({ r, u }) => `<button class="chip ${w.portions[r.id] ? 'on' : ''}" data-action="quick-pick" data-id="${r.id}">${w.portions[r.id] ? '✓' : '+'} ${esc(shortName(r))} <span class="muted">· ${u.map((x) => esc((ingById(x)?.name || x).toLowerCase().split(' ')[0])).join(', ')}</span></button>`).join('')}</div>` : ''}</div>` : '';
   const sugHtml = sug.length ? `<div class="card"><h3>Quick picks</h3><p class="small muted">The most protein for your money. Tap one to add it to the week.</p><div class="chip-row">${sug.map((r) => `<button class="chip" data-action="quick-pick" data-id="${r.id}">+ ${esc(shortName(r))} · ${metaFor(r).pp}g protein · £${metaFor(r).c.cost.toFixed(2)}</button>`).join('')}</div></div>` : '';
   return `<h1>Plan</h1>${weekSwitch()}<div id="plan-top">${planTop(w)}</div>
   <h2 id="pick-head" style="margin-top:26px">Tick the meals you want</h2>
   <p class="small muted" style="margin:0 0 8px">Tick a meal to add it. Use − and + for how many portions this week.</p>
   <input class="search" placeholder="Search meals" value="${esc(S.planSearch || '')}" data-plan-search>
-  ${sugHtml}
+  ${upHtml}${sugHtml}
   <div id="plan-pick">${group('breakfast', 'Breakfasts')}${group('mains', 'Mains (lunch or dinner)')}
   ${snackHtml}
   ${hidden ? `<p class="small muted">${hidden} recipe${hidden > 1 ? 's' : ''} hidden because of what you don't eat (Pantry → Settings).</p>` : ''}
@@ -530,7 +559,7 @@ function recipeDetail(r) {
   return `<h3>${esc(r.name)}</h3><p class="small muted">${P.proteinPerPortion(r, ing)}g protein · ${P.kcalPerPortion(r, ing)} kcal · ~£${c.cost.toFixed(2)} a portion${c.unpriced.length ? ` (excl. ${c.unpriced.join(', ')})` : ''} · ${r.slots.join(' or ')} · ${r.cookMinutes ? r.cookMinutes + ' min' : 'no batch cook'} · ${r.cold ? 'cold ok' : 'eat hot'} · ${r.freezer ? 'freezes' : r.fridgeDays ? `fridge ${r.fridgeDays} days, no freezer` : 'make fresh'}</p>
   <h2>Per portion${r.tweaked ? ' <span class="badge">edited by you</span>' : ''}</h2><div class="ing-list">${ings}</div>
   <button class="btn ghost small" style="margin-top:8px" data-action="tweak-open" data-id="${r.id}">Change the ingredients</button>
-  <h2>Method</h2><ol class="steps">${r.method.map((m) => `<li>${esc(m)}</li>`).join('')}</ol>
+  <h2>Method${r.tweakedMethod ? ' <span class="badge">adjusted for your changes</span>' : ''}</h2><ol class="steps">${r.method.map((m) => `<li>${esc(m)}</li>`).join('')}</ol>
   ${r.notes ? `<p class="small muted">${esc(r.notes)}</p>` : ''}
   ${r.source && r.source.startsWith('http') ? `<p class="small"><a href="${esc(r.source)}" target="_blank" rel="noopener">Source reel</a></p>` : ''}
   <div class="row" style="margin-top:12px">${lib ? `<button class="btn grow" data-action="add-portion" data-id="${r.id}">Add to ${weekLabel(S.activeWeek).toLowerCase()}</button><button class="btn ghost" data-action="lib-remove" data-id="${r.id}">Remove from my recipes</button>` : `<button class="btn grow" data-action="lib-add" data-id="${r.id}">+ Add to my recipes</button>`}${custom ? `<button class="btn danger" data-action="delete-recipe" data-id="${r.id}">Delete</button>` : ''}</div>`;
@@ -539,10 +568,12 @@ function recipeDetail(r) {
 function tweakSheet(id) {
   const base = RAW_ORIGINAL(id); if (!base) return '';
   const t = (S.tweaks && S.tweaks[id]) || { drop: [], add: [] };
-  const rows = base.ingredients.map((x) => { const it = ingById(x.id); const off = t.drop.includes(x.id); return `<label class="check"><input type="checkbox" data-tweak-drop="${x.id}" ${off ? '' : 'checked'}><span class="grow">${esc(it?.name || x.id)}${off ? '<span class="sub">left out</span>' : ''}</span><span class="small muted">${P.fmtQty(x.qty, it?.unit || '')}</span></label>`; }).join('');
-  const added = t.add.map((x, i) => { const it = ingById(x.id); return `<label class="check"><span class="grow">${esc(it?.name || x.id)}<span class="sub">added by you</span></span><span class="small muted">${P.fmtQty(x.qty, it?.unit || '')}</span><button class="btn ghost small" data-action="tweak-rm-add" data-id="${id}" data-i="${i}">Remove</button></label>`; }).join('');
+  const rows = base.ingredients.map((x) => { const it = ingById(x.id); const off = t.drop.includes(x.id); const sw = swapsFor(x.id); const chosen = t.add.find((a) => a.for === x.id)?.id;
+    const swapHtml = off && sw.length ? `<div class="chip-row swaprow"><span class="small muted">Instead:</span>${sw.map((o) => `<button class="chip ${chosen === o.id ? 'on' : ''}" data-action="tweak-swap" data-id="${id}" data-from="${x.id}" data-to="${o.id}" data-qty="${x.qty}">${esc(o.name)}</button>`).join('')}<button class="chip ${!chosen ? 'on' : ''}" data-action="tweak-swap" data-id="${id}" data-from="${x.id}" data-to="">Nothing</button></div>` : '';
+    return `<label class="check"><input type="checkbox" data-tweak-drop="${x.id}" ${off ? '' : 'checked'}><span class="grow">${esc(it?.name || x.id)}${off ? '<span class="sub">left out</span>' : ''}</span><span class="small muted">${P.fmtQty(x.qty, it?.unit || '')}</span></label>${swapHtml}`; }).join('');
+  const added = t.add.filter((x) => !x.for).map((x) => { const i = t.add.indexOf(x); const it = ingById(x.id); return `<label class="check"><span class="grow">${esc(it?.name || x.id)}<span class="sub">added by you</span></span><span class="small muted">${P.fmtQty(x.qty, it?.unit || '')}</span><button class="btn ghost small" data-action="tweak-rm-add" data-id="${id}" data-i="${i}">Remove</button></label>`; }).join('');
   const opts = ING().filter((i) => !i.hidden).sort((a, b) => a.name.localeCompare(b.name)).map((i) => `<option value="${i.id}">${esc(i.name)} (${i.unit})</option>`).join('');
-  return `<h3>${esc(base.name)}</h3><p class="small muted">Untick anything you don't want in it. This only changes your copy; the shop list and the numbers follow it. The method text stays as written.</p>
+  return `<h3>${esc(base.name)}</h3><p class="small muted">Untick anything you don't want in it, and pick a stand-in if you like. This only changes your copy. The shop list, the numbers and the method follow it.</p>
   <div id="tweak-list">${rows}${added}</div>
   <h2>Add something</h2><div class="row"><select id="tweak-add-id" class="grow">${opts}</select><input id="tweak-add-qty" type="number" step="any" min="0" placeholder="per portion" style="width:110px"><button class="btn small" data-action="tweak-add" data-id="${id}">Add</button></div>
   <div class="row" style="margin-top:14px"><button class="btn grow" data-action="tweak-done" data-id="${id}">Done</button>${(t.drop.length || t.add.length) ? `<button class="btn ghost" data-action="tweak-reset" data-id="${id}">Back to original</button>` : ''}</div>`;
@@ -642,14 +673,15 @@ function gateScreen() {
 }
 function renderPantry() {
   const groups = {};
-  for (const it of ING()) if (!it.hidden) (groups[it.category] ||= []).push(it);
+  const options = new Set(ING().flatMap((i) => i.choices || [])); // the actual fruits, not the "your pick" line
+  for (const it of ING()) if ((!it.hidden || options.has(it.id)) && !(it.choices || []).length) (groups[it.category] ||= []).push(it);
   const order = ['protein', 'dairy', 'carb', 'veg', 'fruit', 'tin', 'sauce', 'spice', 'cupboard'];
-  const w = W();
-  const row = (it) => { const v = w.pantry[it.id]; const on = v === true || typeof v === 'number';
-    return `<div class="check"><input type="checkbox" data-pantry="${it.id}" ${on ? 'checked' : ''}><span class="grow">${esc(it.name)}${(it.packs || []).length ? '' : '<span class="sub">no price on file</span>'}</span>${on && !it.staple ? `<input class="qty" type="number" step="any" placeholder="plenty" data-pantry-qty="${it.id}" value="${typeof v === 'number' ? v : ''}"><span class="small muted">${it.unit === 'each' ? '' : it.unit}</span>` : ''}</div>`; };
+  const w = W(); w.useUp ||= {};
+  const row = (it) => { const v = w.pantry[it.id]; const on = v === true || typeof v === 'number'; const up = !!w.useUp[it.id];
+    return `<div class="check"><input type="checkbox" data-pantry="${it.id}" ${on ? 'checked' : ''}><span class="grow">${esc(it.name)}${(it.packs || []).length ? '' : '<span class="sub">no price on file</span>'}${up ? '<span class="sub">using it up this week</span>' : ''}</span>${on ? `<button class="chip small useup ${up ? 'on' : ''}" data-action="useup" data-id="${it.id}" title="Plan meals that use this up">${up ? 'Using up' : 'Use up'}</button>` : ''}${on && !it.staple ? `<input class="qty" type="number" step="any" placeholder="plenty" data-pantry-qty="${it.id}" value="${typeof v === 'number' ? v : ''}"><span class="small muted">${it.unit === 'each' ? '' : it.unit}</span>` : ''}</div>`; };
   const html = order.filter((g) => groups[g]).map((g) => `<h2>${g}</h2><div class="card">${groups[g].map(row).join('')}</div>`).join('');
   const ticked = Object.keys(w.pantry).length;
-  return `<h1>Pantry</h1>${weekSwitch()}<p class="small muted">What's in the cupboard for <b>${weekLabel(S.activeWeek).toLowerCase()}</b>. Every week starts blank so the shop list shows everything; tick what you already have before you shop. Leave the amount blank for "plenty", or type how much and the list buys only the difference. ${ticked} ticked.</p>
+  return `<h1>Pantry</h1>${weekSwitch()}<p class="small muted">What's in the cupboard for <b>${weekLabel(S.activeWeek).toLowerCase()}</b>. Every week starts blank so the shop list shows everything; tick what you already have before you shop. Got leftovers that need eating? Tap <b>Use up</b> on them and Plan will suggest meals that use them. Leave the amount blank for "plenty", or type how much and the list buys only the difference. ${ticked} ticked.</p>
   <div class="row" style="margin-bottom:12px; flex-wrap:wrap"><button class="btn ghost" data-action="clear-pantry">Untick all</button></div>${html}
   <h2>Settings</h2><div class="card">
     <label class="field">Bodyweight (kg)<input type="number" data-setting="weight" value="${S.settings.weight}"></label>
@@ -835,10 +867,11 @@ function onAction(e) {
     relayout(); refreshPlan();
   } else if (a === 'week') { S.activeWeek = el.dataset.week; save(); render(); }
   else if (a === 'cookday') { w.cookDay = +el.dataset.day; relayout(); refreshPlan(); }
-  else if (a === 'quick-pick') { const r = recById(id); const room = P.roomFor(r, P.freeSlots(w.grid, w.days)); if (r && room > 0) { w.portions[r.id] = Math.min(defaultPortions(r), room); relayout(); render(); } }
+  else if (a === 'quick-pick') { const r = recById(id); const room = P.roomFor(r, P.freeSlots(w.grid, w.days)); if (r && w.portions[r.id]) { toast('Already in the week. Change the count in the list below.'); return; } if (r && room > 0) { if (S.library && !S.library.includes(r.id)) S.library.push(r.id); w.portions[r.id] = Math.min(defaultPortions(r), room); relayout(); render(); } else toast('No room left in the week for that'); }
   else if (a === 'relayout') { relayout(); refreshPlan(); }
   else if (a === 'dayx') { const i = +el.dataset.day; w.days[i] = !w.days[i]; relayout(w); refreshPlan(); }
-  else if (a === 'need') { delete w.pantry[id]; save(); render(); }
+  else if (a === 'need') { delete w.pantry[id]; delete (w.useUp || {})[id]; save(); render(); }
+  else if (a === 'useup') { w.useUp ||= {}; if (w.useUp[id]) delete w.useUp[id]; else { w.useUp[id] = true; if (w.pantry[id] === undefined) w.pantry[id] = true; } save(); render(); }
   else if (a === 'pick-shop') { w.shop = el.dataset.shop; save(); render(); }
   else if (a === 'choice-toggle') {
     const it = ingById(el.dataset.choice); const cur = chosenFor(w, it); const v = el.dataset.val;
@@ -922,6 +955,7 @@ function onAction(e) {
   else if (a === 'tweak-done') { const r = recById(id); for (const wk of Object.values(S.weeks)) relayout(wk); if (r) openSheet(recipeDetail(r)); else closeSheet(); render(); }
   else if (a === 'tweak-reset') { delete (S.tweaks || {})[id]; SCALED = { f: null, list: null, n: 0 }; META.clear(); save(); openSheet(tweakSheet(id)); }
   else if (a === 'tweak-rm-add') { setTweak(id, (t) => t.add.splice(+el.dataset.i, 1)); openSheet(tweakSheet(id)); }
+  else if (a === 'tweak-swap') { const from = el.dataset.from, to = el.dataset.to; setTweak(id, (t) => { if (!t.drop.includes(from)) t.drop.push(from); t.add = t.add.filter((x) => x.for !== from); if (to) t.add.push({ id: to, qty: +el.dataset.qty, for: from }); }); openSheet(tweakSheet(id)); }
   else if (a === 'tweak-add') { const iid = document.getElementById('tweak-add-id').value, q = +document.getElementById('tweak-add-qty').value; if (!(q > 0)) { toast('Type how much per portion'); return; } setTweak(id, (t) => t.add.push({ id: iid, qty: q })); openSheet(tweakSheet(id)); }
   else if (a === 'add-portion') { w.portions[id] = (w.portions[id] || 0) + 1; relayout(); closeSheet(); S.tab = 'plan'; render({ top: true }); }
   else if (a === 'delete-recipe') { ask('Delete this recipe?', 'Delete', true).then((ok) => { if (ok) { S.customRecipes = S.customRecipes.filter((r) => r.id !== id); META.clear(); for (const wk of Object.values(S.weeks)) { delete wk.portions[id]; relayout(wk); } closeSheet(); render(); } }); }
@@ -947,7 +981,7 @@ function addIngRow() { const t = document.getElementById('ing-row-t'); document.
 function onTweakChange(e) {
   const td = e.target.closest('[data-tweak-drop]'); if (!td) return false;
   const rid = e.target.closest('.sheet-inner')?.querySelector('[data-action="tweak-done"]')?.dataset.id;
-  if (rid) { setTweak(rid, (t) => { const i = t.drop.indexOf(td.dataset.tweakDrop); if (td.checked) { if (i >= 0) t.drop.splice(i, 1); } else if (i < 0) t.drop.push(td.dataset.tweakDrop); }); openSheet(tweakSheet(rid)); }
+  if (rid) { setTweak(rid, (t) => { const i = t.drop.indexOf(td.dataset.tweakDrop); if (td.checked) { if (i >= 0) t.drop.splice(i, 1); t.add = t.add.filter((x) => x.for !== td.dataset.tweakDrop); } else if (i < 0) t.drop.push(td.dataset.tweakDrop); }); openSheet(tweakSheet(rid)); }
   return true;
 }
 function onChange(e) {
@@ -963,10 +997,11 @@ function onChange(e) {
   else if (t.dataset.tick) { w.ticks[t.dataset.tick] = t.checked; save(); t.closest('.line').classList.toggle('done', t.checked); }
   else if (t.dataset.settingBool) { S.settings[t.dataset.settingBool] = t.checked; save(); render(); }
   else if (t.dataset.pantry) {
-    const id = t.dataset.pantry; if (t.checked) w.pantry[id] = true; else delete w.pantry[id]; save();
+    const id = t.dataset.pantry; if (t.checked) w.pantry[id] = true; else { delete w.pantry[id]; delete (w.useUp || {})[id]; } save();
     const it = ingById(id); const rowEl = t.closest('.check'); const q = rowEl.querySelector('[data-pantry-qty]');
     if (t.checked && !it.staple && !q) rowEl.insertAdjacentHTML('beforeend', `<input class="qty" type="number" step="any" placeholder="plenty" data-pantry-qty="${id}"><span class="small muted">${it.unit === 'each' ? '' : it.unit}</span>`);
-    if (!t.checked) { q?.nextElementSibling?.remove(); q?.remove(); }
+    if (!t.checked) { q?.nextElementSibling?.remove(); q?.remove(); rowEl.querySelector('.useup')?.remove(); rowEl.querySelector('.sub')?.remove(); }
+    else if (!rowEl.querySelector('.useup')) rowEl.querySelector('.grow').insertAdjacentHTML('afterend', `<button class="chip small useup" data-action="useup" data-id="${id}" title="Plan meals that use this up">Use up</button>`);
   }
   else if (t.dataset.pantryQty !== undefined) { const v = parseFloat(t.value); w.pantry[t.dataset.pantryQty] = Number.isFinite(v) && v > 0 ? v : true; save(); }
   else if (t.dataset.setting) { S.settings[t.dataset.setting] = +t.value || 0; save(); META.clear(); const mp = document.getElementById('macro-preview'); if (mp) mp.innerHTML = macroPreview(S.settings.kcalTarget, S.settings.proteinTarget); }
