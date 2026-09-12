@@ -3,7 +3,7 @@ import { CONFIG } from './config.js';
 import { cloud, initCloud, onCloudChange, signIn, signUp, resetPassword, redeemCode, signOut, hasAccess, pullState, pushStateSoon } from './cloud.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v41';
+const APP_VERSION = 'v42';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 
@@ -15,7 +15,15 @@ function syncable() { const { tab, search, planSearch, ideasOpen, ideaTag, ...re
 function save() { S.updatedAt = new Date().toISOString(); try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {} pushStateSoon(syncable); }
 
 const ING = () => DATA.ingredients.concat(S.customIngredients);
-const RAW = () => DATA.recipes.concat(S.customRecipes);
+// Personal tweaks: S.tweaks[recipeId] = { drop: [ingredientId], add: [{ id, qty }] } (qty per portion). Applied to the user's copy of any recipe.
+function applyTweak(r) {
+  const t = S.tweaks && S.tweaks[r.id]; if (!t || (!(t.drop || []).length && !(t.add || []).length)) return r;
+  const drop = new Set(t.drop || []);
+  const ingredients = r.ingredients.filter((x) => !drop.has(x.id)).concat((t.add || []).map((x) => ({ id: x.id, qty: x.qty })));
+  return { ...r, ingredients, tweaked: true };
+}
+const RAW = () => DATA.recipes.concat(S.customRecipes).map(applyTweak);
+const RAW_ORIGINAL = (id) => DATA.recipes.concat(S.customRecipes).find((r) => r.id === id);
 let SCALED = { f: null, list: null, n: 0 };
 // Meals (not snacks) are scaled so the active week's picks land on the calorie target.
 function mealsKcalAt1x(w) {
@@ -116,7 +124,7 @@ function portionsFromGrid(w = W()) {
 function dayList(days) { const c = {}; for (const d of days) c[d] = (c[d] || 0) + 1; return Object.keys(c).map(Number).sort((x, y) => x - y).map((d) => c[d] > 1 ? `${P.DAYS[d]} ×${c[d]}` : P.DAYS[d]).join(', '); }
 function weekLabel(k) { return k === S.thisMon ? 'This week' : k === S.nextMon ? 'Next week' : `Week of ${fmtDate(k)}`; }
 function weekSwitch() {
-  return `<div class="chip-row week-switch">${[S.thisMon, S.nextMon].map((k) => `<button class="chip ${S.activeWeek === k ? 'on' : ''}" data-action="week" data-week="${k}">${weekLabel(k)} <span class="muted small">${fmtDate(k)}</span></button>`).join('')}</div>`;
+  return `<div class="wtabs" role="tablist">${[S.thisMon, S.nextMon].map((k) => `<button role="tab" aria-selected="${S.activeWeek === k}" class="${S.activeWeek === k ? 'on' : ''}" data-action="week" data-week="${k}">${weekLabel(k)}<small>Mon ${fmtDate(k)} – Sun ${fmtDate(addDays(k, 6))}</small></button>`).join('')}</div>`;
 }
 
 // ---------- boot ----------
@@ -184,7 +192,17 @@ const AVOID = {
   spicy: { label: 'Spicy food', ids: ['sriracha', 'chilli_powder', 'curry_paste'] }, nuts: { label: 'Peanuts', ids: ['peanut_butter'] }, coconut: { label: 'Coconut', ids: ['coconut_milk'] },
 };
 function avoidedIds() { return new Set((S.settings.avoid || []).flatMap((k) => AVOID[k]?.ids || [])); }
-function isAvoided(r) { const av = avoidedIds(); return av.size > 0 && r.ingredients.some((x) => av.has(x.id)); }
+// Free-text avoids ("mushrooms", "prawn") match ingredient names and recipe names, loosely singular/plural.
+function avoidTerms() { return (S.settings.avoidText || []).map((t) => t.toLowerCase().replace(/s$/, '')).filter(Boolean); }
+function isAvoided(r) {
+  const av = avoidedIds(); if (av.size > 0 && r.ingredients.some((x) => av.has(x.id))) return true;
+  const terms = avoidTerms(); if (!terms.length) return false;
+  const names = [r.name, ...r.ingredients.map((x) => ingById(x.id)?.name || x.id)].join(' | ').toLowerCase();
+  return terms.some((t) => names.includes(t));
+}
+function avoidTextChips(action) { return `<div class="chip-row" style="margin-top:8px">${(S.settings.avoidText || []).map((t) => `<button class="chip on" data-action="${action}" data-term="${esc(t)}">${esc(t)} ×</button>`).join('')}</div>`; }
+function addAvoidText(inputId) { const inp = document.getElementById(inputId); const v = (inp?.value || '').trim().toLowerCase(); if (!v) return false; S.settings.avoidText ||= []; if (!S.settings.avoidText.includes(v)) S.settings.avoidText.push(v); save(); return true; }
+function removeAvoidText(term) { S.settings.avoidText = (S.settings.avoidText || []).filter((t) => t !== term); save(); }
 function suggestions(n = 6) { return REC().filter((r) => inLibrary(r.id) && !r.slots.includes('snack') && !isAvoided(r) && r.cookMinutes > 0).map((r) => ({ r, score: metaFor(r).c.cost ? metaFor(r).pp / metaFor(r).c.cost : 0 })).sort((a, b) => b.score - a.score).slice(0, n).map((x) => x.r); }
 const META = new Map();
 function metaFor(r) { let m = META.get(r.id); if (!m) { const ing = ING(); m = { pp: P.proteinPerPortion(r, ing), kcal: P.kcalPerPortion(r, ing), c: P.costPerPortion(r, ing) }; META.set(r.id, m); } return m; }
@@ -471,7 +489,7 @@ function tagsOf(r) {
   return t;
 }
 function recipeRow(r, action) {
-  return `<div class="recipe-row" data-action="open-recipe" data-id="${r.id}"><div class="grow"><div class="name">${esc(r.name)}</div><div class="meta">${mealMeta(r)}${S.customRecipes.some((c) => c.id === r.id) ? ' <span class="badge">yours</span>' : ''}</div></div>${action || '<span class="muted">›</span>'}</div>`;
+  return `<div class="recipe-row" data-action="open-recipe" data-id="${r.id}"><div class="grow"><div class="name">${esc(r.name)}</div><div class="meta">${mealMeta(r)}${S.customRecipes.some((c) => c.id === r.id) ? ' <span class="badge">yours</span>' : ''}${r.tweaked ? ' <span class="badge">edited</span>' : ''}</div></div>${action || '<span class="muted">›</span>'}</div>`;
 }
 function renderRecipes() {
   const q = (S.search || '').toLowerCase();
@@ -510,12 +528,26 @@ function recipeDetail(r) {
   const ings = P.scaleIngredients(r, 1, ing).map((s) => `<span>${esc(s.name)}</span><b>${P.fmtQty(s.qty, s.unit)}</b>`).join('');
   const lib = inLibrary(r.id);
   return `<h3>${esc(r.name)}</h3><p class="small muted">${P.proteinPerPortion(r, ing)}g protein · ${P.kcalPerPortion(r, ing)} kcal · ~£${c.cost.toFixed(2)} a portion${c.unpriced.length ? ` (excl. ${c.unpriced.join(', ')})` : ''} · ${r.slots.join(' or ')} · ${r.cookMinutes ? r.cookMinutes + ' min' : 'no batch cook'} · ${r.cold ? 'cold ok' : 'eat hot'} · ${r.freezer ? 'freezes' : r.fridgeDays ? `fridge ${r.fridgeDays} days, no freezer` : 'make fresh'}</p>
-  <h2>Per portion</h2><div class="ing-list">${ings}</div>
+  <h2>Per portion${r.tweaked ? ' <span class="badge">edited by you</span>' : ''}</h2><div class="ing-list">${ings}</div>
+  <button class="btn ghost small" style="margin-top:8px" data-action="tweak-open" data-id="${r.id}">Change the ingredients</button>
   <h2>Method</h2><ol class="steps">${r.method.map((m) => `<li>${esc(m)}</li>`).join('')}</ol>
   ${r.notes ? `<p class="small muted">${esc(r.notes)}</p>` : ''}
   ${r.source && r.source.startsWith('http') ? `<p class="small"><a href="${esc(r.source)}" target="_blank" rel="noopener">Source reel</a></p>` : ''}
   <div class="row" style="margin-top:12px">${lib ? `<button class="btn grow" data-action="add-portion" data-id="${r.id}">Add to ${weekLabel(S.activeWeek).toLowerCase()}</button><button class="btn ghost" data-action="lib-remove" data-id="${r.id}">Remove from my recipes</button>` : `<button class="btn grow" data-action="lib-add" data-id="${r.id}">+ Add to my recipes</button>`}${custom ? `<button class="btn danger" data-action="delete-recipe" data-id="${r.id}">Delete</button>` : ''}</div>`;
 }
+// Sheet for leaving ingredients out of a recipe or adding one, for this account only.
+function tweakSheet(id) {
+  const base = RAW_ORIGINAL(id); if (!base) return '';
+  const t = (S.tweaks && S.tweaks[id]) || { drop: [], add: [] };
+  const rows = base.ingredients.map((x) => { const it = ingById(x.id); const off = t.drop.includes(x.id); return `<label class="check"><input type="checkbox" data-tweak-drop="${x.id}" ${off ? '' : 'checked'}><span class="grow">${esc(it?.name || x.id)}${off ? '<span class="sub">left out</span>' : ''}</span><span class="small muted">${P.fmtQty(x.qty, it?.unit || '')}</span></label>`; }).join('');
+  const added = t.add.map((x, i) => { const it = ingById(x.id); return `<label class="check"><span class="grow">${esc(it?.name || x.id)}<span class="sub">added by you</span></span><span class="small muted">${P.fmtQty(x.qty, it?.unit || '')}</span><button class="btn ghost small" data-action="tweak-rm-add" data-id="${id}" data-i="${i}">Remove</button></label>`; }).join('');
+  const opts = ING().filter((i) => !i.hidden).sort((a, b) => a.name.localeCompare(b.name)).map((i) => `<option value="${i.id}">${esc(i.name)} (${i.unit})</option>`).join('');
+  return `<h3>${esc(base.name)}</h3><p class="small muted">Untick anything you don't want in it. This only changes your copy; the shop list and the numbers follow it. The method text stays as written.</p>
+  <div id="tweak-list">${rows}${added}</div>
+  <h2>Add something</h2><div class="row"><select id="tweak-add-id" class="grow">${opts}</select><input id="tweak-add-qty" type="number" step="any" min="0" placeholder="per portion" style="width:110px"><button class="btn small" data-action="tweak-add" data-id="${id}">Add</button></div>
+  <div class="row" style="margin-top:14px"><button class="btn grow" data-action="tweak-done" data-id="${id}">Done</button>${(t.drop.length || t.add.length) ? `<button class="btn ghost" data-action="tweak-reset" data-id="${id}">Back to original</button>` : ''}</div>`;
+}
+function setTweak(id, fn) { S.tweaks ||= {}; const t = S.tweaks[id] || { drop: [], add: [] }; fn(t); if (!t.drop.length && !t.add.length) delete S.tweaks[id]; else S.tweaks[id] = t; SCALED = { f: null, list: null, n: 0 }; META.clear(); save(); }
 function recipeForm() {
   const opts = ING().map((i) => `<option value="${i.id}">${esc(i.name)} (${i.unit})</option>`).join('');
   return `<h3>Add a recipe</h3><form id="recipe-form">
@@ -631,6 +663,7 @@ function renderPantry() {
     <label class="field">Weekly food budget (£)<input type="number" data-setting="budget" value="${S.settings.budget}"></label>
     <div class="small muted" style="margin-top:8px">Things you don't eat (recipes with these are hidden)</div>
     <div class="chip-row">${Object.entries(AVOID).map(([k, v]) => `<button class="chip ${S.settings.avoid.includes(k) ? 'on' : ''}" data-action="avoid" data-id="${k}">${v.label}</button>`).join('')}</div>
+    <div class="row" style="margin-top:8px"><input class="grow" id="settings-avoid-text" placeholder="Anything else, e.g. mushrooms" autocapitalize="none"><button class="btn small" data-action="settings-avoid-add">Add</button></div>${avoidTextChips('settings-avoid-rm')}
     <button class="btn ghost small" data-action="intro">Show the intro again</button>
     <label class="check"><input type="checkbox" data-setting-bool="preferThigh" ${S.settings.preferThigh ? 'checked' : ''}><span>Buy boneless thigh fillets instead of breast<span class="sub">Swaps every breast line on the shop list for thigh fillets. Breast is currently the cheaper per kilo at all four shops.</span></span></label></div>
   <h2>Account</h2><div class="card">${accountCard()}</div>
@@ -672,14 +705,14 @@ function introStep(n) {
     1: `<div class="logo wordmark" aria-label="Fuel">FU<b>£</b>L</div><h1>What's the goal?</h1><p>This sets your daily protein and calorie targets. You can change them any time.</p>${goals.map(([k, t, d]) => `<button class="opt ${g === k ? 'on' : ''}" data-action="intro-goal" data-goal="${k}">${t}<small>${d}</small></button>`).join('')}`,
     2: `<h1>How much do you weigh?</h1><p>Kilos, roughly. Your daily protein and calorie targets come from this and your goal. Meals stay the same size; you hit the targets by what you pick.</p><input class="big" type="number" id="intro-weight" inputmode="numeric" value="${wt}" min="40" max="160"><div class="stat-row"><div><b id="iw-p">${P.proteinTargetFor(wt, g)}g</b><span>protein a day</span></div><div><b id="iw-f">${P.kcalTargetFor(wt, g).toLocaleString()}</b><span>kcal a day</span></div></div><button class="go" data-action="intro-weight">Next</button><button class="back" data-action="intro-back">Back</button>`,
     3: `<h1>Weekly food budget?</h1><p>The shop list always shows what's left against it.</p><div class="chips">${budgets.map((b) => `<button class="opt ${S.settings.budget === b ? 'on' : ''}" data-action="intro-budget" data-budget="${b}">£${b}</button>`).join('')}</div><p style="margin-bottom:6px">Or type your own</p><input class="big" type="number" id="intro-budget" inputmode="numeric" placeholder="£" min="10" max="300"><button class="go" data-action="intro-budget-custom">Next</button><button class="back" data-action="intro-back">Back</button>`,
-    4: `<h1>Anything you don't eat?</h1><p>Recipes with these are hidden. Tap all that apply.</p><div class="chips">${Object.entries(AVOID).map(([k, v]) => `<button class="opt ${S.settings.avoid.includes(k) ? 'on' : ''}" data-action="intro-avoid" data-id="${k}">${v.label}</button>`).join('')}</div><button class="go" data-action="intro-next">Next</button><button class="back" data-action="intro-back">Back</button>`,
+    4: `<h1>Anything you don't eat?</h1><p>Recipes with these are hidden. Tap all that apply.</p><div class="chips">${Object.entries(AVOID).map(([k, v]) => `<button class="opt ${S.settings.avoid.includes(k) ? 'on' : ''}" data-action="intro-avoid" data-id="${k}">${v.label}</button>`).join('')}</div><p style="margin:16px 0 6px">Anything else? Allergies, or things you just don't like.</p><div class="row"><input class="big grow" id="intro-avoid-text" data-enter="intro-avoid-add" placeholder="e.g. mushrooms" autocapitalize="none" style="font-size:18px;text-align:left;margin:0"><button class="go" style="width:auto;margin:0;padding:14px 18px;font-size:16px" data-action="intro-avoid-add">Add</button></div>${avoidTextChips('intro-avoid-rm')}<button class="go" data-action="intro-next">Next</button><button class="back" data-action="intro-back">Back</button>`,
     5: `<h1>You're set.</h1><p>Here's your setup. Snacks get picked on the Plan tab and count towards these numbers.</p><div class="stat-row"><div><b>${S.settings.proteinTarget}g</b><span>protein a day</span></div><div><b>${(S.settings.kcalTarget || 0).toLocaleString()}</b><span>kcal a day</span></div><div><b>£${S.settings.budget}</b><span>a week</span></div></div><p>Start by ticking meals. The week grid, the Sunday cook list and the cheapest shop fill themselves in.</p><button class="go" data-action="intro-done">Let's plan a week</button><button class="back" data-action="intro-back">Back</button>`,
   }[n];
   el.innerHTML = `<div class="wrap">${dots}${step}</div>`; el.hidden = false;
   const wIn = document.getElementById('intro-weight');
   if (wIn) wIn.addEventListener('input', () => { const v = +wIn.value || wt; document.getElementById('iw-p').textContent = P.proteinTargetFor(v, g) + 'g'; document.getElementById('iw-f').textContent = P.kcalTargetFor(v, g).toLocaleString(); });
   // Enter / Go on a keyboard behaves like the Next button.
-  el.querySelectorAll('input.big').forEach((inp) => inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); el.querySelector('button.go')?.click(); } }));
+  el.querySelectorAll('input.big').forEach((inp) => inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); (inp.dataset.enter ? el.querySelector(`[data-action="${inp.dataset.enter}"]`) : el.querySelector('button.go'))?.click(); } }));
   if (wIn) { wIn.focus(); wIn.select(); }
 }
 function closeIntro() { const el = document.getElementById('intro'); el.hidden = true; el.innerHTML = ''; }
@@ -690,7 +723,7 @@ function openSheet(html) { const s = document.getElementById('sheet'); document.
 function closeSheet() { document.getElementById('sheet').hidden = true; }
 document.getElementById('sheet').addEventListener('click', (e) => { if (e.target.id === 'sheet') closeSheet(); else onAction(e); });
 document.getElementById('sheet').addEventListener('submit', onSubmit);
-document.getElementById('sheet').addEventListener('change', (e) => { const chip = e.target.closest('.chip'); if (chip && e.target.type === 'checkbox') chip.classList.toggle('on', e.target.checked); });
+document.getElementById('sheet').addEventListener('change', (e) => { if (onTweakChange(e)) return; const chip = e.target.closest('.chip'); if (chip && e.target.type === 'checkbox') chip.classList.toggle('on', e.target.checked); });
 
 // ---------- drag and drop between grid cells ----------
 const drag = { src: null, ghost: null, over: null, active: false, x: 0, y: 0, lx: 0, ly: 0, timer: null, touch: false, raf: null, scrollDir: 0 };
@@ -827,6 +860,10 @@ function onAction(e) {
   else if (a === 'intro-budget') { S.settings.budget = +el.dataset.budget; save(); introStep(4); }
   else if (a === 'intro-budget-custom') { const v = +document.getElementById('intro-budget').value; if (!(v >= 10 && v <= 300)) { toast('Type a budget between £10 and £300, or tap one above'); return; } S.settings.budget = v; save(); introStep(4); }
   else if (a === 'intro-avoid') { const i = S.settings.avoid.indexOf(id); if (i >= 0) S.settings.avoid.splice(i, 1); else S.settings.avoid.push(id); save(); el.classList.toggle('on'); }
+  else if (a === 'intro-avoid-add') { if (addAvoidText('intro-avoid-text')) introStep(4); else toast('Type something first'); }
+  else if (a === 'intro-avoid-rm') { removeAvoidText(el.dataset.term); introStep(4); }
+  else if (a === 'settings-avoid-add') { if (addAvoidText('settings-avoid-text')) render(); else toast('Type something first'); }
+  else if (a === 'settings-avoid-rm') { removeAvoidText(el.dataset.term); render(); }
   else if (a === 'intro-next') { introStep(INTRO.step + 1); }
   else if (a === 'intro-back') { introStep(Math.max(1, INTRO.step - 1)); }
   else if (a === 'intro-done') { S.settings.onboarded = true; save(); closeIntro(); S.tab = 'plan'; for (const wk of Object.values(S.weeks)) relayout(wk); render({ top: true }); }
@@ -881,6 +918,11 @@ function onAction(e) {
     }
     apply();
   } else if (a === 'open-recipe') { const r = recById(id); if (r) openSheet(recipeDetail(r)); }
+  else if (a === 'tweak-open') { openSheet(tweakSheet(id)); }
+  else if (a === 'tweak-done') { const r = recById(id); for (const wk of Object.values(S.weeks)) relayout(wk); if (r) openSheet(recipeDetail(r)); else closeSheet(); render(); }
+  else if (a === 'tweak-reset') { delete (S.tweaks || {})[id]; SCALED = { f: null, list: null, n: 0 }; META.clear(); save(); openSheet(tweakSheet(id)); }
+  else if (a === 'tweak-rm-add') { setTweak(id, (t) => t.add.splice(+el.dataset.i, 1)); openSheet(tweakSheet(id)); }
+  else if (a === 'tweak-add') { const iid = document.getElementById('tweak-add-id').value, q = +document.getElementById('tweak-add-qty').value; if (!(q > 0)) { toast('Type how much per portion'); return; } setTweak(id, (t) => t.add.push({ id: iid, qty: q })); openSheet(tweakSheet(id)); }
   else if (a === 'add-portion') { w.portions[id] = (w.portions[id] || 0) + 1; relayout(); closeSheet(); S.tab = 'plan'; render({ top: true }); }
   else if (a === 'delete-recipe') { ask('Delete this recipe?', 'Delete', true).then((ok) => { if (ok) { S.customRecipes = S.customRecipes.filter((r) => r.id !== id); META.clear(); for (const wk of Object.values(S.weeks)) { delete wk.portions[id]; relayout(wk); } closeSheet(); render(); } }); }
   else if (a === 'add-recipe') { openSheet(recipeForm()); addIngRow(); }
@@ -901,6 +943,13 @@ function onAction(e) {
   } else if (a === 'reset') { ask('Wipe plans, pantry and your own recipes on this phone?', 'Wipe', true).then((ok) => { if (ok) { localStorage.removeItem(KEY); location.reload(); } }); }
 }
 function addIngRow() { const t = document.getElementById('ing-row-t'); document.getElementById('ing-rows').appendChild(t.content.cloneNode(true)); }
+// Ticking/unticking an ingredient in the "change the ingredients" sheet.
+function onTweakChange(e) {
+  const td = e.target.closest('[data-tweak-drop]'); if (!td) return false;
+  const rid = e.target.closest('.sheet-inner')?.querySelector('[data-action="tweak-done"]')?.dataset.id;
+  if (rid) { setTweak(rid, (t) => { const i = t.drop.indexOf(td.dataset.tweakDrop); if (td.checked) { if (i >= 0) t.drop.splice(i, 1); } else if (i < 0) t.drop.push(td.dataset.tweakDrop); }); openSheet(tweakSheet(rid)); }
+  return true;
+}
 function onChange(e) {
   const t = e.target; const w = W();
   if (t.dataset.pick) {

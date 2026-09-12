@@ -148,8 +148,6 @@ hr { border: 0; border-top: 1px solid #f3ecdc; margin: 14px 0; }
 .day-pick button.on { background: var(--coral); color: #fff; }
 a { color: var(--accent); font-weight: 700; }
 /* pick list, week switch, comparison tables */
-.week-switch { margin: -4px 0 12px; }
-.week-switch .chip { padding: 8px 14px; }
 .chip.meal { border: 0; font-weight: 600; }
 .recipe-row.pick .tick { width: 26px; height: 26px; accent-color: var(--accent); flex: none; }
 .recipe-row.pick.on { background: #fff7fa; border-radius: 12px; padding-left: 6px; padding-right: 6px; }
@@ -302,3 +300,10 @@ ul.store li b { display: inline-block; min-width: 64px; color: #5b3fb8; }
 #view.dragging { touch-action: none; }
 .cell.ghost { transition: none; opacity: .96; transform-origin: center; }
 .cell.over { background: #fff; }
+
+/* Week switcher: one segmented control, dates spelled out */
+.wtabs { display: flex; background: var(--panel); border-radius: 14px; padding: 4px; margin: -2px 0 14px; box-shadow: 0 6px 24px rgba(74,51,0,.08); }
+.wtabs button { flex: 1; border: 0; background: none; border-radius: 11px; padding: 9px 6px; font-weight: 600; color: var(--muted); font-size: 14px; line-height: 1.2; transition: background-color .12s ease, color .12s ease; }
+.wtabs button.on { background: #1b1a2e; color: #fff; }
+.wtabs button small { display: block; font-size: 11px; font-weight: 500; opacity: .8; margin-top: 2px; }
+.sheet-inner input:not([type=checkbox]):not([type=range]), .sheet-inner select { font: inherit; padding: 10px 12px; border-radius: 10px; border: 1.5px solid var(--line); background: #fff; min-width: 0; }

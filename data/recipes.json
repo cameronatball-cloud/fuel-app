@@ -3337,10 +3337,15 @@
     {
      "id": "lemon",
      "qty": 0.2
+    },
+    {
+     "id": "cheddar",
+     "qty": 20
     }
    ],
    "method": [
-    "Boil the pasta, cool under the tap. Mix mayo, skyr and lemon; stir through with tuna, cucumber and pepper."
+    "Boil the pasta, cool under the tap. Mix mayo, skyr and lemon; stir through with tuna, cucumber and pepper.",
+    "Grated cheddar on top when eating."
    ],
    "notes": "Cold lunch, no reheating, 45g protein.",
    "tags": [
@@ -4258,11 +4263,16 @@
     {
      "id": "pesto",
      "qty": 15
+    },
+    {
+     "id": "cheddar",
+     "qty": 20
     }
    ],
    "method": [
     "Fry the chicken with garlic paste, add halved tomatoes until they burst, then spinach until wilted.",
-    "Toss with the pasta and pesto."
+    "Toss with the pasta and pesto.",
+    "Grated cheddar on top when eating."
    ],
    "notes": "Fresh-tasting, 20 minutes.",
    "tags": [
