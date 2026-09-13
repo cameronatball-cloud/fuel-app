@@ -3,7 +3,7 @@ import { CONFIG } from './config.js';
 import { cloud, initCloud, onCloudChange, signIn, signUp, resetPassword, redeemCode, signOut, hasAccess, pullState, pushStateSoon } from './cloud.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v45';
+const APP_VERSION = 'v46';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 if (S.tab === 'settings') S.tab = S.prevTab && S.prevTab !== 'settings' ? S.prevTab : 'plan';
@@ -12,7 +12,7 @@ function load() {
   const base = { tab: 'plan', activeWeek: null, weeks: {}, tubs: {}, customRecipes: [], customIngredients: [], inbox: [], settings: { portion: 1, weight: 85, goal: 'build', proteinTarget: 180, snackProtein: 24, budget: 50, avoid: [] } };
   try { return { ...base, ...JSON.parse(localStorage.getItem(KEY) || '{}') }; } catch { return base; }
 }
-function syncable() { const { tab, search, planSearch, ideasOpen, ideaTag, ...rest } = S; return rest; }
+function syncable() { const { tab, search, planSearch, pantrySearch, ideasOpen, ideaTag, ...rest } = S; return rest; }
 function save() { S.updatedAt = new Date().toISOString(); try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {} pushStateSoon(syncable); }
 
 const ING = () => DATA.ingredients.concat(S.customIngredients);
@@ -683,10 +683,18 @@ function renderPantry() {
   const w = W(); w.useUp ||= {};
   const row = (it) => { const v = w.pantry[it.id]; const on = v === true || typeof v === 'number'; const up = !!w.useUp[it.id];
     return `<div class="check"><input type="checkbox" data-pantry="${it.id}" ${on ? 'checked' : ''}><span class="grow">${esc(it.name)}${(it.packs || []).length ? '' : '<span class="sub">no price on file</span>'}${up ? '<span class="sub">using it up this week</span>' : ''}</span>${on ? `<button class="chip small useup ${up ? 'on' : ''}" data-action="useup" data-id="${it.id}" title="Plan meals that use this up">${up ? 'Using up' : 'Use up'}</button>` : ''}${on && !it.staple ? `<input class="qty" type="number" step="any" placeholder="plenty" data-pantry-qty="${it.id}" value="${typeof v === 'number' ? v : ''}"><span class="small muted">${it.unit === 'each' ? '' : it.unit}</span>` : ''}</div>`; };
-  const html = order.filter((g) => groups[g]).map((g) => `<h2>${g}</h2><div class="card">${groups[g].map(row).join('')}</div>`).join('');
+  const q = (S.pantrySearch || '').toLowerCase();
+  const LABEL = { protein: 'Meat, fish & protein', dairy: 'Dairy & eggs', carb: 'Carbs & bread', veg: 'Veg & herbs', fruit: 'Fruit', tin: 'Tins & jars', sauce: 'Sauces & condiments', spice: 'Spices & seasoning', cupboard: 'Cupboard' };
+  const html = order.filter((g) => groups[g]).map((g) => {
+    const items = q ? groups[g].filter((it) => it.name.toLowerCase().includes(q) || String(it.aka || '').toLowerCase().includes(q)) : groups[g];
+    if (!items.length) return '';
+    const ticked = groups[g].filter((it) => w.pantry[it.id] !== undefined).length;
+    const open = q || ticked || ['protein', 'dairy', 'carb', 'veg'].includes(g);
+    return `<details class="pantry-group" ${open ? 'open' : ''}><summary><h2>${LABEL[g] || g}</h2><span class="small muted">${ticked ? `${ticked} ticked · ` : ''}${groups[g].length}</span></summary><div class="card">${items.map(row).join('')}</div></details>`;
+  }).join('');
   const ticked = Object.keys(w.pantry).length;
   return `<h1>Pantry</h1>${weekSwitch()}<p class="small muted">Tick what you already have for <b>${weekLabel(S.activeWeek).toLowerCase()}</b> and it comes off the shop list. Leftovers that need eating? Tap <b>Use up</b> and Plan suggests meals for them. Leave the amount blank for "plenty", or type how much and the list buys only the difference. ${ticked} ticked.</p>
-  <div class="row" style="margin-bottom:12px; flex-wrap:wrap"><button class="btn ghost" data-action="clear-pantry">Untick all</button></div>${html}`;
+  <div class="row" style="margin-bottom:12px"><input class="search grow" placeholder="Search the cupboard" value="${esc(S.pantrySearch || '')}" data-pantry-search><button class="btn ghost" data-action="clear-pantry">Untick all</button></div>${html}`;
 }
 
 // ---------- Settings: its own screen, opened from the gear on any tab ----------
@@ -1043,6 +1051,7 @@ function onInput(e) {
   }
   const t = e.target;
   if (t.dataset.search !== undefined) { S.search = t.value; refreshCard(renderRecipes); }
+  else if (t.dataset.pantrySearch !== undefined) { S.pantrySearch = t.value; const keep = document.activeElement; render(); const inp = document.querySelector('[data-pantry-search]'); if (inp) { inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); } }
   else if (t.dataset.planSearch !== undefined) { S.planSearch = t.value; const pick = document.getElementById('plan-pick'); if (pick) pick.innerHTML = planPickHtml(); else render(); }
 }
 function refreshCard(fn) { const v = document.getElementById('view'); const card = v.querySelector('.card'); if (card) { const tmp = document.createElement('div'); tmp.innerHTML = fn(); card.innerHTML = tmp.querySelector('.card').innerHTML; } }
