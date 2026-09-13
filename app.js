@@ -3,7 +3,7 @@ import { CONFIG } from './config.js';
 import { cloud, initCloud, onCloudChange, signIn, signUp, resetPassword, redeemCode, signOut, hasAccess, pullState, pushStateSoon } from './cloud.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v46';
+const APP_VERSION = 'v47';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 if (S.tab === 'settings') S.tab = S.prevTab && S.prevTab !== 'settings' ? S.prevTab : 'plan';
@@ -81,6 +81,19 @@ function resolveFor(w) {
   };
 }
 const recById = (id) => REC().find((r) => r.id === id);
+// Ingredients the Pantry should list: everything used by the recipes in your library (after tweaks and the thigh switch),
+// the options behind any choice ingredient, plus anything already ticked or marked "use up" this week so nothing vanishes.
+// The rest of the catalogue stays as the price store for recipes added later.
+function pantryIds(w) {
+  const ids = new Set(); const res = resolveFor(w);
+  for (const r of RAW()) {
+    if (!inLibrary(r.id) && !Object.values(S.weeks).some((wk) => wk.portions?.[r.id] || wk.snacks?.[r.id])) continue;
+    for (const x of r.ingredients || []) { ids.add(x.id); ids.add(res(x.id)); const it = ingById(x.id); for (const c of it?.choices || []) ids.add(c); }
+  }
+  for (const id of Object.keys(w.pantry || {})) ids.add(id);
+  for (const id of Object.keys(w.useUp || {})) ids.add(id);
+  return ids;
+}
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const hue = (id) => { let h = 0; for (const c of id) h = (h * 31 + c.charCodeAt(0)) % 360; return h; };
 const cellStyle = (id) => `background:hsl(${hue(id)} 90% 82%);color:hsl(${hue(id)} 70% 22%);`;
@@ -677,10 +690,11 @@ function gateScreen() {
 }
 function renderPantry() {
   const groups = {};
-  const options = new Set(ING().flatMap((i) => i.choices || [])); // the actual fruits, not the "your pick" line
-  for (const it of ING()) if ((!it.hidden || options.has(it.id)) && !(it.choices || []).length) (groups[it.category] ||= []).push(it);
-  const order = ['protein', 'dairy', 'carb', 'veg', 'fruit', 'tin', 'sauce', 'spice', 'cupboard'];
   const w = W(); w.useUp ||= {};
+  const mine = pantryIds(w);
+  const options = new Set(ING().flatMap((i) => i.choices || [])); // the actual fruits, not the "your pick" line
+  for (const it of ING()) if (mine.has(it.id) && (!it.hidden || options.has(it.id)) && !(it.choices || []).length) (groups[it.category] ||= []).push(it);
+  const order = ['protein', 'dairy', 'carb', 'veg', 'fruit', 'tin', 'sauce', 'spice', 'cupboard'];
   const row = (it) => { const v = w.pantry[it.id]; const on = v === true || typeof v === 'number'; const up = !!w.useUp[it.id];
     return `<div class="check"><input type="checkbox" data-pantry="${it.id}" ${on ? 'checked' : ''}><span class="grow">${esc(it.name)}${(it.packs || []).length ? '' : '<span class="sub">no price on file</span>'}${up ? '<span class="sub">using it up this week</span>' : ''}</span>${on ? `<button class="chip small useup ${up ? 'on' : ''}" data-action="useup" data-id="${it.id}" title="Plan meals that use this up">${up ? 'Using up' : 'Use up'}</button>` : ''}${on && !it.staple ? `<input class="qty" type="number" step="any" placeholder="plenty" data-pantry-qty="${it.id}" value="${typeof v === 'number' ? v : ''}"><span class="small muted">${it.unit === 'each' ? '' : it.unit}</span>` : ''}</div>`; };
   const q = (S.pantrySearch || '').toLowerCase();
@@ -694,6 +708,7 @@ function renderPantry() {
   }).join('');
   const ticked = Object.keys(w.pantry).length;
   return `<h1>Pantry</h1>${weekSwitch()}<p class="small muted">Tick what you already have for <b>${weekLabel(S.activeWeek).toLowerCase()}</b> and it comes off the shop list. Leftovers that need eating? Tap <b>Use up</b> and Plan suggests meals for them. Leave the amount blank for "plenty", or type how much and the list buys only the difference. ${ticked} ticked.</p>
+  <p class="small muted">Only ingredients from your recipes are listed. Add a recipe and its ingredients appear here.</p>
   <div class="row" style="margin-bottom:12px"><input class="search grow" placeholder="Search the cupboard" value="${esc(S.pantrySearch || '')}" data-pantry-search><button class="btn ghost" data-action="clear-pantry">Untick all</button></div>${html}`;
 }
 
