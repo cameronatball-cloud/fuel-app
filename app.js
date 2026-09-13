@@ -3,9 +3,10 @@ import { CONFIG } from './config.js';
 import { cloud, initCloud, onCloudChange, signIn, signUp, resetPassword, redeemCode, signOut, hasAccess, pullState, pushStateSoon } from './cloud.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v44';
+const APP_VERSION = 'v45';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
+if (S.tab === 'settings') S.tab = S.prevTab && S.prevTab !== 'settings' ? S.prevTab : 'plan';
 
 function load() {
   const base = { tab: 'plan', activeWeek: null, weeks: {}, tubs: {}, customRecipes: [], customIngredients: [], inbox: [], settings: { portion: 1, weight: 85, goal: 'build', proteinTarget: 180, snackProtein: 24, budget: 50, avoid: [] } };
@@ -206,7 +207,8 @@ async function syncOnSignIn() {
 function render(opts = {}) {
   const view = document.getElementById('view'); const y = view.scrollTop;
   document.querySelectorAll('#tabs button').forEach((b) => b.classList.toggle('active', b.dataset.tab === S.tab));
-  document.getElementById('view').innerHTML = `<div class="brandbar"><button class="gear" data-action="settings" aria-label="Settings" title="Settings">⚙</button><span class="wordmark" aria-label="Fuel">FU<b>£</b>L</span></div>` + ({ plan: renderPlan, cook: renderCook, shop: renderShop, recipes: renderRecipes, pantry: renderPantry })[S.tab]();
+  const page = ({ plan: renderPlan, cook: renderCook, shop: renderShop, recipes: renderRecipes, pantry: renderPantry, settings: renderSettings })[S.tab] || renderPlan;
+  document.getElementById('view').innerHTML = `<div class="brandbar">${S.tab === 'settings' ? '' : `<button class="gear" data-action="settings" aria-label="Settings" title="Settings"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v.1a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>`}<span class="wordmark" aria-label="Fuel">FU<b>£</b>L</span></div>` + page();
   view.scrollTop = opts.top ? 0 : y;
 }
 
@@ -342,7 +344,7 @@ function renderPlan() {
   ${upHtml}${sugHtml}
   <div id="plan-pick">${nothing}${group('breakfast', 'Breakfasts')}${group('mains', 'Mains (lunch or dinner)')}
   ${snackHtml}
-  ${hidden ? `<p class="small muted">${hidden} recipe${hidden > 1 ? 's' : ''} hidden because of what you don't eat (Settings).</p>` : ''}
+  ${hidden ? `<p class="small muted">${hidden} recipe${hidden > 1 ? 's' : ''} hidden because of what you don't eat (see Settings).</p>` : ''}
   <p class="small muted">Missing something? Recipes → <b>Find more meal ideas</b>.</p></div>`;
 }
 // Just the inside of #plan-pick, for the search box to refresh without redrawing the page.
@@ -538,12 +540,11 @@ function renderRecipes() {
   const ideasCount = all.filter((r) => !inLibrary(r.id) && !isAvoided(r)).length;
   const ideasHtml = S.ideasOpen ? `<div class="card" id="ideas"><h3>Meal ideas <span class="muted small">${ideasCount} not in your list</span></h3>
     <div class="chip-row"><button class="chip ${!tag ? 'on' : ''}" data-action="idea-tag" data-tag="">All</button>${TAGS.map(([k, l]) => `<button class="chip ${tag === k ? 'on' : ''}" data-action="idea-tag" data-tag="${k}">${l}</button>`).join('')}</div>
-    ${ideas.length ? ideas.map((r) => recipeRow(r, `<button class="btn small" data-action="lib-add" data-id="${r.id}">+ Add</button>`)).join('') : '<p class="muted">Nothing left to add here. Try another filter, or paste a link below.</p>'}</div>` : '';
+    ${ideas.length ? ideas.map((r) => recipeRow(r, `<button class="btn small" data-action="lib-add" data-id="${r.id}">+ Add</button>`)).join('') : '<p class="muted">Nothing left to add here. Try another filter, or type one in.</p>'}</div>` : '';
   return `<h1>Recipes</h1>
   <button class="btn block ${S.ideasOpen ? 'ghost' : ''}" data-action="ideas-toggle" style="margin-bottom:10px">${S.ideasOpen ? 'Hide meal ideas' : `✨ Find more meal ideas (${ideasCount})`}</button>
   ${ideasHtml}
-  <div class="row" style="margin-bottom:12px"><button class="btn ghost grow" data-action="add-link">+ From an Instagram link</button><button class="btn ghost" data-action="add-recipe">Type one in</button></div>
-  ${inboxHtml}
+  <div class="row" style="margin-bottom:12px"><button class="btn ghost grow" data-action="add-recipe">+ Type a recipe in</button></div>
   <input class="search" placeholder="Search ${mine.length} of your recipes" value="${esc(S.search || '')}" data-search>
   <h2>My recipes</h2><div class="card">${list || '<p class="muted">Nothing here yet. Add some from the ideas above.</p>'}</div>`;
 }
@@ -685,26 +686,48 @@ function renderPantry() {
   const html = order.filter((g) => groups[g]).map((g) => `<h2>${g}</h2><div class="card">${groups[g].map(row).join('')}</div>`).join('');
   const ticked = Object.keys(w.pantry).length;
   return `<h1>Pantry</h1>${weekSwitch()}<p class="small muted">Tick what you already have for <b>${weekLabel(S.activeWeek).toLowerCase()}</b> and it comes off the shop list. Leftovers that need eating? Tap <b>Use up</b> and Plan suggests meals for them. Leave the amount blank for "plenty", or type how much and the list buys only the difference. ${ticked} ticked.</p>
-  <div class="row" style="margin-bottom:12px; flex-wrap:wrap"><button class="btn ghost" data-action="clear-pantry">Untick all</button></div>${html}
-  <h2 id="settings">Settings</h2><div class="card">
-    <label class="field">Bodyweight (kg)<input type="number" data-setting="weight" value="${S.settings.weight}"></label>
-    <label class="field">Goal<select data-setting-str="goal"><option value="build" ${S.settings.goal === 'build' ? 'selected' : ''}>Build muscle</option><option value="lean" ${S.settings.goal === 'lean' ? 'selected' : ''}>Stay lean and strong</option><option value="lose" ${S.settings.goal === 'lose' ? 'selected' : ''}>Lose fat, keep muscle</option><option value="eatwell" ${S.settings.goal === 'eatwell' ? 'selected' : ''}>Just eat well</option></select></label>
-    <h3 style="margin-top:14px">Daily targets</h3>
-    <p class="small muted">Calories set the portion size: the week's meals are scaled so they land on this number, and the shop list scales with them. Snacks stay their normal size and count towards it.</p>
-    <label class="field">Calorie target: <b data-val="kcalTarget">${(S.settings.kcalTarget || 0).toLocaleString()}</b> kcal a day<input class="range" type="range" min="1200" max="4500" step="50" data-setting="kcalTarget" value="${S.settings.kcalTarget || 2500}"></label>
-    <label class="field">Protein target: <b data-val="proteinTarget">${S.settings.proteinTarget}g</b> a day <span class="muted">(what you're aiming for; hit it with higher-protein meals and snacks)</span><input class="range" type="range" min="80" max="260" step="5" data-setting="proteinTarget" value="${S.settings.proteinTarget}"></label>
-    <div id="macro-preview">${macroPreview(S.settings.kcalTarget, S.settings.proteinTarget)}</div>
+  <div class="row" style="margin-bottom:12px; flex-wrap:wrap"><button class="btn ghost" data-action="clear-pantry">Untick all</button></div>${html}`;
+}
+
+// ---------- Settings: its own screen, opened from the gear on any tab ----------
+function renderSettings() {
+  const st = S.settings;
+  const goal = (k, l) => `<option value="${k}" ${st.goal === k ? 'selected' : ''}>${l}</option>`;
+  const account = !cloud.enabled
+    ? `<div class="acct"><div class="avatar">☺</div><div class="grow"><b>This phone only</b><span class="sub muted">Everything is saved here. Sign-in and sync switch on with the cloud project.</span></div></div>`
+    : cloud.status === 'error' ? `<div class="bad-box">Cloud problem: ${esc(cloud.error || 'unknown')}. The app keeps working on this phone.</div>`
+    : !cloud.user ? `<div class="acct"><div class="avatar">?</div><div class="grow"><b>Not signed in</b></div></div>`
+    : `<div class="acct"><div class="avatar">${esc((cloud.user.email || '?')[0].toUpperCase())}</div><div class="grow"><b>${esc(cloud.user.email)}</b><span class="sub muted">Full access${cloud.planExpires ? ` until ${fmtDate(cloud.planExpires.slice(0, 10))}` : ''}${cloud.lastSync ? ` · synced ${new Date(cloud.lastSync).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''}</span></div></div>
+       <div class="row" style="margin-top:12px"><button class="btn ghost grow" data-action="signout">Sign out</button></div>`;
+  return `<div class="settings-head"><button class="btn ghost small" data-action="settings-back">‹ Back</button><h1>Settings</h1></div>
+  <h2>Account</h2><div class="card">${account}</div>
+  <h2>You</h2><div class="card">
+    <div class="setgrid">
+      <label class="field">Bodyweight (kg)<input type="number" inputmode="numeric" data-setting="weight" value="${st.weight}"></label>
+      <label class="field">Weekly food budget (£)<input type="number" inputmode="numeric" data-setting="budget" value="${st.budget}"></label>
+    </div>
+    <label class="field">Goal<select data-setting-str="goal">${goal('build', 'Build muscle')}${goal('lean', 'Stay lean and strong')}${goal('lose', 'Lose fat, keep muscle')}${goal('eatwell', 'Just eat well')}</select></label>
+  </div>
+  <h2>Daily targets</h2><div class="card">
+    <p class="small muted" style="margin:0 0 10px">Calories set the portion size: meals are scaled so the week lands on this number, and the shop list scales with them. Protein is what you aim for.</p>
+    <label class="field">Calories <b data-val="kcalTarget">${(st.kcalTarget || 0).toLocaleString()}</b> kcal a day<input class="range" type="range" min="1200" max="4500" step="50" data-setting="kcalTarget" value="${st.kcalTarget || 2500}"></label>
+    <label class="field">Protein <b data-val="proteinTarget">${st.proteinTarget}g</b> a day<input class="range" type="range" min="80" max="260" step="5" data-setting="proteinTarget" value="${st.proteinTarget}"></label>
+    <div id="macro-preview">${macroPreview(st.kcalTarget, st.proteinTarget)}</div>
     <button class="btn ghost small" data-action="suggest-targets">Suggest targets from my weight and goal</button>
-    <label class="field">Weekly food budget (£)<input type="number" data-setting="budget" value="${S.settings.budget}"></label>
-    <div class="small muted" style="margin-top:8px">Things you don't eat (recipes with these are hidden)</div>
-    <div class="chip-row">${Object.entries(AVOID).map(([k, v]) => `<button class="chip ${S.settings.avoid.includes(k) ? 'on' : ''}" data-action="avoid" data-id="${k}">${v.label}</button>`).join('')}</div>
-    <div class="row" style="margin-top:8px"><input class="grow" id="settings-avoid-text" placeholder="Anything else, e.g. mushrooms" autocapitalize="none"><button class="btn small" data-action="settings-avoid-add">Add</button></div>${avoidTextChips('settings-avoid-rm')}
-    <button class="btn ghost small" data-action="intro">Show the intro again</button>
-    <label class="check"><input type="checkbox" data-setting-bool="preferThigh" ${S.settings.preferThigh ? 'checked' : ''}><span>Buy boneless thigh fillets instead of breast<span class="sub">Swaps every breast line on the shop list for thigh fillets. Breast is currently the cheaper per kilo at all four shops.</span></span></label></div>
-  <h2>Account</h2><div class="card">${accountCard()}</div>
-  <h2>Backup</h2><div class="card"><div class="row"><button class="btn ghost grow" data-action="export">Copy backup</button><button class="btn ghost grow" data-action="import">Paste backup</button></div>
-  <button class="btn danger block" data-action="reset" style="margin-top:10px">Reset everything</button></div>
-  <p class="small muted" style="text-align:center">${esc(CONFIG.APP_NAME)} ${APP_VERSION} · prices checked ${DATA.priceDate || ''} · <a href="terms.html">Terms</a> · <a href="privacy.html">Privacy</a></p>`;
+  </div>
+  <h2>Things you don't eat</h2><div class="card">
+    <p class="small muted" style="margin:0 0 8px">Recipes with these are hidden everywhere.</p>
+    <div class="chip-row">${Object.entries(AVOID).map(([k, v]) => `<button class="chip ${st.avoid.includes(k) ? 'on' : ''}" data-action="avoid" data-id="${k}">${v.label}</button>`).join('')}</div>
+    <div class="row" style="margin-top:10px"><input class="grow" id="settings-avoid-text" placeholder="Anything else, e.g. mushrooms" autocapitalize="none"><button class="btn small" data-action="settings-avoid-add">Add</button></div>${avoidTextChips('settings-avoid-rm')}
+  </div>
+  <h2>Shopping</h2><div class="card">
+    <label class="check"><input type="checkbox" data-setting-bool="preferThigh" ${st.preferThigh ? 'checked' : ''}><span>Buy thigh fillets instead of breast<span class="sub">Swaps every breast line on the shop list. Breast is currently cheaper per kilo at all four shops.</span></span></label>
+  </div>
+  <h2>App</h2><div class="card">
+    <div class="row" style="flex-wrap:wrap;gap:8px"><button class="btn ghost small" data-action="intro">Show the intro again</button><button class="btn ghost small" data-action="export">Copy backup</button><button class="btn ghost small" data-action="import">Paste backup</button></div>
+    <button class="btn danger block" data-action="reset" style="margin-top:12px">Reset everything</button>
+  </div>
+  <p class="small muted" style="text-align:center">${esc(CONFIG.APP_NAME)} ${APP_VERSION} · prices checked ${DATA.priceDate ? fmtDate(DATA.priceDate) : ''} · <a href="terms.html">Terms</a> · <a href="privacy.html">Privacy</a></p>`;
 }
 
 // ---------- sheet ----------
@@ -888,7 +911,8 @@ function onAction(e) {
     (navigator.clipboard?.writeText(txt) || Promise.reject()).then(() => toast('List copied. Paste it anywhere.'), () => askText('Copy this list', txt));
   }
   else if (a === 'avoid') { const i = S.settings.avoid.indexOf(id); if (i >= 0) S.settings.avoid.splice(i, 1); else S.settings.avoid.push(id); save(); render(); }
-  else if (a === 'settings') { S.tab = 'pantry'; save(); render(); const v = document.getElementById('view'), h = document.getElementById('settings'); if (h) v.scrollTo({ top: v.scrollTop + h.getBoundingClientRect().top - v.getBoundingClientRect().top - 6 }); }
+  else if (a === 'settings') { if (S.tab !== 'settings') S.prevTab = S.tab; S.tab = 'settings'; save(); render({ top: true }); }
+  else if (a === 'settings-back') { S.tab = S.prevTab && S.prevTab !== 'settings' ? S.prevTab : 'plan'; save(); render({ top: true }); }
   else if (a === 'tip-done') { S.tips ||= {}; S.tips[el.dataset.tip] = true; save(); render(); }
   else if (a === 'scroll-pick') { const v = document.getElementById('view'), h = document.getElementById('pick-head'); if (h) v.scrollTo({ top: v.scrollTop + h.getBoundingClientRect().top - v.getBoundingClientRect().top - 6 }); }
   else if (a === 'intro') openIntro();
