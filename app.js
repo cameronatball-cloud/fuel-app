@@ -3,7 +3,7 @@ import { CONFIG } from './config.js';
 import { cloud, initCloud, onCloudChange, signIn, signUp, resetPassword, redeemCode, signOut, hasAccess, pullState, pushStateSoon } from './cloud.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v49';
+const APP_VERSION = 'v50';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 if (S.tab === 'settings') S.tab = S.prevTab && S.prevTab !== 'settings' ? S.prevTab : 'plan';
@@ -92,6 +92,7 @@ function pantryIds(w) {
   }
   for (const id of Object.keys(w.pantry || {})) ids.add(id);
   for (const id of Object.keys(w.useUp || {})) ids.add(id);
+  for (const e of extras()) ids.add(e.id);
   return ids;
 }
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -452,18 +453,40 @@ function shopNeeds(w, recipes) {
     for (const c of picks) { needsAll[c] = (needsAll[c] || 0) + qty / picks.length; genericOf[c] = id; }
   }
   const resolve = (id) => { const r = base(id); const it = ingById(r); return it?.choices?.length ? chosenFor(w, it) : [r]; };
+  for (const e of extras()) { needsAll[e.id] = (needsAll[e.id] || 0) + e.qty; rawNeeds[e.id] = (rawNeeds[e.id] || 0) + e.qty; } // standing "also buy" items, every week
   const pantryFor = {}; for (const id of Object.keys(needsAll)) { const g = genericOf[id]; pantryFor[id] = w.pantry[id] !== undefined ? w.pantry[id] : (g && w.pantry[g] !== undefined ? w.pantry[g] : undefined); }
   return { counts, resolve, rawNeeds, needsAll, pantryFor, needs: P.netPantry(needsAll, pantryFor) };
+}
+// Things bought every week that aren't part of any meal (milk for the coffee, an avocado for the eggs): {id, qty} in the ingredient's unit.
+function extras() { return (S.extras || []).filter((e) => ingById(e.id) && e.qty > 0); }
+const AISLES = [['protein', 'Meat, fish & eggs'], ['dairy', 'Dairy'], ['veg', 'Veg & herbs'], ['fruit', 'Fruit'], ['carb', 'Bread, rice & pasta'], ['tin', 'Tins & jars'], ['sauce', 'Sauces'], ['spice', 'Spices'], ['cupboard', 'Cupboard'], ['frozen', 'Frozen']];
+function aisleOf(it) { return it?.store === 'freezer' && !['protein'].includes(it.category) ? 'frozen' : (AISLES.some(([k]) => k === it?.category) ? it.category : 'cupboard'); }
+function extrasSheet(q = '') {
+  const have = new Set(extras().map((e) => e.id)); const s = q.trim().toLowerCase();
+  const hits = s ? ING().filter((it) => !it.hidden && !(it.choices || []).length && !have.has(it.id) && (it.name.toLowerCase().includes(s) || String(it.aka || '').toLowerCase().includes(s))).slice(0, 12) : [];
+  return `<h3>Also buy every week</h3><p class="small muted">Not part of a meal, just something you always get. It's priced in with the rest of the list.</p>
+  <input class="search" style="width:100%" placeholder="Search ingredients, e.g. milk" value="${esc(q)}" data-extra-search autofocus>
+  <div id="extra-list" style="margin-top:8px">${hits.map((it) => `<button class="line" style="width:100%;text-align:left;background:none;border:0;border-bottom:1px solid #f3ecdc" data-action="extra-pick" data-id="${it.id}"><span class="grow"><span class="name">${esc(it.name)}</span><span class="sub">${(it.packs || []).length ? 'priced' : 'no price on file'} · sold by ${it.unit === 'each' ? 'the piece' : it.unit}</span></span></button>`).join('') || (s ? '<p class="small muted">Nothing matches.</p>' : '')}</div>
+  <button class="btn ghost block" data-action="close-sheet" style="margin-top:10px">Done</button>`;
+}
+async function askExtraQty(it, current) {
+  const unitWord = it.unit === 'each' ? 'how many' : `how much (${it.unit})`;
+  const v = await askText(`${it.name}: ${unitWord} each week?`, it.unit === 'each' ? 'e.g. 2' : it.unit === 'ml' ? 'e.g. 2000' : 'e.g. 500');
+  if (v === null) return null;
+  const n = parseFloat(String(v).replace(/[^0-9.]/g, ''));
+  if (!(n > 0)) { toast('Type a number'); return null; }
+  return n;
 }
 function renderShop() {
   const w = W(); const ing = ING(), recipes = REC();
   const { counts, resolve, rawNeeds, needsAll, pantryFor, needs } = shopNeeds(w, recipes);
   const usedBy = {};
   for (const [rid, n] of Object.entries(counts)) { const r = recById(rid); if (!r) continue; for (const x of r.ingredients) for (const id of resolve(x.id)) (usedBy[id] ||= []).push(`${r.short || r.name} ×${n}`); }
+  for (const e of extras()) (usedBy[e.id] ||= []).push('also buy');
   const choiceHtml = Object.keys(rawNeeds).map(ingById).filter((it) => it?.choices?.length).map((it) => { const picks = chosenFor(w, it); return `<div class="small muted" style="margin-bottom:6px"><b>${esc(it.name)}</b> · pick one or more; the amount is split between them</div><div class="chip-row">${it.choices.map((c) => `<button class="chip ${picks.includes(c) ? 'on' : ''}" data-action="choice-toggle" data-choice="${it.id}" data-val="${c}">${esc((ingById(c)?.name || c).replace(/^Frozen /, ''))}</button>`).join('')}</div>`; }).join('');
   const fullWeek = P.compareShops(needsAll, ing)[0];
   const head = `<h1>Shop</h1>${weekSwitch()}`;
-  if (!Object.keys(needsAll).length) return `${head}<div class="card"><p>Nothing picked for ${weekLabel(S.activeWeek).toLowerCase()} yet. Tick meals on the Plan tab.</p></div>`;
+  if (!Object.keys(needsAll).length) return `${head}<div class="card"><p>Nothing picked for ${weekLabel(S.activeWeek).toLowerCase()} yet. Tick meals on the Plan tab.</p></div><h2>Also buy every week</h2><div class="card"><p class="small muted">Things that aren't part of a meal but you always get. They're priced into the list.</p><button class="btn ghost small" data-action="extra-add" style="margin-top:4px">+ Add something</button></div>`;
   const ranked = P.compareShops(needs, ing).map((b) => {
     const notSold = b.missing.filter((m) => (ingById(m.id)?.unavailable || []).includes(b.shop));
     const unpriced = b.missing.filter((m) => !(ingById(m.id)?.unavailable || []).includes(b.shop));
@@ -487,12 +510,19 @@ function renderShop() {
   // the list for the chosen shop
   const online = { tesco: (q) => `https://www.tesco.com/groceries/en-GB/search?query=${encodeURIComponent(q)}`, asda: (q) => `https://www.asda.com/groceries/search/${encodeURIComponent(q)}`, sainsburys: (q) => `https://www.sainsburys.co.uk/gol-ui/SearchResults/${encodeURIComponent(q)}` };
   const cheapestFor = (id) => { let m = null; for (const s of P.SHOPS) { const l = byShop[s]?.lines.find((x) => x.id === id); if (l && (m === null || l.cost < m.cost)) m = { cost: l.cost, shop: s }; } return m; };
-  const lines = chosen.lines.map((l) => {
+  const lineHtml = (l) => {
     const k = `${chosen.shop}:${l.id}`; const done = !!w.ticks[k];
     const cheap = cheapestFor(l.id); const elsewhere = cheap && cheap.shop !== chosen.shop && l.cost - cheap.cost >= 0.3 ? `<span class="sub alt">${P.gbp(cheap.cost)} at ${P.SHOP_NAMES[cheap.shop]}</span>` : '';
     const link = online[chosen.shop] ? `<a class="find" href="${online[chosen.shop](l.pack.name)}" target="_blank" rel="noopener" aria-label="Find at ${P.SHOP_NAMES[chosen.shop]}">↗</a>` : '';
-    return `<label class="line ${done ? 'done' : ''}"><input type="checkbox" data-tick="${k}" ${done ? 'checked' : ''}><span class="grow"><span class="name">${l.n > 1 ? `${l.n} × ` : ''}${esc(l.pack.name)}</span><span class="sub">${esc((usedBy[l.id] || []).join(', '))}</span>${elsewhere}</span><span class="cost">${P.gbp(l.cost)}</span>${link}</label>`;
-  }).join('');
+    const shelfName = l.pack.name.replace(/\s*\((?!\d+\s?(g|ml|kg|l)\b)[^)]*\)/g, '').trim(); // drop notes like "(Aldi has no natural skyr)" but keep sizes like "(580g)"
+    return `<label class="line ${done ? 'done' : ''}"><input type="checkbox" data-tick="${k}" ${done ? 'checked' : ''}><span class="grow"><span class="name">${l.n > 1 ? `<b class="n">${l.n} ×</b> ` : ''}${esc(shelfName)}</span><span class="sub">${esc((usedBy[l.id] || []).join(', '))}</span>${elsewhere}</span><span class="cost">${P.gbp(l.cost)}</span>${link}</label>`;
+  };
+  // grouped by aisle so the list reads top to bottom as you walk the shop; ticked lines sink to the end of their aisle
+  const aisleGroups = {}; for (const l of chosen.lines) (aisleGroups[aisleOf(ingById(l.id))] ||= []).push(l);
+  const lines = AISLES.filter(([k]) => aisleGroups[k]).map(([k, label]) => { const g = aisleGroups[k]; const sorted = [...g].sort((a, b) => (w.ticks[`${chosen.shop}:${a.id}`] ? 1 : 0) - (w.ticks[`${chosen.shop}:${b.id}`] ? 1 : 0)); return `<h4 class="aisle">${label}<span>${P.gbp(P.round2(g.reduce((t, l) => t + l.cost, 0)))}</span></h4>${sorted.map(lineHtml).join('')}`; }).join('');
+  const breakdown = AISLES.filter(([k]) => aisleGroups[k]).map(([k, label]) => `${label.split(',')[0].split(' &')[0]} ${P.gbp(P.round2(aisleGroups[k].reduce((t, l) => t + l.cost, 0)))}`).join(' · ');
+  const extraRows = extras().map((e) => { const it = ingById(e.id); return `<div class="line"><span class="grow"><span class="name">${esc(it.name)}</span><span class="sub">every week</span></span><button class="chip" data-action="extra-qty" data-id="${e.id}">${P.fmtQty(e.qty, it.unit)}${it.unit === 'each' ? (e.qty === 1 ? ' piece' : ' pieces') : ''}</button><button class="btn ghost small" data-action="extra-remove" data-id="${e.id}" aria-label="Remove">×</button></div>`; }).join('');
+  const extrasCard = `<h2>Also buy every week</h2><div class="card">${extraRows || '<p class="small muted">Things that aren\'t part of a meal but you always get: milk for the coffee, an avocado for the eggs. They\'re priced into the list above.</p>'}<button class="btn ghost small" data-action="extra-add" style="margin-top:${extraRows ? 10 : 4}px">+ Add something</button></div>`;
   const notSold = chosen.notSold.map((m) => esc(m.name)); const unpriced = chosen.unpriced.map((m) => esc(m.name));
   const missing = (notSold.length ? `<div class="warn-box">Not sold at ${P.SHOP_NAMES[chosen.shop]}: ${notSold.join(', ')} (about ${P.gbp(chosen.elsewhere)} elsewhere; counted in the totals above).</div>` : '') + (unpriced.length ? `<div class="warn-box">No ${P.SHOP_NAMES[chosen.shop]} price on file for: ${unpriced.join(', ')}.${chosen.shop === 'lidl' ? ' Lidl publishes no prices online.' : ''}</div>` : '');
   const done = chosen.lines.filter((l) => w.ticks[`${chosen.shop}:${l.id}`]).length;
@@ -509,10 +539,12 @@ function renderShop() {
   <div class="card shophead"><div class="row"><span class="grow"><b class="bigtotal">${P.gbp(chosen.total)}</b> <span class="muted">at ${P.SHOP_NAMES[chosen.shop]}</span>${chosen.elsewhere ? `<span class="sub muted"> + ${P.gbp(chosen.elsewhere)} for ${chosen.notSold.length} item${chosen.notSold.length > 1 ? 's' : ''} it doesn't sell = ${P.gbp(chosen.comparable)}</span>` : ''}</span><span class="muted small">budget ${P.gbp(budget)}</span></div>
     <div class="budget ${chosen.comparable > budget ? 'over' : ''}"><i style="width:${pct}%"></i></div>
     <p class="small muted">${chosen.comparable > budget ? `Over budget by ${P.gbp(chosen.comparable - budget)}.` : `${P.gbp(budget - chosen.comparable)} left.`}${haveIds.length ? ` ${haveIds.length} ingredient${haveIds.length > 1 ? 's' : ''} left off because ${haveIds.length > 1 ? "they're" : "it's"} ticked in Pantry.` : ''} Prices checked ${oldest ? fmtDate(oldest) : 'n/a'}.</p>
+    ${breakdown ? `<p class="small muted breakdown">${breakdown}</p>` : ''}
     <div class="row" style="gap:8px;margin-top:6px"><button class="btn small grow" data-action="share-list">Share list</button><button class="btn ghost small grow" data-action="copy-list">Copy</button>${online[chosen.shop] ? `<a class="btn ghost small grow" style="text-align:center" href="${online[chosen.shop]('')}" target="_blank" rel="noopener">Shop online</a>` : ''}</div></div>
   <h2>Where to shop</h2><div class="shopchips">${chips}</div>
   <h2>${P.SHOP_NAMES[chosen.shop]} list <span class="muted" style="text-transform:none;letter-spacing:0;font-weight:600">${done}/${chosen.lines.length} ticked</span></h2>
-  <div class="card list">${missing}${lines || '<p class="muted">Nothing priced at this shop.</p>'}${chosen.lines.length ? `<p class="small muted" style="margin-top:8px">Tap ↗ to find that item online. A lower price shown under a line is where it's cheaper.</p>` : ''}</div>
+  <div class="card list">${missing}${lines || '<p class="muted">Nothing priced at this shop.</p>'}${chosen.lines.length ? `<p class="small muted" style="margin-top:8px">Tap ↗ to find that item online. A green price under a line is where it's cheaper.</p>` : ''}</div>
+  ${extrasCard}
   ${items}${splitHtml}
   ${unpricedAll.length ? `<div class="card" style="margin-top:10px"><h3>No price anywhere yet</h3><p class="small muted">${unpricedAll.map(esc).join(', ')}. Left out of the totals until priced.</p></div>` : ''}
   ${haveRows ? `<h2>Already in your pantry</h2><div class="card"><p class="small muted">Left off the list because it's ticked in Pantry. Tap "Need it" to put it back. Buying everything would be ${P.gbp(fullWeek.total)} at ${P.SHOP_NAMES[fullWeek.shop]}.</p>${haveRows}</div>` : ''}
@@ -804,6 +836,7 @@ function openSheet(html) { const s = document.getElementById('sheet'); document.
 function closeSheet() { document.getElementById('sheet').hidden = true; }
 document.getElementById('sheet').addEventListener('click', (e) => { if (e.target.id === 'sheet') closeSheet(); else onAction(e); });
 document.getElementById('sheet').addEventListener('submit', onSubmit);
+document.getElementById('sheet').addEventListener('input', onInput);
 document.getElementById('sheet').addEventListener('change', (e) => { if (onTweakChange(e)) return; const chip = e.target.closest('.chip'); if (chip && e.target.type === 'checkbox') chip.classList.toggle('on', e.target.checked); });
 
 // ---------- drag and drop between grid cells ----------
@@ -920,6 +953,10 @@ function onAction(e) {
   else if (a === 'relayout') { relayout(); refreshPlan(); }
   else if (a === 'dayx') { const i = +el.dataset.day; w.days[i] = !w.days[i]; relayout(w); refreshPlan(); }
   else if (a === 'need') { delete w.pantry[id]; delete (w.useUp || {})[id]; save(); render(); }
+  else if (a === 'extra-add') { openSheet(extrasSheet('')); document.querySelector('[data-extra-search]')?.focus(); }
+  else if (a === 'extra-pick') { const it = ingById(id); closeSheet(); askExtraQty(it).then((n) => { if (n === null) return; S.extras ||= []; S.extras.push({ id, qty: n }); save(); render(); toast(`${it.name} added to every week's list`); }); }
+  else if (a === 'extra-qty') { const it = ingById(id); askExtraQty(it).then((n) => { if (n === null) return; const e = (S.extras || []).find((x) => x.id === id); if (e) e.qty = n; save(); render(); }); }
+  else if (a === 'extra-remove') { S.extras = (S.extras || []).filter((x) => x.id !== id); save(); render(); }
   else if (a === 'useup') { w.useUp ||= {}; if (w.useUp[id]) delete w.useUp[id]; else { w.useUp[id] = true; if (w.pantry[id] === undefined) w.pantry[id] = true; } save(); render(); }
   else if (a === 'pick-shop') { w.shop = el.dataset.shop; save(); render(); }
   else if (a === 'choice-toggle') {
@@ -1068,6 +1105,7 @@ function onInput(e) {
   if (t.dataset.search !== undefined) { S.search = t.value; refreshCard(renderRecipes); }
   else if (t.dataset.pantrySearch !== undefined) { S.pantrySearch = t.value; const keep = document.activeElement; render(); const inp = document.querySelector('[data-pantry-search]'); if (inp) { inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); } }
   else if (t.dataset.planSearch !== undefined) { S.planSearch = t.value; const pick = document.getElementById('plan-pick'); if (pick) pick.innerHTML = planPickHtml(); else render(); }
+  else if (t.dataset.extraSearch !== undefined) { const tmp = document.createElement('div'); tmp.innerHTML = extrasSheet(t.value); document.getElementById('extra-list').innerHTML = tmp.querySelector('#extra-list').innerHTML; }
 }
 function refreshCard(fn) { const v = document.getElementById('view'); const card = v.querySelector('.card'); if (card) { const tmp = document.createElement('div'); tmp.innerHTML = fn(); card.innerHTML = tmp.querySelector('.card').innerHTML; } }
 function onSubmit(e) {

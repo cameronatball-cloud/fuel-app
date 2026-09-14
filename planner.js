@@ -320,5 +320,5 @@ export function scaleIngredients(recipe, portions, ingredients) {
 
 export const round2 = (x) => Math.round(x * 100) / 100;
 export const round1 = (x) => Math.round(x * 10) / 10;
-export const fmtQty = (qty, unit) => (unit === 'each' ? `${qty}` : qty >= 1000 ? `${round2(qty / 1000)}k${unit}` : `${qty}${unit}`);
+export const fmtQty = (qty, unit) => (unit === 'each' ? `${qty}` : qty >= 1000 ? `${round2(qty / 1000)}${unit === 'ml' ? 'l' : 'kg'}` : `${qty}${unit}`);
 export const gbp = (x) => `£${x.toFixed(2)}`;

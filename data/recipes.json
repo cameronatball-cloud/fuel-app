@@ -540,6 +540,10 @@
      "qty": 125
     },
     {
+     "id": "onion",
+     "qty": 0.5
+    },
+    {
      "id": "kidney_beans",
      "qty": 60
     },
@@ -581,6 +585,7 @@
     }
    ],
    "method": [
+    "Dice the onion and soften it in a little oil for 5 minutes before anything else goes in the pan.",
     "Brown the mince in a dry pan, add garlic paste, then cumin, paprika and chilli powder for a minute.",
     "Add chopped tomatoes, purée, drained beans, crumbled stock cube and a splash of water. Simmer 25 minutes with the lid off until thick.",
     "Cook the rice separately. Tub rice on one side, chilli on the other. Cheese on top when eating."
@@ -614,6 +619,10 @@
      "qty": 165
     },
     {
+     "id": "onion",
+     "qty": 0.5
+    },
+    {
      "id": "chopped_tomatoes",
      "qty": 130
     },
@@ -643,6 +652,7 @@
     }
    ],
    "method": [
+    "Dice the onion and soften it in a little oil for 5 minutes before anything else goes in the pan.",
     "Brown the mince, add garlic paste, then tomatoes, purée, stock cube and paprika. Simmer 30 minutes.",
     "Boil the penne, drain, stir through the sauce so it doesn't dry out in the tub. Cheese on top when eating."
    ],
@@ -674,6 +684,10 @@
     {
      "id": "chicken_breast",
      "qty": 175
+    },
+    {
+     "id": "onion",
+     "qty": 0.33
     },
     {
      "id": "curry_paste",
@@ -709,6 +723,7 @@
     }
    ],
    "method": [
+    "Dice the onion and soften it in a little oil for 5 minutes before anything else goes in the pan.",
     "Sear the diced chicken in a hot pan 3 minutes, set aside.",
     "Fry the ginger-garlic paste, then the curry paste; fry 1 minute.",
     "Stir in a third of the coconut milk until it bubbles, then the rest plus stock (cube in 100ml water per 4 portions), honey and soy (standing in for fish sauce and sugar).",
@@ -1076,6 +1091,10 @@
      "qty": 150
     },
     {
+     "id": "onion",
+     "qty": 0.33
+    },
+    {
      "id": "wrap",
      "qty": 2
     },
@@ -1097,6 +1116,7 @@
     }
    ],
    "method": [
+    "Slice the onion and fry it with the peppers.",
     "Slice chicken, toss in seasoning, fry hard with the peppers.",
     "Tub the filling. Wraps stay in the packet; cheese and a spoon of skyr when serving."
    ],
@@ -1185,6 +1205,10 @@
      "qty": 150
     },
     {
+     "id": "onion",
+     "qty": 0.33
+    },
+    {
      "id": "sweet_potato",
      "qty": 300
     },
@@ -1206,6 +1230,7 @@
     }
    ],
    "method": [
+    "Dice the onion and soften it in a little oil for 5 minutes before anything else goes in the pan.",
     "Cube and air-fry the sweet potato 200°C 20 minutes.",
     "Brown the mince with peppers, garlic paste, paprika and cumin.",
     "Fold the potato through. Tub."
@@ -1470,6 +1495,10 @@
      "qty": 125
     },
     {
+     "id": "onion",
+     "qty": 0.33
+    },
+    {
      "id": "kidney_beans",
      "qty": 60
     },
@@ -1515,6 +1544,7 @@
     }
    ],
    "method": [
+    "Dice the onion and soften it in a little oil for 5 minutes before anything else goes in the pan.",
     "Brown the mince, add garlic paste and the spices, then tomatoes, purée, drained beans and a crumbled stock cube. Simmer 20 minutes until thick.",
     "Spoon the chilli down the middle of each wrap, roll, and lay seam-down in an oven dish. A little chopped tomato over the top, cheese over that.",
     "Bake at 200°C for 15 minutes until the cheese is bubbling. Tub two per portion with a spoon of skyr.",
@@ -1549,6 +1579,10 @@
      "qty": 175
     },
     {
+     "id": "onion",
+     "qty": 0.33
+    },
+    {
      "id": "curry_powder",
      "qty": 8
     },
@@ -1578,6 +1612,7 @@
     }
    ],
    "method": [
+    "Dice the onion and soften it in a little oil for 5 minutes before anything else goes in the pan.",
     "Fry the ginger-garlic paste and curry powder in a little oil for 1 minute until it smells toasty.",
     "Add diced chicken and colour it, then tomatoes, coconut milk, pepper strips and a crumbled stock cube. Simmer 20 minutes.",
     "Rice cooked separately. Tub rice and curry side by side."
@@ -1609,6 +1644,10 @@
     {
      "id": "chicken_thigh",
      "qty": 125
+    },
+    {
+     "id": "onion",
+     "qty": 0.33
     },
     {
      "id": "red_lentils",
@@ -1644,6 +1683,7 @@
     }
    ],
    "method": [
+    "Dice the onion and soften it in a little oil for 5 minutes before anything else goes in the pan.",
     "Rinse the lentils. Fry ginger-garlic paste, curry powder and turmeric 1 minute, add diced thigh and brown.",
     "Add lentils, tomatoes, coconut milk and 250ml stock per portion. Simmer 25 minutes, stirring, until the lentils collapse and it's thick. Add water if it catches.",
     "Rice on the side, or eat it as a thick dhal on its own."
@@ -1891,6 +1931,10 @@
      "qty": 100
     },
     {
+     "id": "onion",
+     "qty": 0.33
+    },
+    {
      "id": "kidney_beans",
      "qty": 60
     },
@@ -1920,6 +1964,7 @@
     }
    ],
    "method": [
+    "Dice the onion and soften it in a little oil for 5 minutes before anything else goes in the pan.",
     "Brown the mince with the seasoning, add beans, tomatoes and pepper, simmer 10 minutes until dry-ish.",
     "Rice cooked. Lay a wrap out, rice then beef then cheese, fold the sides in and roll tight.",
     "Wrap each in foil. Fridge 3 days, or freeze and microwave from frozen for 3 minutes."
@@ -2799,6 +2844,10 @@
      "qty": 3
     },
     {
+     "id": "onion",
+     "qty": 0.33
+    },
+    {
      "id": "baby_potatoes",
      "qty": 250
     },
@@ -2820,6 +2869,7 @@
     }
    ],
    "method": [
+    "Dice the onion and fry it with the peppers for the last 8 minutes.",
     "Halve the baby potatoes, air-fry or roast with paprika and oil 20 minutes. Peppers in for the last 8.",
     "Make wells, crack the eggs in, cheese over, back in until the whites set."
    ],
@@ -2853,6 +2903,10 @@
      "qty": 3
     },
     {
+     "id": "onion",
+     "qty": 0.33
+    },
+    {
      "id": "chopped_tomatoes",
      "qty": 200
     },
@@ -2882,6 +2936,7 @@
     }
    ],
    "method": [
+    "Dice the onion and soften it in a little oil for 5 minutes before anything else goes in the pan.",
     "Soften the pepper, add garlic paste and spices, then the tomatoes. Simmer 8 minutes until thick.",
     "Make wells, crack in the eggs, lid on 5 minutes until just set. Toast to mop up."
    ],
@@ -2971,6 +3026,10 @@
      "qty": 100
     },
     {
+     "id": "onion",
+     "qty": 0.33
+    },
+    {
      "id": "coconut_milk",
      "qty": 100
     },
@@ -3000,6 +3059,7 @@
     }
    ],
    "method": [
+    "Dice the onion and soften it in a little oil for 5 minutes before anything else goes in the pan.",
     "Fry the ginger-garlic paste and spices a minute. Add rinsed lentils, tomatoes, coconut milk and 300ml stock.",
     "Simmer 25 minutes, stirring, until thick. Rice on the side."
    ],
@@ -3844,6 +3904,10 @@
      "qty": 150
     },
     {
+     "id": "onion",
+     "qty": 0.33
+    },
+    {
      "id": "mushrooms",
      "qty": 100
     },
@@ -3865,6 +3929,7 @@
     }
    ],
    "method": [
+    "Dice the onion and soften it in a little oil for 5 minutes before anything else goes in the pan.",
     "Fry the chicken, then the mushrooms hard with garlic paste.",
     "Blend the cottage cheese with a ladle of pasta water, stir through the drained pasta, chicken and mushrooms. Parmesan over."
    ],
@@ -3955,6 +4020,10 @@
      "qty": 125
     },
     {
+     "id": "onion",
+     "qty": 0.33
+    },
+    {
      "id": "chickpeas",
      "qty": 100
     },
@@ -3984,6 +4053,7 @@
     }
    ],
    "method": [
+    "Dice the onion and soften it in a little oil for 5 minutes before anything else goes in the pan.",
     "Fry the ginger-garlic paste and curry powder, brown the chicken, add tomatoes, chickpeas and coconut milk. Simmer 20 minutes.",
     "Spinach in for the last 3 minutes. Rice on the side."
    ],
@@ -4482,6 +4552,10 @@
      "qty": 150
     },
     {
+     "id": "onion",
+     "qty": 0.5
+    },
+    {
      "id": "black_beans",
      "qty": 80
     },
@@ -4515,6 +4589,7 @@
     }
    ],
    "method": [
+    "Dice the onion and soften it in a little oil for 5 minutes before anything else goes in the pan.",
     "Brown the turkey with garlic paste and spices, add pepper, tomatoes and beans. Simmer 25 minutes.",
     "Rice alongside. Freezes."
    ],
@@ -4605,6 +4680,10 @@
      "qty": 150
     },
     {
+     "id": "onion",
+     "qty": 0.33
+    },
+    {
      "id": "carrots",
      "qty": 60
     },
@@ -4634,6 +4713,7 @@
     }
    ],
    "method": [
+    "Dice the onion and soften it in a little oil for 5 minutes before anything else goes in the pan.",
     "Fry the turkey hard, add diced carrot, then peas, soy, honey and ginger-garlic paste.",
     "Push aside, scramble an egg, fold in cooked rice."
    ],
@@ -4666,6 +4746,10 @@
      "qty": 125
     },
     {
+     "id": "onion",
+     "qty": 0.33
+    },
+    {
      "id": "basmati",
      "qty": 50
     },
@@ -4691,6 +4775,7 @@
     }
    ],
    "method": [
+    "Dice the onion and soften it in a little oil for 5 minutes before anything else goes in the pan.",
     "Brown the mince with garlic paste and cumin, stir in cooked rice and tomatoes.",
     "Halve the peppers, fill, cheese on top, bake 190°C 25 minutes."
    ],
@@ -4724,6 +4809,10 @@
      "qty": 150
     },
     {
+     "id": "onion",
+     "qty": 0.5
+    },
+    {
      "id": "carrots",
      "qty": 60
     },
@@ -4749,6 +4838,7 @@
     }
    ],
    "method": [
+    "Dice the onion and soften it in a little oil for 5 minutes before anything else goes in the pan.",
     "Brown the mince, add diced carrot, tomatoes, stock and garlic paste; simmer 15 minutes, peas in at the end.",
     "Boil and mash the sweet potato, spread on top, bake 200°C 20 minutes until the edges catch."
    ],
@@ -4782,6 +4872,10 @@
      "qty": 100
     },
     {
+     "id": "onion",
+     "qty": 0.33
+    },
+    {
      "id": "kidney_beans",
      "qty": 60
     },
@@ -4811,6 +4905,7 @@
     }
    ],
    "method": [
+    "Dice the onion and soften it in a little oil for 5 minutes before anything else goes in the pan.",
     "Quick chilli: brown the mince, add beans, tomatoes and spices, simmer 15 minutes.",
     "Bake or air-fry the sweet potato. Split, chilli on, cheese and skyr."
    ],
@@ -4844,6 +4939,10 @@
      "qty": 150
     },
     {
+     "id": "onion",
+     "qty": 0.33
+    },
+    {
      "id": "mushrooms",
      "qty": 100
     },
@@ -4869,6 +4968,7 @@
     }
    ],
    "method": [
+    "Dice the onion and soften it in a little oil for 5 minutes before anything else goes in the pan.",
     "Brown the pork, add mushrooms until they colour, then tomatoes, garlic paste and paprika. Simmer 20 minutes.",
     "Stir through the pasta. Parmesan over."
    ],
@@ -5080,6 +5180,10 @@
      "qty": 150
     },
     {
+     "id": "onion",
+     "qty": 0.5
+    },
+    {
      "id": "frozen_peas",
      "qty": 80
     },
@@ -5101,6 +5205,7 @@
     }
    ],
    "method": [
+    "Dice the onion and soften it in a little oil for 5 minutes before anything else goes in the pan.",
     "Fry ginger-garlic paste and curry powder, brown the turkey, add tomatoes and a splash of water. Simmer 15 minutes, peas in at the end."
    ],
    "notes": "Dry curry, brilliant in a wrap the next day too.",
@@ -5457,6 +5562,10 @@
      "qty": 120
     },
     {
+     "id": "onion",
+     "qty": 0.33
+    },
+    {
      "id": "curry_paste",
      "qty": 20
     },
@@ -5478,6 +5587,7 @@
     }
    ],
    "method": [
+    "Dice the onion and soften it in a little oil for 5 minutes before anything else goes in the pan.",
     "Fry the curry paste with ginger-garlic paste, add coconut milk, simmer 5 minutes, prawns and spinach in for 4 more. Rice."
    ],
    "notes": "Fifteen-minute curry.",
@@ -5510,6 +5620,10 @@
      "qty": 150
     },
     {
+     "id": "onion",
+     "qty": 0.33
+    },
+    {
      "id": "spinach",
      "qty": 80
     },
@@ -5535,6 +5649,7 @@
     }
    ],
    "method": [
+    "Dice the onion and soften it in a little oil for 5 minutes before anything else goes in the pan.",
     "Fry the paste and curry powder, add tomatoes, chickpeas and coconut milk; simmer 15 minutes, spinach in at the end."
    ],
    "notes": "Meat-free, about 90p, freezes for months.",
@@ -5567,6 +5682,10 @@
      "qty": 120
     },
     {
+     "id": "onion",
+     "qty": 0.33
+    },
+    {
      "id": "basmati",
      "qty": 50
     },
@@ -5588,6 +5707,7 @@
     }
    ],
    "method": [
+    "Dice the onion and soften it in a little oil first, then add the beans.",
     "Warm the beans with the seasoning and sweetcorn, mash a little. Rice, beans, cheese in a wrap; roll and toast the seam.",
     "Foil, then freezer. Microwave 3 minutes from frozen."
    ],
@@ -5621,6 +5741,10 @@
      "qty": 3
     },
     {
+     "id": "onion",
+     "qty": 0.33
+    },
+    {
      "id": "curry_powder",
      "qty": 8
     },
@@ -5646,6 +5770,7 @@
     }
    ],
    "method": [
+    "Dice the onion and soften it in a little oil for 5 minutes before anything else goes in the pan.",
     "Boil the eggs 8 minutes, peel, halve. Fry the paste and curry powder, add tomatoes and coconut milk, simmer 10 minutes, spinach in, eggs in to warm through."
    ],
    "notes": "Cheap, quick, 30g protein.",
@@ -5678,6 +5803,10 @@
      "qty": 90
     },
     {
+     "id": "onion",
+     "qty": 0.5
+    },
+    {
      "id": "chopped_tomatoes",
      "qty": 200
     },
@@ -5707,6 +5836,7 @@
     }
    ],
    "method": [
+    "Dice the onion and soften it in a little oil for 5 minutes before anything else goes in the pan.",
     "Fry diced carrot and mushrooms, add garlic paste and paprika, then lentils, tomatoes and 250ml water. Simmer 25 minutes until thick.",
     "Stir through the pasta, parmesan over."
    ],
@@ -5960,6 +6090,10 @@
      "qty": 80
     },
     {
+     "id": "onion",
+     "qty": 0.5
+    },
+    {
      "id": "black_beans",
      "qty": 80
     },
@@ -5997,6 +6131,7 @@
     }
    ],
    "method": [
+    "Dice the onion and soften it in a little oil for 5 minutes before anything else goes in the pan.",
     "Fry the pepper with garlic paste and spices, add tomatoes and all the beans, simmer 20 minutes. Rice."
    ],
    "notes": "Meat-free, 25g protein, about 80p. Freezes.",
@@ -6029,6 +6164,10 @@
      "qty": 70
     },
     {
+     "id": "onion",
+     "qty": 0.5
+    },
+    {
      "id": "carrots",
      "qty": 150
     },
@@ -6050,6 +6189,7 @@
     }
    ],
    "method": [
+    "Dice the onion and soften it in a little oil for 5 minutes before anything else goes in the pan.",
     "Fry diced carrot with the paste and cumin, add lentils and 500ml stock. Simmer 20 minutes, blend. Pitta to dip."
    ],
    "notes": "Under 70p a bowl. Freezes.",
@@ -6082,6 +6222,10 @@
      "qty": 120
     },
     {
+     "id": "onion",
+     "qty": 0.5
+    },
+    {
      "id": "carrots",
      "qty": 100
     },
@@ -6103,6 +6247,7 @@
     }
    ],
    "method": [
+    "Dice the onion and soften it in a little oil for 5 minutes before anything else goes in the pan.",
     "Simmer diced chicken, carrot and potato in 500ml stock 15 minutes, peas in for 3. Season well."
    ],
    "notes": "Proper soup, 30g protein.",

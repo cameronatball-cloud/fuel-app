@@ -270,8 +270,20 @@ html { scroll-behavior: auto; }
 .shopchip.on { border-color: var(--accent); background: #fff5f8; }
 .shopchip.on i { color: var(--accent); }
 .shopchip.dead { opacity: .55; }
-.card.list .line { align-items: flex-start; }
-.card.list .line input[type=checkbox] { margin-top: 2px; }
+/* the shop list is read standing in an aisle with a basket: big names, one line per item, aisle headings, ticked lines fade */
+.card.list { padding: 10px 14px 14px; }
+.card.list .line { align-items: flex-start; padding: 12px 0; gap: 12px; }
+.card.list .line input[type=checkbox] { margin-top: 1px; width: 28px; height: 28px; }
+.card.list .line .name { font-size: 17px; font-weight: 700; line-height: 1.25; color: var(--text); }
+.card.list .line .name .n { color: var(--accent); }
+.card.list .line .sub { font-size: 12.5px; margin-top: 2px; }
+.card.list .line .cost { font-size: 15px; margin-top: 3px; }
+.card.list .line.done { opacity: .45; }
+.card.list .line.done .name { text-decoration: line-through; }
+.card.list h4.aisle { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; margin: 18px 0 2px; padding-bottom: 4px; border-bottom: 2px solid var(--line); color: var(--muted); text-transform: uppercase; letter-spacing: .07em; font-weight: 700; }
+.card.list h4.aisle:first-child { margin-top: 4px; }
+.card.list h4.aisle span { font-variant-numeric: tabular-nums; letter-spacing: 0; text-transform: none; font-weight: 600; }
+.breakdown { margin-top: 4px; }
 .line .name { display: block; font-weight: 700; line-height: 1.25; }
 .line .sub.alt { color: #15803d; font-weight: 700; }
 .line .find { flex: none; width: 34px; height: 34px; border-radius: 10px; background: var(--panel-2); display: grid; place-items: center; text-decoration: none; font-weight: 700; color: var(--text); }
