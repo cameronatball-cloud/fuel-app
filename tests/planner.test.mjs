@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { kcalTargetFor, kcalPerPortion, scaleRecipes, portionFactor, proteinTargetFor, freshCells, freeSlots, roomFor, gridCounts, costPerPortion, aggregateNeeds, netPantry, packsFor, basketAt, compareShops, cheapestSplit, autoLayout, gridStats, tubPlan, proteinPerPortion, runSheet } from '../planner.js';
+import { kcalTargetFor, kcalPerPortion, scaleRecipes, portionFactor, proteinTargetFor, freshCells, freeSlots, roomFor, gridCounts, costPerPortion, aggregateNeeds, netPantry, packsFor, basketAt, compareShops, cheapestSplit, autoLayout, gridStats, tubPlan, proteinPerPortion, runSheet, unitPrice } from '../planner.js';
 
 const ingredients = [
   { id: 'chicken', name: 'Chicken breast', unit: 'g', protein: 22.5, packs: [
@@ -199,3 +199,8 @@ test('kcal, scaling and targets', () => {
 });
 
 test('kcal target from weight and goal', () => { assert.equal(kcalTargetFor(85, 'build'), 3000); assert.equal(kcalTargetFor(68, 'lose'), 1800); });
+
+test('unitPrice ignores packs from shops that are not compared (Lidl receipt prices on file)', () => {
+  const it = { id: 'x', unit: 'g', packs: [{ shop: 'lidl', size: 500, price: 0.1 }, { shop: 'aldi', size: 500, price: 0.5 }, { shop: 'any', size: 500, price: 0.4 }] };
+  assert.equal(unitPrice(it), 0.4 / 500);
+});

@@ -52,10 +52,11 @@ export function proteinPerPortion(recipe, ingredients) {
   return Math.round(p);
 }
 
-// Cheapest per-unit price across all packs at any shop; null if unpriced.
+// Cheapest per-unit price across the compared shops; null if unpriced. Packs for other shops (Lidl receipt prices kept
+// on file) don't count until that shop is in SHOPS.
 export function unitPrice(item) {
   let best = null;
-  for (const p of item.packs || []) { const u = p.price / p.size; if (best === null || u < best) best = u; }
+  for (const p of item.packs || []) { if (!SHOPS.includes(p.shop) && p.shop !== 'any') continue; const u = p.price / p.size; if (best === null || u < best) best = u; }
   return best;
 }
 
