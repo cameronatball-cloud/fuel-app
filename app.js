@@ -3,7 +3,7 @@ import { CONFIG } from './config.js';
 import { cloud, initCloud, onCloudChange, signIn, signUp, resetPassword, redeemCode, signOut, hasAccess, pullState, pushStateSoon } from './cloud.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v51';
+const APP_VERSION = 'v52';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 if (S.tab === 'settings') S.tab = S.prevTab && S.prevTab !== 'settings' ? S.prevTab : 'plan';
@@ -993,7 +993,7 @@ function onAction(e) {
   else if (a === 'intro-goal') { INTRO.goal = el.dataset.goal; S.settings.goal = INTRO.goal; save(); introStep(2); }
   else if (a === 'intro-weight') { const v = +document.getElementById('intro-weight').value; if (!(v >= 30 && v <= 200)) { toast('Enter a weight between 30 and 200 kg'); return; } S.settings.weight = v; S.settings.proteinTarget = P.proteinTargetFor(v, INTRO.goal || S.settings.goal); S.settings.kcalTarget = P.kcalTargetFor(v, INTRO.goal || S.settings.goal); save(); introStep(3); }
   else if (a === 'intro-budget') { S.settings.budget = +el.dataset.budget; save(); introStep(4); }
-  else if (a === 'intro-budget-custom') { const v = +document.getElementById('intro-budget').value; if (!(v >= 10 && v <= 300)) { toast('Type a budget between £10 and £300, or tap one above'); return; } S.settings.budget = v; save(); introStep(4); }
+  else if (a === 'intro-budget-custom') { const raw = document.getElementById('intro-budget').value.trim(); const v = raw ? +raw : S.settings.budget; if (!(v >= 10 && v <= 300)) { toast('Type a budget between £10 and £300, or tap one above'); return; } S.settings.budget = v; save(); introStep(4); } // Next with nothing typed keeps the highlighted amount
   else if (a === 'intro-avoid') { const i = S.settings.avoid.indexOf(id); if (i >= 0) S.settings.avoid.splice(i, 1); else S.settings.avoid.push(id); save(); el.classList.toggle('on'); }
   else if (a === 'intro-avoid-add') { if (addAvoidText('intro-avoid-text')) introStep(4); else toast('Type something first'); }
   else if (a === 'intro-avoid-rm') { removeAvoidText(el.dataset.term); introStep(4); }
