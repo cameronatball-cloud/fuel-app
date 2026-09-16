@@ -31,11 +31,11 @@ input, select, label { -webkit-tap-highlight-color: transparent; }
 #tabs button[data-tab=recipes].active::after { background: var(--grape); }
 #tabs button[data-tab=pantry].active::after { background: var(--sky); }
 h1 { font-size: 28px; margin: 6px 0 14px; letter-spacing: -.02em; font-weight: 700; }
-h2 { font-size: 12px; margin: 24px 0 8px; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; font-weight: 600; }
+h2 { font-size: 13px; margin: 26px 0 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; font-weight: 700; }
 h3 { font-size: 17px; margin: 0 0 6px; font-weight: 600; letter-spacing: -.01em; }
 p { margin: 6px 0; }
 .muted { color: var(--muted); }
-.small { font-size: 13px; }
+.small { font-size: 14px; }
 .card { background: var(--panel); border: 0; border-radius: var(--radius); padding: 16px; margin-bottom: 12px; box-shadow: 0 6px 24px rgba(74, 51, 0, .08); }
 .card.flat { background: transparent; box-shadow: none; padding: 4px 0; }
 .row { display: flex; align-items: center; gap: 10px; }
@@ -57,7 +57,7 @@ p { margin: 6px 0; }
 .recipe-row { display: flex; align-items: center; gap: 10px; padding: 11px 0; border-bottom: 1px solid #f3ecdc; }
 .recipe-row:last-child { border-bottom: 0; }
 .recipe-row .name { font-weight: 600; }
-.recipe-row .meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.recipe-row .meta { font-size: 13px; color: var(--muted); margin-top: 3px; }
 .stepper { display: flex; align-items: center; background: var(--panel-2); border-radius: 12px; overflow: hidden; }
 .stepper button { width: 42px; height: 40px; background: none; border: 0; font-size: 22px; color: var(--accent); font-weight: 700; }
 .stepper b { min-width: 28px; text-align: center; font-size: 17px; font-weight: 700; }
@@ -121,7 +121,7 @@ ol.steps li::marker { color: var(--accent); font-weight: 700; }
 .line input[type=checkbox] { width: 24px; height: 24px; accent-color: var(--ok); flex: none; }
 .line.done .name { text-decoration: line-through; color: var(--muted); }
 .line .cost { margin-left: auto; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
-.line .sub { display: block; font-size: 12px; color: var(--muted); }
+.line .sub { display: block; font-size: 13px; color: var(--muted); }
 .budget { height: 14px; background: var(--panel-2); border-radius: 999px; overflow: hidden; margin: 10px 0 4px; }
 .budget i { display: block; height: 100%; background: linear-gradient(90deg, var(--lime), var(--sky)); }
 .budget.over i { background: var(--bad); }
@@ -276,7 +276,7 @@ html { scroll-behavior: auto; }
 .card.list .line input[type=checkbox] { margin-top: 1px; width: 28px; height: 28px; }
 .card.list .line .name { font-size: 17px; font-weight: 700; line-height: 1.25; color: var(--text); }
 .card.list .line .name .n { color: var(--accent); }
-.card.list .line .sub { font-size: 12.5px; margin-top: 2px; }
+.card.list .line .sub { font-size: 13px; margin-top: 3px; }
 .card.list .line .cost { font-size: 15px; margin-top: 3px; }
 .card.list .line.done { opacity: .45; }
 .card.list .line.done .name { text-decoration: line-through; }
@@ -360,7 +360,8 @@ details.pantry-group > .card { border-radius: 0 0 14px 14px; margin-top: 0; }
 .stack .btn .sub { display: block; font-weight: 500; font-size: 12.5px; opacity: .8; }
 .line .cost.over { color: var(--bad); }
 .line .cost.muted { color: var(--muted); }
-.shophead .sub { display: block; margin-top: 4px; font-size: 13px; }
+.shophead .sub { display: block; margin-top: 6px; font-size: 14px; line-height: 1.35; }
+.bigtotal { font-size: 34px; }
 /* the meal picker: a clear start and a clear end */
 .pickhead { background: linear-gradient(135deg, var(--sun), #ffdf7a); color: var(--sun-ink); margin-top: 22px; box-shadow: 0 10px 30px rgba(255, 197, 49, .35); }
 .pickhead h3 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
@@ -385,3 +386,18 @@ h2.pickgroup span { font-weight: 600; color: var(--muted); font-size: 12px; }
 #statusband { position: fixed; top: 0; left: 0; right: 0; height: env(safe-area-inset-top); background: #1b1a2e; z-index: 60; }
 #view { padding-top: calc(14px + env(safe-area-inset-top)); }
 #intro > *, #gate > * { padding-top: env(safe-area-inset-top); }
+
+/* compare by item: one row per ingredient, four shop cells that fit a phone */
+.cmp-row { padding: 10px 0; border-bottom: 1px solid #f3ecdc; }
+.cmp-row:last-child { border-bottom: 0; }
+.cmp-name { font-weight: 700; font-size: 15px; margin-bottom: 6px; }
+.cmp-name .sub { display: inline; font-weight: 500; color: var(--muted); font-size: 13px; margin-left: 6px; }
+.cmp-shops { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.cmp-cell { display: flex; flex-direction: column; align-items: center; padding: 6px 4px; border-radius: 10px; background: var(--panel-2); font-variant-numeric: tabular-nums; }
+.cmp-cell i { font-style: normal; font-size: 11px; color: var(--muted); font-weight: 600; }
+.cmp-cell b { font-size: 14px; }
+.cmp-cell.min { background: #dcfce7; color: #15803d; }
+.cmp-cell.here { outline: 2px solid var(--accent); outline-offset: -2px; }
+.fold summary b { font-size: 16px; }
+.fold h4.sub { margin: 16px 0 4px; }
+.line .cost.alt { color: #15803d; }

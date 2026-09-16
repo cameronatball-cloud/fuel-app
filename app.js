@@ -3,7 +3,7 @@ import { CONFIG } from './config.js';
 import { cloud, initCloud, onCloudChange, signIn, signUp, resetPassword, redeemCode, signOut, hasAccess, pullState, pushStateSoon } from './cloud.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v56';
+const APP_VERSION = 'v57';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 if (S.tab === 'settings') S.tab = S.prevTab && S.prevTab !== 'settings' ? S.prevTab : 'plan';
@@ -334,7 +334,7 @@ function planTop(w) {
     ? `<div class="stat-grid"><div class="stat"><b>${st.filled}<span>/${st.slots}</span></b><span>${gone ? 'meals to go' : 'meals planned'}</span></div><div class="stat"><b>${st.avg}g</b><span>protein a day<br>target ${target}g</span></div><div class="stat"><b>${st.avgKcal.toLocaleString()}</b><span>kcal a day<br>target ${kcalT.toLocaleString()}</span></div></div>
     ${limitNote ? `<p class="small muted" style="margin-top:8px">${limitNote}</p>` : ''}
     <div class="bars" style="margin-top:26px">${bars}</div><div class="bars-labels">${P.DAYS.map((d) => `<div>${d}</div>`).join('')}</div>
-    <p class="small muted">Protein each day. Green hits your ${target}g target, amber is under.</p>`
+    <p class="small muted">Protein a day. Green is on target.</p>`
     : `<p>Nothing planned yet.</p><p class="small muted">Tick the meals you want from the list below. They're placed into your week for you.</p><button class="btn block" style="margin-top:10px" data-action="scroll-pick">Choose meals</button>`) + `${tubHtml}</div>`;
   const nudge = S.activeWeek === S.thisMon && (todayIdx() >= 5 || !liveDays(w).some(Boolean)) ? `<div class="card tipcard"><h3>${todayIdx() >= 6 ? 'This week is done' : 'This week is nearly done'}</h3><p class="small">Plan next week now so Sunday's cook and shop are sorted.</p><button class="btn small" data-action="week" data-week="${S.nextMon}">Plan next week</button></div>` : '';
   return `${tips}${installCard()}${nudge}${head}
@@ -533,17 +533,17 @@ function renderShop() {
   const best = ranked[0];
   const isStock = (id) => !!ingById(id)?.staple;
   for (const b of ranked) { b.stock = P.round2(b.lines.filter((l) => isStock(l.id)).reduce((t, l) => t + l.cost, 0) + b.notSold.filter((m) => isStock(m.id)).reduce((t, m) => t + cheapestElsewhere(m.id, b.shop), 0)); b.weekly = P.round2(b.comparable - b.stock); b.elsewhereWeek = P.round2(b.notSold.filter((m) => !isStock(m.id)).reduce((t, m) => t + cheapestElsewhere(m.id, b.shop), 0)); }
-  ranked.sort((a, b) => (a.unpriced.length - b.unpriced.length) || (a.weekly - b.weekly)); // shops compared on this week's food, not on cupboard stock-ups
+  ranked.sort((a, b) => (a.unpriced.length - b.unpriced.length) || (a.comparable - b.comparable)); // everything you'd buy this week, stock-ups included
   const bestWeek = ranked[0];
   const chosen = byShop[w.shop] ? byShop[w.shop] : bestWeek;
   const split = P.cheapestSplit(needs, ing);
   const budget = S.settings.budget;
-  const pct = Math.min(100, Math.round((chosen.weekly / budget) * 100));
+  const pct = Math.min(100, Math.round((chosen.comparable / budget) * 100));
   const oldest = ranked.map((b) => b.oldest).filter(Boolean).sort()[0];
   // shop picker: one chip per shop, total on it
   const chips = ranked.map((b) => {
     const dead = b.unpriced.length === b.missing.length && b.lines.length === 0;
-    return `<button class="shopchip ${b === chosen ? 'on' : ''} ${dead ? 'dead' : ''}" data-action="pick-shop" data-shop="${b.shop}"><span>${P.SHOP_NAMES[b.shop]}</span><b>${b.lines.length ? P.gbp(b.weekly) : '—'}</b>${b === bestWeek && b.lines.length ? '<i>cheapest</i>' : b.unpriced.length ? `<i>${b.unpriced.length} unpriced</i>` : b.stock ? `<i>+£${Math.round(b.stock)} stock</i>` : '<i>&nbsp;</i>'}</button>`;
+    return `<button class="shopchip ${b === chosen ? 'on' : ''} ${dead ? 'dead' : ''}" data-action="pick-shop" data-shop="${b.shop}"><span>${P.SHOP_NAMES[b.shop]}</span><b>${b.lines.length ? P.gbp(b.comparable) : '—'}</b>${b === bestWeek && b.lines.length ? '<i>cheapest</i>' : b.unpriced.length ? `<i>${b.unpriced.length} unpriced</i>` : b.elsewhere ? `<i>incl. ${P.gbp(b.elsewhere)} elsewhere</i>` : '<i>&nbsp;</i>'}</button>`;
   }).join('');
   // the list for the chosen shop
   const online = { tesco: (q) => `https://www.tesco.com/groceries/en-GB/search?query=${encodeURIComponent(q)}`, asda: (q) => `https://www.asda.com/groceries/search/${encodeURIComponent(q)}`, sainsburys: (q) => `https://www.sainsburys.co.uk/gol-ui/SearchResults/${encodeURIComponent(q)}` };
@@ -560,39 +560,56 @@ function renderShop() {
   const weekLines = chosen.lines.filter((l) => !isStock(l.id)), stockLines = chosen.lines.filter((l) => isStock(l.id));
   const lines = aisleHtml(weekLines);
   const stockTotal = P.round2(stockLines.reduce((t, l) => t + l.cost, 0));
-  const stockHtml = stockLines.length ? `<h2>Stock up <span class="muted" style="text-transform:none;letter-spacing:0;font-weight:600">${stockLines.filter((l) => w.ticks[`${chosen.shop}:${l.id}`]).length}/${stockLines.length} ticked · ${P.gbp(stockTotal)}</span></h2><div class="card list"><p class="small muted" style="margin:4px 0 2px">Whey, oils, spices and sauces: bought once, then they last for weeks. Kept out of the weekly total above. Tick them in Pantry once you have them.${chosen.elsewhere - chosen.elsewhereWeek > 0.004 ? ` About ${P.gbp(P.round2(chosen.elsewhere - chosen.elsewhereWeek))} of this is for ${chosen.notSold.filter((m) => isStock(m.id)).map((m) => m.name.toLowerCase()).join(', ')}, which ${P.SHOP_NAMES[chosen.shop]} doesn't sell.` : ''}</p>${aisleHtml(stockLines)}</div>` : '';
+  const stockHtml = stockLines.length ? `<h2>Stock up <span class="muted" style="text-transform:none;letter-spacing:0;font-weight:600">${stockLines.filter((l) => w.ticks[`${chosen.shop}:${l.id}`]).length}/${stockLines.length} ticked · ${P.gbp(stockTotal)}</span></h2><div class="card list"><p class="small muted" style="margin:4px 0 2px">Bought this week and counted in the total, but they'll last you weeks. Next week they'll be in your Pantry already.${chosen.elsewhere - chosen.elsewhereWeek > 0.004 ? ` About ${P.gbp(P.round2(chosen.elsewhere - chosen.elsewhereWeek))} of this is for ${chosen.notSold.filter((m) => isStock(m.id)).map((m) => m.name.toLowerCase()).join(', ')}, which ${P.SHOP_NAMES[chosen.shop]} doesn't sell.` : ''}</p>${aisleHtml(stockLines)}</div>` : '';
   const aisleGroups = {}; for (const l of weekLines) (aisleGroups[aisleOf(ingById(l.id))] ||= []).push(l);
   const breakdown = AISLES.filter(([k]) => aisleGroups[k]).map(([k, label]) => `${label.split(',')[0].split(' &')[0]} ${P.gbp(P.round2(aisleGroups[k].reduce((t, l) => t + l.cost, 0)))}`).join(' · ');
   const extraRows = extras(w).map((e) => { const it = ingById(e.id); const l = chosen.lines.find((x) => x.id === e.id); return `<div class="line"><span class="grow"><span class="name">${esc(it.name)}</span><span class="sub">${e.scope === 'week' ? 'this week only' : 'every week'}${l ? ` · ${esc(l.pack.name.replace(/\s*\([^)]*\)/g, ''))}` : ' · no price at this shop'}</span></span><button class="chip" data-action="extra-qty" data-id="${e.id}" data-scope="${e.scope}">${P.fmtQty(e.qty, it.unit)}${it.unit === 'each' ? (e.qty === 1 ? ' piece' : ' pieces') : ''}</button><span class="cost">${l ? P.gbp(l.cost) : '—'}</span><button class="btn ghost small" data-action="extra-remove" data-id="${e.id}" data-scope="${e.scope}" aria-label="Remove">×</button></div>`; }).join('');
   const extrasCard = `<h2>Extras</h2><div class="card">${extraRows || '<p class="small muted">Nothing extra yet. Anything you add here is priced into the list and the total above.</p>'}<button class="btn block big" data-action="extra-add" style="margin-top:${extraRows ? 12 : 6}px">+ Add something to this shop</button></div>`;
   const complete = chosen.lines.length > 0 && chosen.lines.every((l) => w.ticks[`${chosen.shop}:${l.id}`]);
-  const doneBox = complete ? `<div class="done-box"><b>Shop done ✓</b> ${P.gbp(chosen.total)} (${P.gbp(chosen.weekly)} this week + ${P.gbp(chosen.stock)} stock-ups) at ${P.SHOP_NAMES[chosen.shop]}${w.done?.date ? ` on ${fmtDate(w.done.date)}` : ''}. Logged under Settings → Money.</div>` : '';
+  const doneBox = complete ? `<div class="done-box"><b>Shop done ✓</b> ${P.gbp(chosen.total)} at ${P.SHOP_NAMES[chosen.shop]}${w.done?.date ? ` on ${fmtDate(w.done.date)}` : ''}. Logged under Settings → Money.</div>` : '';
   const notSold = chosen.notSold.filter((m) => !isStock(m.id)).map((m) => esc(m.name)); const unpriced = chosen.unpriced.map((m) => esc(m.name));
   const missing = (notSold.length ? `<div class="warn-box">Not sold at ${P.SHOP_NAMES[chosen.shop]}: ${notSold.join(', ')} (about ${P.gbp(chosen.elsewhereWeek)} elsewhere; counted in the total above).</div>` : '') + (unpriced.length ? `<div class="warn-box">No ${P.SHOP_NAMES[chosen.shop]} price on file for: ${unpriced.join(', ')}.${chosen.shop === 'lidl' ? ' Lidl publishes no prices online.' : ''}</div>` : '');
   const done = chosen.lines.filter((l) => !isStock(l.id) && w.ticks[`${chosen.shop}:${l.id}`]).length; const weekCount = chosen.lines.filter((l) => !isStock(l.id)).length;
   // item-by-item, folded away
   const ids = Object.keys(needs).filter((id) => ingById(id));
-  const cmpRows = ids.map((id) => { const it = ingById(id); const min = cheapestFor(id); return `<tr><td>${esc(it.name)}<span class="sub">${P.fmtQty(P.round1(needs[id]), it.unit)}</span></td>${P.SHOPS.map((s) => { const l = byShop[s]?.lines.find((x) => x.id === id); return `<td class="r ${l && min && s === min.shop ? 'min' : ''}">${l ? P.gbp(l.cost) : '<span class="muted">—</span>'}</td>`; }).join('')}</tr>`; }).join('');
-  const items = `<details class="fold"><summary><b>Compare item by item</b><span class="muted small">every shop, every line</span></summary><div class="scroll-x"><table class="tbl cmp"><thead><tr><th>Item</th>${P.SHOPS.map((s) => `<th class="r">${P.SHOP_NAMES[s].replace("Sainsbury's", 'Sains.')}</th>`).join('')}</tr></thead><tbody>${cmpRows}</tbody></table></div><p class="small muted">Green is the cheapest for that item. Swipe sideways.</p></details>`;
-  const splitHtml = split ? `<details class="fold"><summary><b>Two shops saves ${P.gbp(split.saving)}</b><span class="muted small">${P.SHOP_NAMES[split.shops[0]]} + ${P.SHOP_NAMES[split.shops[1]]}</span></summary>${split.baskets.map((b) => `<p class="small"><b>${P.SHOP_NAMES[b.shop]}</b> ${P.gbp(b.total)}: ${b.lines.map((l) => esc(l.name)).join(', ')}</p>`).join('')}<p class="small muted">Only worth it if you're passing both.</p></details>` : '';
+  const SHORT = { aldi: 'Aldi', tesco: 'Tesco', asda: 'ASDA', sainsburys: 'Sains' };
+  const cmpRows = ids.map((id) => { const it = ingById(id); const min = cheapestFor(id); return `<div class="cmp-row"><div class="cmp-name">${esc(it.name)}<span class="sub">${P.fmtQty(P.round1(needs[id]), it.unit)}</span></div><div class="cmp-shops">${P.SHOPS.map((s) => { const l = byShop[s]?.lines.find((x) => x.id === id); return `<span class="cmp-cell ${l && min && s === min.shop ? 'min' : ''} ${s === chosen.shop ? 'here' : ''}"><i>${SHORT[s]}</i><b>${l ? P.gbp(l.cost) : '—'}</b></span>`; }).join('')}</div></div>`; }).join('');
+  const items = `<details class="fold"><summary><b>Compare item by item</b><span class="muted small">every line at every shop</span></summary><div class="cmp">${cmpRows}</div></details>`;
+  // Why this much, and where the money could be saved: dearest meals, dearest lines, cheaper-elsewhere lines, the two-shop split, stock-ups.
+  const mealCosts = Object.entries(counts).map(([rid, k]) => { const r = recById(rid); return r ? { r, n: k, cost: P.round2((metaFor(r).c.cost || 0) * k), pp: metaFor(r).c.cost || 0 } : null; }).filter(Boolean).sort((a, b) => b.cost - a.cost);
+  const dearLines = [...chosen.lines].sort((a, b) => b.cost - a.cost).slice(0, 5);
+  const cheaperElsewhere = chosen.lines.map((l) => { const c = cheapestFor(l.id); return c && c.shop !== chosen.shop && l.cost - c.cost >= 0.3 ? { l, c, save: P.round2(l.cost - c.cost) } : null; }).filter(Boolean).sort((a, b) => b.save - a.save);
+  const savePot = P.round2(cheaperElsewhere.reduce((t, x) => t + x.save, 0));
+  const swaps = mealCosts.filter((m) => m.pp >= 2).slice(0, 3).map((m) => { const alt = suggestions(12).find((r) => r.id !== m.r.id && !counts[r.id] && metaFor(r).c.cost > 0 && metaFor(r).c.cost < m.pp * 0.7 && r.slots.some((sl) => m.r.slots.includes(sl))); const toCost = alt ? metaFor(alt).c.cost : 0; return alt && toCost > 0 ? { from: m.r, fromPp: m.pp, to: alt, toCost, toPp: metaFor(alt).pp, save: P.round2((m.pp - toCost) * m.n) } : null; }).filter(Boolean);
+  const whyHtml = chosen.lines.length ? `<details class="fold"><summary><b>Why ${P.gbp(chosen.comparable)}? Where can I save?</b><span class="muted small">what costs the most, and the cheaper options</span></summary>
+    <h4 class="sub">Dearest meals this week</h4>${mealCosts.slice(0, 5).map((m) => `<div class="line"><span class="grow"><span class="name">${esc(m.r.name)}</span><span class="sub">${m.n} portion${m.n > 1 ? 's' : ''} · ${P.gbp(m.pp)} each</span></span><span class="cost">${P.gbp(m.cost)}</span></div>`).join('')}
+    <h4 class="sub">Dearest items on the list</h4>${dearLines.map((l) => `<div class="line"><span class="grow"><span class="name">${l.n > 1 ? `${l.n} × ` : ''}${esc(l.pack.name.replace(/\s*\([^)]*\)/g, ''))}</span><span class="sub">${esc((usedBy[l.id] || []).join(', '))}</span></span><span class="cost">${P.gbp(l.cost)}</span></div>`).join('')}
+    <h4 class="sub">Ways to save</h4>
+    ${swaps.length ? swaps.map((x) => `<div class="line"><span class="grow"><span class="name">Swap ${esc(x.from.name)} for ${esc(x.to.name)}</span><span class="sub">${P.gbp(x.toCost)} a portion instead of ${P.gbp(x.fromPp)}, ${x.toPp}g protein</span></span><span class="cost alt">−${P.gbp(x.save)}</span></div>`).join('') : ''}
+    ${split ? `<div class="line"><span class="grow"><span class="name">Shop at ${P.SHOP_NAMES[split.shops[0]]} and ${P.SHOP_NAMES[split.shops[1]]}</span><span class="sub">${split.baskets.map((b) => `${P.SHOP_NAMES[b.shop]} ${P.gbp(b.total)}: ${b.lines.length} items`).join(' · ')}. Only worth it if you pass both.</span></span><span class="cost alt">−${P.gbp(split.saving)}</span></div>` : ''}
+    ${cheaperElsewhere.length ? `<div class="line"><span class="grow"><span class="name">${cheaperElsewhere.length} line${cheaperElsewhere.length > 1 ? 's are' : ' is'} cheaper at another shop</span><span class="sub">${cheaperElsewhere.slice(0, 4).map((x) => `${esc(ingById(x.l.id)?.name || x.l.id)} ${P.gbp(x.c.cost)} at ${P.SHOP_NAMES[x.c.shop]}`).join(' · ')}</span></span><span class="cost alt">−${P.gbp(savePot)}</span></div>` : ''}
+    ${!S.settings.preferThigh && chosen.lines.some((l) => l.id === 'chicken_breast') ? `<div class="line"><span class="grow"><span class="name">Thigh fillets instead of breast</span><span class="sub">Usually cheaper per kilo. Switch it under ⚙ Settings → Shopping.</span></span></div>` : ''}
+    ${chosen.stock ? `<div class="line"><span class="grow"><span class="name">${P.gbp(chosen.stock)} of this is stock-ups</span><span class="sub">Rice, oils, spices, whey: they last weeks and next week's list won't ask for them again.</span></span></div>` : ''}
+    ${!swaps.length && !split && !cheaperElsewhere.length ? '<p class="small muted">You\'re already at the cheapest shop with the cheapest packs.</p>' : ''}</details>` : '';
+  const splitHtml = '';
   const unpricedAll = ids.filter((id) => !(ingById(id)?.packs || []).length).map((id) => ingById(id)?.name);
   const haveIds = Object.keys(needsAll).filter((id) => pantryFor[id] !== undefined);
   const haveRows = haveIds.map((id) => { const it = ingById(id); const v = pantryFor[id]; return `<div class="line"><span class="grow"><span class="name">${esc(it?.name || id)}</span><span class="sub">${v === true ? 'plenty' : `you have ${P.fmtQty(v, it?.unit || 'g')}`} · ${esc((usedBy[id] || []).join(', '))}</span></span><button class="btn ghost small" data-action="need" data-id="${id}">Need it</button></div>`; }).join('');
   return `${head}
   ${choiceHtml ? `<div class="card">${choiceHtml}</div>` : ''}
   ${doneBox}
-  <div class="card shophead"><div class="row"><span class="grow"><b class="bigtotal">${P.gbp(chosen.weekly)}</b> <span class="muted">this week at ${P.SHOP_NAMES[chosen.shop]}</span>${chosen.stock ? `<span class="sub muted">+ ${P.gbp(chosen.stock)} of stock-ups that last weeks (listed below)</span>` : ''}${chosen.elsewhereWeek ? `<span class="sub muted">Includes about ${P.gbp(chosen.elsewhereWeek)} for what ${P.SHOP_NAMES[chosen.shop]} doesn't sell, at the cheapest other shop.</span>` : ''}</span><span class="muted small">budget ${P.gbp(budget)}</span></div>
-    <div class="budget ${chosen.weekly > budget ? 'over' : ''}"><i style="width:${pct}%"></i></div>
-    <p class="small muted">${chosen.weekly > budget ? `Over budget by ${P.gbp(chosen.weekly - budget)}.` : `${P.gbp(budget - chosen.weekly)} left.`}${haveIds.length ? ` ${haveIds.length} ingredient${haveIds.length > 1 ? 's' : ''} left off because ${haveIds.length > 1 ? "they're" : "it's"} ticked in Pantry.` : ''} Prices checked ${oldest ? fmtDate(oldest) : 'n/a'}.</p>
+  <div class="card shophead"><div class="row"><span class="grow"><b class="bigtotal">${P.gbp(chosen.comparable)}</b> <span class="muted">at ${P.SHOP_NAMES[chosen.shop]}</span>${chosen.stock ? `<span class="sub muted">${P.gbp(chosen.weekly)} of food for the week, ${P.gbp(chosen.stock)} of stock-ups that will last</span>` : ''}${chosen.elsewhere ? `<span class="sub muted">Includes about ${P.gbp(chosen.elsewhere)} for what ${P.SHOP_NAMES[chosen.shop]} doesn't sell, priced at the cheapest other shop.</span>` : ''}</span><span class="muted small">budget ${P.gbp(budget)}</span></div>
+    <div class="budget ${chosen.comparable > budget ? 'over' : ''}"><i style="width:${pct}%"></i></div>
+    <p class="small muted">${chosen.comparable > budget ? `Over your ${P.gbp(budget)} budget by ${P.gbp(chosen.comparable - budget)}.` : `${P.gbp(budget - chosen.comparable)} of your ${P.gbp(budget)} budget left.`}</p>
     ${breakdown ? `<p class="small muted breakdown">${breakdown}</p>` : ''}
     <div class="row" style="gap:8px;margin-top:6px"><button class="btn small grow" data-action="share-list">Share list</button><button class="btn ghost small grow" data-action="copy-list">Copy</button>${online[chosen.shop] ? `<a class="btn ghost small grow" style="text-align:center" href="${online[chosen.shop]('')}" target="_blank" rel="noopener">Shop online</a>` : ''}</div></div>
   <button class="btn block big" data-action="extra-add" style="margin:2px 0 6px">+ Add something to this shop</button>
   <h2>Where to shop</h2><div class="shopchips">${chips}</div>
   <h2>${P.SHOP_NAMES[chosen.shop]} list <span class="muted" style="text-transform:none;letter-spacing:0;font-weight:600">${done}/${weekCount} ticked</span></h2>
-  <div class="card list">${missing}${lines || '<p class="muted">Nothing priced at this shop.</p>'}${chosen.lines.length ? `<p class="small muted" style="margin-top:8px">Tap ↗ to find that item online. A green price under a line is where it's cheaper.</p>` : ''}</div>
+  <div class="card list">${missing}${lines || '<p class="muted">Nothing priced at this shop.</p>'}</div>
   ${stockHtml}
   ${extrasCard}
-  ${items}${splitHtml}
+  ${whyHtml}${items}${splitHtml}
   ${unpricedAll.length ? `<div class="card" style="margin-top:10px"><h3>No price anywhere yet</h3><p class="small muted">${unpricedAll.map(esc).join(', ')}. Left out of the totals until priced.</p></div>` : ''}
   ${haveRows ? `<h2>Already in your pantry</h2><div class="card"><p class="small muted">Left off the list because it's ticked in Pantry. Tap "Need it" to put it back. Buying everything would be ${P.gbp(fullWeek.total)} at ${P.SHOP_NAMES[fullWeek.shop]}.</p>${haveRows}</div>` : ''}
   <p class="small muted">${esc(DATA.priceNote || '')}</p>`;
@@ -616,7 +633,7 @@ async function pastCell(w, day, slot) {
 // First-time tip cards, one per tab. Dismissed with "Got it" (S.tips[key]); "Show the tips again" in Settings clears them.
 const TIPS = {
   cook: { title: 'How Cook works', items: ['<b>Batch cook</b> lists everything for your cook day with amounts already scaled for your week.', '<b>Box it up</b> tells you what goes in the fridge, what goes in the freezer, and how to reheat it.', 'Tap a meal on the Plan grid and tick <b>make fresh</b> if you\'d rather cook it on the day.'] },
-  shop: { title: 'How Shop works', items: ['The big number is <b>this week\'s food</b> at the cheapest shop. Tap another shop to see its list instead.', 'Tick lines off as you go round. When they\'re all ticked the shop is logged under <b>Settings → Money</b>.', '<b>Stock up</b> is the whey, oils, spices and rice that last weeks. They\'re kept out of the weekly total.', 'Want milk for your coffee or crisps? <b>Add something to this shop</b>, just this week or every week.'] },
+  shop: { title: 'How Shop works', items: ['The big number is <b>everything on the list</b> at the cheapest shop. Tap another shop to see its list instead. <b>Why this much?</b> shows what costs most and where to save.', 'Tick lines off as you go round. When they\'re all ticked the shop is logged under <b>Settings → Money</b>.', '<b>Stock up</b> is the whey, oils, spices and rice that last weeks: counted this week, in your Pantry next week.', 'Want milk for your coffee or crisps? <b>Add something to this shop</b>, just this week or every week.'] },
   pantry: { title: 'How Pantry works', items: ['Tick what you already have and it comes off the shop list.', 'Type an amount if you only have some, or leave it blank for "plenty".', 'Stock-ups you\'ve ticked or bought carry into next week on their own.', 'Got leftovers to use? Tap <b>Use up</b> and the Plan tab suggests meals for them.'] },
 };
 function tipCard(key) { if (S.tips && S.tips[key]) return ''; const t = TIPS[key]; return `<div class="card tipcard"><h3>${t.title}</h3><ol class="tips">${t.items.map((i) => `<li>${i}</li>`).join('')}</ol><button class="btn small" data-action="tip-done" data-tip="${key}">Got it</button></div>`; }
@@ -642,7 +659,7 @@ function shopListText() {
   const grouped = (ls) => { const g = {}; for (const l of ls) (g[aisleOf(ingById(l.id))] ||= []).push(l); return AISLES.filter(([k]) => g[k]).map(([k, label]) => `${label.toUpperCase()}\n${g[k].map(line).join('\n')}`).join('\n\n'); };
   const weekLs = b.lines.filter((l) => !ingById(l.id)?.staple), stockLs = b.lines.filter((l) => ingById(l.id)?.staple);
   const weekTotal = P.round2(weekLs.reduce((t, l) => t + l.cost, 0));
-  return `Fuel shop, ${weekLabel(S.activeWeek).toLowerCase()} at ${P.SHOP_NAMES[b.shop]}: ${P.gbp(weekTotal)}\n\n${grouped(weekLs)}${stockLs.length ? `\n\nSTOCK UP (lasts weeks) — ${P.gbp(P.round2(stockLs.reduce((t, l) => t + l.cost, 0)))}\n${stockLs.map(line).join('\n')}` : ''}\n\nMade with Fuel · fuel app`;
+  return `Fuel shop, ${weekLabel(S.activeWeek).toLowerCase()} at ${P.SHOP_NAMES[b.shop]}: ${P.gbp(b.total)}\n\n${grouped(weekLs)}${stockLs.length ? `\n\nSTOCK UP (lasts weeks) — ${P.gbp(P.round2(stockLs.reduce((t, l) => t + l.cost, 0)))}\n${stockLs.map(line).join('\n')}` : ''}\n\nMade with Fuel · fuel app`;
 }
 
 // ----- Recipes -----
@@ -824,8 +841,7 @@ function renderPantry() {
     return `<details class="pantry-group" ${open ? 'open' : ''}><summary><h2>${LABEL[g] || g}</h2><span class="small muted">${ticked ? `${ticked} ticked · ` : ''}${groups[g].length}</span></summary><div class="card">${items.map(row).join('')}</div></details>`;
   }).join('');
   const ticked = Object.keys(w.pantry).length;
-  return `<h1>Pantry</h1>${weekSwitch()}${tipCard('pantry')}<p class="small muted">Tick what you already have for <b>${weekLabel(S.activeWeek).toLowerCase()}</b> and it comes off the shop list. Leftovers that need eating? Tap <b>Use up</b> and Plan suggests meals for them. Leave the amount blank for "plenty", or type how much and the list buys only the difference. ${ticked} ticked.</p>
-  <p class="small muted">Only ingredients from your recipes are listed. Add a recipe and its ingredients appear here.</p>
+  return `<h1>Pantry</h1>${weekSwitch()}${tipCard('pantry')}<p class="muted" style="margin:0 0 10px">Tick what you already have and it comes off the shop list. <b>${ticked} ticked.</b></p>
   <div class="row" style="margin-bottom:12px"><input class="search grow" placeholder="Search the cupboard" value="${esc(S.pantrySearch || '')}" data-pantry-search><button class="btn ghost" data-action="clear-pantry">Untick all</button></div>${html}`;
 }
 
@@ -837,11 +853,11 @@ function moneyCard() {
   if (cur && !cur.done && Object.keys(cur.portions || {}).length) { const { needs } = shopNeeds(cur, REC()); const b = P.compareShops(needs, ING()).sort((x, y) => x.total - y.total)[0]; if (b) planned = { shop: b.shop, total: P.round2(b.total) }; }
   if (!log.length && !planned) return `<p class="small muted">Nothing tracked yet. When every line of a week's shop is ticked, its total lands here.</p>`;
   const totals = log.map(([, v]) => v.total); const avg = totals.length ? totals.reduce((a, b) => a + b, 0) / totals.length : 0;
-  const under = log.filter(([, v]) => (v.weekly ?? v.total) <= (v.budget || S.settings.budget)).length;
+  const under = log.filter(([, v]) => v.total <= (v.budget || S.settings.budget)).length;
   const best = totals.length ? Math.min(...totals) : 0, worst = totals.length ? Math.max(...totals) : 0;
   const stats = totals.length ? `<div class="stat-grid"><div class="stat"><b>${P.gbp(avg)}</b><span>average a week</span></div><div class="stat"><b>${P.gbp(totals.reduce((a, b) => a + b, 0))}</b><span>spent over ${totals.length} week${totals.length > 1 ? 's' : ''}</span></div><div class="stat"><b>${under}<span>/${totals.length}</span></b><span>weeks on budget</span></div></div>
     <p class="small muted" style="margin-top:8px">Cheapest week ${P.gbp(best)}, dearest ${P.gbp(worst)}. Budget ${P.gbp(S.settings.budget)} a week.</p>` : '';
-  const rows = [...log].reverse().slice(0, 8).map(([k, v]) => `<div class="line"><span class="grow"><span class="name">Week of ${fmtDate(k)}</span><span class="sub">${P.SHOP_NAMES[v.shop] || v.shop}${v.date ? ` · shopped ${fmtDate(v.date)}` : ''}</span></span><span class="cost ${(v.weekly ?? v.total) > (v.budget || S.settings.budget) ? 'over' : ''}">${P.gbp(v.total)}${v.weekly != null && v.weekly !== v.total ? `<span class="sub muted">${P.gbp(v.weekly)} food</span>` : ''}</span></div>`).join('');
+  const rows = [...log].reverse().slice(0, 8).map(([k, v]) => `<div class="line"><span class="grow"><span class="name">Week of ${fmtDate(k)}</span><span class="sub">${P.SHOP_NAMES[v.shop] || v.shop}${v.date ? ` · shopped ${fmtDate(v.date)}` : ''}</span></span><span class="cost ${v.total > (v.budget || S.settings.budget) ? 'over' : ''}">${P.gbp(v.total)}</span></div>`).join('');
   const plannedRow = planned ? `<div class="line"><span class="grow"><span class="name">This week, planned</span><span class="sub">${P.SHOP_NAMES[planned.shop]} · tick off the whole shop to log it</span></span><span class="cost muted">${P.gbp(planned.total)}</span></div>` : '';
   return `${stats}${plannedRow}${rows}`;
 }
