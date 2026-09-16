@@ -353,3 +353,4 @@ details.pantry-group[open] summary h2::before { content: "▾ "; }
 .stack .btn .sub { display: block; font-weight: 500; font-size: 12.5px; opacity: .8; }
 .line .cost.over { color: var(--bad); }
 .line .cost.muted { color: var(--muted); }
+.shophead .sub { display: block; margin-top: 4px; font-size: 13px; }
