@@ -3,7 +3,7 @@ import { CONFIG } from './config.js';
 import { cloud, initCloud, onCloudChange, signIn, signUp, resetPassword, redeemCode, signOut, hasAccess, pullState, pushStateSoon } from './cloud.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v50';
+const APP_VERSION = 'v51';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 if (S.tab === 'settings') S.tab = S.prevTab && S.prevTab !== 'settings' ? S.prevTab : 'plan';
@@ -316,7 +316,7 @@ function planTop(w) {
     <div class="bars" style="margin-top:26px">${bars}</div><div class="bars-labels">${P.DAYS.map((d) => `<div>${d}</div>`).join('')}</div>
     <p class="small muted">Protein each day. Green hits your ${target}g target, amber is under.</p>`
     : `<p>Nothing planned yet.</p><p class="small muted">Tick the meals you want from the list below. They're placed into your week for you.</p><button class="btn block" style="margin-top:10px" data-action="scroll-pick">Choose meals</button>`) + `${tubHtml}</div>`;
-  return `${tips}${head}
+  return `${tips}${installCard()}${head}
   ${hasGrid ? `<div class="card gridcard"><h3>Your week</h3><p class="small muted" style="margin:0 0 10px">Tap a meal to change it. Hold and drag to move it.</p>${gridHtml}
     ${snackBar(w)}
     <p class="small muted" style="margin:12px 0 4px">Which day do you batch cook?</p>
@@ -778,6 +778,7 @@ function renderSettings() {
   <h2>Shopping</h2><div class="card">
     <label class="check"><input type="checkbox" data-setting-bool="preferThigh" ${st.preferThigh ? 'checked' : ''}><span>Buy thigh fillets instead of breast<span class="sub">Swaps every breast line on the shop list. Breast is currently cheaper per kilo at all four shops.</span></span></label>
   </div>
+  ${isStandalone() ? '' : `<h2>On your phone</h2>${installCard(true)}`}
   <h2>App</h2><div class="card">
     <div class="row" style="flex-wrap:wrap;gap:8px"><button class="btn ghost small" data-action="intro">Show the intro again</button><button class="btn ghost small" data-action="export">Copy backup</button><button class="btn ghost small" data-action="import">Paste backup</button></div>
     <button class="btn danger block" data-action="reset" style="margin-top:12px">Reset everything</button>
@@ -786,6 +787,18 @@ function renderSettings() {
 }
 
 // ---------- sheet ----------
+// ---------- Install: Chrome/Edge (Android, desktop) hand us a native install prompt; iPhone Safari can only Add to Home Screen ----------
+let installEvt = null;
+window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); installEvt = e; const c = document.getElementById('install-card'); if (c) c.hidden = false; });
+window.addEventListener('appinstalled', () => { installEvt = null; S.tips ||= {}; S.tips.install = true; save(); render(); toast('Fuel is on your home screen'); });
+const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const isIOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent) && !window.MSStream;
+function installCard(force = false) {
+  if (isStandalone()) return '';
+  if (!force && S.tips && S.tips.install) return '';
+  if (installEvt || !isIOS()) return `<div class="card tipcard" id="install-card" ${installEvt || force ? '' : 'hidden'}><h3>Put Fuel on your phone</h3><p class="small">One tap, no app store. It opens full screen like any other app and works offline in the shop.</p><div class="row" style="gap:8px"><button class="btn small" data-action="install">Install Fuel</button>${force ? '' : '<button class="btn ghost small" data-action="tip-done" data-tip="install">Not now</button>'}</div></div>`;
+  return `<div class="card tipcard" id="install-card"><h3>Put Fuel on your home screen</h3><p class="small">iPhone doesn't let websites install themselves, so it's two taps in Safari:</p><ol class="tips"><li>Tap the <b>Share</b> button (the square with the arrow, bottom of the screen).</li><li>Scroll down and tap <b>Add to Home Screen</b>, then <b>Add</b>.</li></ol><p class="small muted">It then opens full screen, works offline in the shop and keeps you signed in.</p>${force ? '' : '<button class="btn ghost small" data-action="tip-done" data-tip="install">Not now</button>'}</div>`;
+}
 // In-app replacements for confirm/alert/prompt: iOS standalone web apps often don't show the built-in ones at all.
 function ask(text, okLabel = 'Yes', danger = false) {
   return new Promise((resolve) => {
@@ -973,6 +986,7 @@ function onAction(e) {
   else if (a === 'avoid') { const i = S.settings.avoid.indexOf(id); if (i >= 0) S.settings.avoid.splice(i, 1); else S.settings.avoid.push(id); save(); render(); }
   else if (a === 'settings') { if (S.tab !== 'settings') S.prevTab = S.tab; S.tab = 'settings'; save(); render({ top: true }); }
   else if (a === 'settings-back') { S.tab = S.prevTab && S.prevTab !== 'settings' ? S.prevTab : 'plan'; save(); render({ top: true }); }
+  else if (a === 'install') { if (installEvt) { installEvt.prompt(); installEvt.userChoice.then(() => { installEvt = null; }); } else toast('Use your browser menu: Install app / Add to Home Screen'); }
   else if (a === 'tip-done') { S.tips ||= {}; S.tips[el.dataset.tip] = true; save(); render(); }
   else if (a === 'scroll-pick') { const v = document.getElementById('view'), h = document.getElementById('pick-head'); if (h) v.scrollTo({ top: v.scrollTop + h.getBoundingClientRect().top - v.getBoundingClientRect().top - 6 }); }
   else if (a === 'intro') openIntro();
