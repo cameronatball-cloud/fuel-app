@@ -6447,6 +6447,190 @@
     "snack"
    ],
    "core": false
+  },
+  {
+   "id": "snack_protein_bar",
+   "name": "Protein bar (shop-bought)",
+   "short": "Protein bar",
+   "slots": [
+    "snack"
+   ],
+   "cold": true,
+   "reheat": "none",
+   "fridgeDays": 0,
+   "freezer": false,
+   "cookMinutes": 0,
+   "equipment": [],
+   "source": "shop",
+   "ingredients": [
+    {
+     "id": "protein_bar",
+     "qty": 1
+    }
+   ],
+   "method": [
+    "Straight from the packet — nothing to make."
+   ],
+   "notes": "Grab-and-go. Aldi's Harvest Morn bars are the cheap ones.",
+   "tags": [
+    "snack",
+    "shop-bought"
+   ],
+   "core": true
+  },
+  {
+   "id": "snack_protein_yogurt",
+   "name": "High-protein yogurt pot",
+   "short": "Protein pot",
+   "slots": [
+    "snack"
+   ],
+   "cold": true,
+   "reheat": "none",
+   "fridgeDays": 0,
+   "freezer": false,
+   "cookMinutes": 0,
+   "equipment": [],
+   "source": "shop",
+   "ingredients": [
+    {
+     "id": "protein_yogurt",
+     "qty": 200
+    }
+   ],
+   "method": [
+    "Straight from the packet — nothing to make."
+   ],
+   "notes": "20g protein for under a pound at Aldi.",
+   "tags": [
+    "snack",
+    "shop-bought"
+   ],
+   "core": true
+  },
+  {
+   "id": "snack_beef_jerky",
+   "name": "Beef jerky",
+   "short": "Jerky",
+   "slots": [
+    "snack"
+   ],
+   "cold": true,
+   "reheat": "none",
+   "fridgeDays": 0,
+   "freezer": false,
+   "cookMinutes": 0,
+   "equipment": [],
+   "source": "shop",
+   "ingredients": [
+    {
+     "id": "beef_jerky",
+     "qty": 35
+    }
+   ],
+   "method": [
+    "Straight from the packet — nothing to make."
+   ],
+   "notes": "Dear per gram but 12g protein in a pocket-sized bag.",
+   "tags": [
+    "snack",
+    "shop-bought"
+   ],
+   "core": true
+  },
+  {
+   "id": "snack_rtd_shake",
+   "name": "Ready-made protein shake",
+   "short": "Shake (bought)",
+   "slots": [
+    "snack"
+   ],
+   "cold": true,
+   "reheat": "none",
+   "fridgeDays": 0,
+   "freezer": false,
+   "cookMinutes": 0,
+   "equipment": [],
+   "source": "shop",
+   "ingredients": [
+    {
+     "id": "rtd_protein_shake",
+     "qty": 1
+    }
+   ],
+   "method": [
+    "Straight from the packet — nothing to make."
+   ],
+   "notes": "25g protein, no blender. Cheapest at Sainsbury's.",
+   "tags": [
+    "snack",
+    "shop-bought"
+   ],
+   "core": true
+  },
+  {
+   "id": "snack_babybel_apple",
+   "name": "Babybel and an apple",
+   "short": "Babybel + apple",
+   "slots": [
+    "snack"
+   ],
+   "cold": true,
+   "reheat": "none",
+   "fridgeDays": 0,
+   "freezer": false,
+   "cookMinutes": 0,
+   "equipment": [],
+   "source": "shop",
+   "ingredients": [
+    {
+     "id": "cheese_portions",
+     "qty": 2
+    },
+    {
+     "id": "apples",
+     "qty": 1
+    }
+   ],
+   "method": [
+    "Straight from the packet — nothing to make."
+   ],
+   "notes": "Two mini cheeses and an apple.",
+   "tags": [
+    "snack",
+    "shop-bought"
+   ],
+   "core": true
+  },
+  {
+   "id": "snack_nuts",
+   "name": "Handful of mixed nuts",
+   "short": "Nuts",
+   "slots": [
+    "snack"
+   ],
+   "cold": true,
+   "reheat": "none",
+   "fridgeDays": 0,
+   "freezer": false,
+   "cookMinutes": 0,
+   "equipment": [],
+   "source": "shop",
+   "ingredients": [
+    {
+     "id": "mixed_nuts",
+     "qty": 30
+    }
+   ],
+   "method": [
+    "Straight from the packet — nothing to make."
+   ],
+   "notes": "30g is a handful. Calorie-dense, good on training days.",
+   "tags": [
+    "snack",
+    "shop-bought"
+   ],
+   "core": true
   }
  ]
 }

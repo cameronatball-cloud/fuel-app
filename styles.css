@@ -336,11 +336,18 @@ ul.store li b { display: inline-block; min-width: 64px; color: #5b3fb8; }
 .acct .sub { display: block; font-size: 12.5px; margin-top: 2px; }
 #tabs button.active { color: #fff; }
 
-details.pantry-group summary { list-style: none; display: flex; align-items: center; justify-content: space-between; cursor: pointer; padding: 6px 0 2px; }
+/* pantry groups are buttons you can see: a filled bar with a chevron that turns when open */
+details.pantry-group { margin-top: 10px; }
+details.pantry-group summary { list-style: none; display: flex; align-items: center; justify-content: space-between; cursor: pointer; padding: 12px 14px; background: var(--panel); border-radius: 14px; box-shadow: 0 4px 16px rgba(74, 51, 0, .06); border-left: 5px solid var(--sky); }
+details.pantry-group[open] summary { border-radius: 14px 14px 0 0; border-left-color: var(--accent); }
 details.pantry-group summary::-webkit-details-marker { display: none; }
-details.pantry-group summary h2 { margin: 12px 0 4px; }
-details.pantry-group summary h2::before { content: "▸ "; color: var(--muted); }
-details.pantry-group[open] summary h2::before { content: "▾ "; }
+details.pantry-group summary h2 { margin: 0; font-size: 15px; color: var(--text); text-transform: none; letter-spacing: 0; font-weight: 700; }
+details.pantry-group summary h2::before { content: "▸"; display: inline-block; width: 18px; color: var(--accent); font-size: 16px; transition: transform .15s; }
+details.pantry-group[open] summary h2::before { transform: rotate(90deg); }
+details.pantry-group summary .small { font-weight: 600; }
+details.pantry-group summary .small::after { content: " · tap to open"; color: var(--muted); font-weight: 500; }
+details.pantry-group[open] summary .small::after { content: ""; }
+details.pantry-group > .card { border-radius: 0 0 14px 14px; margin-top: 0; }
 /* days already gone: eaten, not planned */
 .cell.past { background: var(--panel-2); color: var(--muted); opacity: .7; }
 .cell.past .cname { text-decoration: line-through; }
@@ -359,3 +366,22 @@ details.pantry-group[open] summary h2::before { content: "▾ "; }
 .pickhead h3 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
 .pickhead .search { margin-top: 10px; width: 100%; background: #fff; }
 .endcard { text-align: center; background: var(--panel-2); box-shadow: none; }
+/* the meal picker rows: each meal is its own card with a colour bar for its type */
+.pickfilters { margin: 12px 0 0; }
+.pickfilters .chip { background: rgba(255,255,255,.75); border-color: rgba(255,255,255,.9); color: var(--sun-ink); }
+.pickfilters .chip.on { background: #1b1a2e; border-color: #1b1a2e; color: #fff; }
+h2.pickgroup { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text); margin: 22px 0 8px; }
+h2.pickgroup::before { content: ""; width: 12px; height: 12px; border-radius: 4px; background: var(--sun); }
+h2.pickgroup.mains::before { background: var(--coral); }
+h2.pickgroup.snack::before { background: var(--grape); }
+h2.pickgroup span { font-weight: 600; color: var(--muted); font-size: 12px; }
+.card.pickcard { background: transparent; box-shadow: none; padding: 0; }
+.card.pickcard .recipe-row.pick { background: var(--panel); border-radius: 14px; border-bottom: 0; margin-bottom: 8px; padding: 12px 10px 12px 12px; border-left: 5px solid var(--sun); box-shadow: 0 4px 16px rgba(74, 51, 0, .06); }
+.card.pickcard .recipe-row.pick.mains { border-left-color: var(--coral); }
+.card.pickcard .recipe-row.pick.snack { border-left-color: var(--grape); }
+.card.pickcard .recipe-row.pick.on { background: #fff7fa; outline: 2px solid var(--accent); }
+.card.pickcard .recipe-row.pick .name { font-size: 16px; }
+/* iPhone home-screen app: the status bar area is painted the same dark as the tab bar (black-translucent + a fixed band) */
+#statusband { position: fixed; top: 0; left: 0; right: 0; height: env(safe-area-inset-top); background: #1b1a2e; z-index: 60; }
+#view { padding-top: calc(14px + env(safe-area-inset-top)); }
+#intro > *, #gate > * { padding-top: env(safe-area-inset-top); }

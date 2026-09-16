@@ -804,7 +804,8 @@
      "source": "receipt"
     }
    ],
-   "kcal": 350
+   "kcal": 350,
+   "staple": true
   },
   {
    "id": "rice_noodles",
@@ -843,7 +844,8 @@
      "checked": "2026-09-14"
     }
    ],
-   "kcal": 360
+   "kcal": 360,
+   "staple": true
   },
   {
    "id": "oats",
@@ -882,7 +884,8 @@
      "checked": "2026-09-14"
     }
    ],
-   "kcal": 375
+   "kcal": 375,
+   "staple": true
   },
   {
    "id": "bread",
@@ -1511,7 +1514,8 @@
      "checked": "2026-09-14"
     }
    ],
-   "kcal": 150
+   "kcal": 150,
+   "staple": true
   },
   {
    "id": "peanut_butter",
@@ -1557,7 +1561,8 @@
      "checked": "2026-09-14"
     }
    ],
-   "kcal": 600
+   "kcal": 600,
+   "staple": true
   },
   {
    "id": "sweet_chilli",
@@ -1603,7 +1608,8 @@
      "checked": "2026-09-14"
     }
    ],
-   "kcal": 220
+   "kcal": 220,
+   "staple": true
   },
   {
    "id": "light_mayo",
@@ -1642,7 +1648,8 @@
      "checked": "2026-09-14"
     }
    ],
-   "kcal": 300
+   "kcal": 300,
+   "staple": true
   },
   {
    "id": "soy_sauce",
@@ -2299,7 +2306,8 @@
      "checked": "2026-09-14"
     }
    ],
-   "kcal": 300
+   "kcal": 300,
+   "staple": true
   },
   {
    "id": "corn_tortilla",
@@ -2451,7 +2459,8 @@
      "checked": "2026-09-14"
     }
    ],
-   "kcal": 480
+   "kcal": 480,
+   "staple": true
   },
   {
    "id": "nduja",
@@ -2618,7 +2627,8 @@
      "checked": "2026-09-14"
     }
    ],
-   "kcal": 350
+   "kcal": 350,
+   "staple": true
   },
   {
    "id": "flour",
@@ -2992,7 +3002,8 @@
      "checked": "2026-09-14"
     }
    ],
-   "kcal": 340
+   "kcal": 340,
+   "staple": true
   },
   {
    "id": "frozen_peas",
@@ -4684,7 +4695,8 @@
    ],
    "unavailable": [
     "aldi"
-   ]
+   ],
+   "staple": true
   },
   {
    "id": "brown_rice",
@@ -4718,7 +4730,8 @@
    ],
    "unavailable": [
     "aldi"
-   ]
+   ],
+   "staple": true
   },
   {
    "id": "microwave_rice",
@@ -4794,7 +4807,8 @@
      "price": 0.28,
      "checked": "2026-09-14"
     }
-   ]
+   ],
+   "staple": true
   },
   {
    "id": "fusilli",
@@ -4832,7 +4846,8 @@
      "price": 1.19,
      "checked": "2026-09-14"
     }
-   ]
+   ],
+   "staple": true
   },
   {
    "id": "tagliatelle",
@@ -4870,7 +4885,8 @@
      "price": 0.75,
      "checked": "2026-09-14"
     }
-   ]
+   ],
+   "staple": true
   },
   {
    "id": "lasagne_sheets",
@@ -4908,7 +4924,8 @@
      "price": 0.75,
      "checked": "2026-09-14"
     }
-   ]
+   ],
+   "staple": true
   },
   {
    "id": "gnocchi",
@@ -4984,7 +5001,8 @@
      "price": 1.15,
      "checked": "2026-09-14"
     }
-   ]
+   ],
+   "staple": true
   },
   {
    "id": "quinoa",
@@ -5018,7 +5036,8 @@
    ],
    "unavailable": [
     "aldi"
-   ]
+   ],
+   "staple": true
   },
   {
    "id": "bulgur",
@@ -5045,7 +5064,8 @@
    ],
    "unavailable": [
     "aldi"
-   ]
+   ],
+   "staple": true
   },
   {
    "id": "white_potatoes",
@@ -5228,7 +5248,8 @@
      "price": 2.0,
      "checked": "2026-09-14"
     }
-   ]
+   ],
+   "staple": true
   },
   {
    "id": "rice_cakes",
@@ -5266,7 +5287,8 @@
      "price": 0.95,
      "checked": "2026-09-14"
     }
-   ]
+   ],
+   "staple": true
   },
   {
    "id": "oatcakes",
@@ -5300,7 +5322,8 @@
    ],
    "unavailable": [
     "aldi"
-   ]
+   ],
+   "staple": true
   },
   {
    "id": "crackers",
@@ -5334,7 +5357,8 @@
    ],
    "unavailable": [
     "aldi"
-   ]
+   ],
+   "staple": true
   },
   {
    "id": "frozen_chips",
@@ -7084,7 +7108,8 @@
    ],
    "unavailable": [
     "aldi"
-   ]
+   ],
+   "staple": true
   },
   {
    "id": "olives",
@@ -7122,7 +7147,8 @@
      "price": 2.5,
      "checked": "2026-09-14"
     }
-   ]
+   ],
+   "staple": true
   },
   {
    "id": "sun_dried_tomatoes",
@@ -7156,7 +7182,8 @@
    ],
    "unavailable": [
     "aldi"
-   ]
+   ],
+   "staple": true
   },
   {
    "id": "jalapenos",
@@ -7194,7 +7221,8 @@
      "price": 1.7,
      "checked": "2026-09-14"
     }
-   ]
+   ],
+   "staple": true
   },
   {
    "id": "gherkins",
@@ -7228,7 +7256,8 @@
    ],
    "unavailable": [
     "aldi"
-   ]
+   ],
+   "staple": true
   },
   {
    "id": "capers",
@@ -7262,7 +7291,8 @@
    ],
    "unavailable": [
     "aldi"
-   ]
+   ],
+   "staple": true
   },
   {
    "id": "butter_beans",
@@ -7525,7 +7555,8 @@
      "price": 1.15,
      "checked": "2026-09-14"
     }
-   ]
+   ],
+   "staple": true
   },
   {
    "id": "mayo",
@@ -8304,7 +8335,8 @@
      "price": 1.15,
      "checked": "2026-09-14"
     }
-   ]
+   ],
+   "staple": true
   },
   {
    "id": "salt",
@@ -10020,8 +10052,16 @@
      "size": 4,
      "price": 2.5,
      "checked": "2026-09-14"
+    },
+    {
+     "shop": "asda",
+     "name": "Warrior Raw Protein Flapjack Chocolate Peanut Butter 75g",
+     "size": 1,
+     "price": 1.25,
+     "checked": "2026-09-16"
     }
-   ]
+   ],
+   "staple": true
   },
   {
    "id": "peanuts",
@@ -10274,7 +10314,8 @@
    ],
    "unavailable": [
     "aldi"
-   ]
+   ],
+   "staple": true
   },
   {
    "id": "coffee",
@@ -10587,7 +10628,8 @@
    ],
    "unavailable": [
     "aldi"
-   ]
+   ],
+   "staple": true
   },
   {
    "id": "nori",
@@ -10621,7 +10663,8 @@
    ],
    "unavailable": [
     "aldi"
-   ]
+   ],
+   "staple": true
   },
   {
    "id": "miso",
@@ -11248,6 +11291,130 @@
     }
    ],
    "store": "fridge"
+  },
+  {
+   "id": "protein_yogurt",
+   "name": "High-protein yogurt (pot)",
+   "unit": "g",
+   "protein": 10,
+   "kcal": 60,
+   "category": "dairy",
+   "store": "fridge",
+   "packs": [
+    {
+     "shop": "aldi",
+     "name": "Brooklea Protein Yogurt 200g",
+     "size": 200,
+     "price": 0.79,
+     "checked": "2026-09-16"
+    },
+    {
+     "shop": "asda",
+     "name": "ASDA Fat Free Protein Natural Yogurt 500g",
+     "size": 500,
+     "price": 1.85,
+     "checked": "2026-09-16"
+    },
+    {
+     "shop": "sainsburys",
+     "name": "Arla Skyr Natural Icelandic Style Yogurt 450g",
+     "size": 450,
+     "price": 2.5,
+     "checked": "2026-09-16"
+    }
+   ]
+  },
+  {
+   "id": "beef_jerky",
+   "name": "Beef jerky",
+   "unit": "g",
+   "protein": 33,
+   "kcal": 250,
+   "category": "protein",
+   "packs": [
+    {
+     "shop": "aldi",
+     "name": "Snackrite Beef Jerky 35g",
+     "size": 35,
+     "price": 1.35,
+     "checked": "2026-09-16"
+    },
+    {
+     "shop": "asda",
+     "name": "Jack Link's Beef Jerky Original 60g",
+     "size": 60,
+     "price": 3.6,
+     "checked": "2026-09-16"
+    },
+    {
+     "shop": "sainsburys",
+     "name": "Jack Link's Beef Jerky Original 60g",
+     "size": 60,
+     "price": 3.75,
+     "checked": "2026-09-16"
+    }
+   ],
+   "staple": true
+  },
+  {
+   "id": "rtd_protein_shake",
+   "name": "Ready-made protein shake (330ml)",
+   "unit": "each",
+   "protein": 25,
+   "kcal": 210,
+   "category": "dairy",
+   "store": "fridge",
+   "unavailable": [
+    "aldi"
+   ],
+   "packs": [
+    {
+     "shop": "asda",
+     "name": "FUEL10K High Protein Breakfast Shake Drink 330ml",
+     "size": 1,
+     "price": 1.89,
+     "checked": "2026-09-16"
+    },
+    {
+     "shop": "sainsburys",
+     "name": "FUEL10K On the Go High Protein Milk Shake 330ml",
+     "size": 1,
+     "price": 1.15,
+     "checked": "2026-09-16"
+    }
+   ]
+  },
+  {
+   "id": "cheese_portions",
+   "name": "Mini cheese portions (Babybel)",
+   "unit": "each",
+   "protein": 4.6,
+   "kcal": 62,
+   "category": "dairy",
+   "store": "fridge",
+   "packs": [
+    {
+     "shop": "aldi",
+     "name": "Babybel Original Mini Babybels 10 Pack",
+     "size": 10,
+     "price": 2.89,
+     "checked": "2026-09-16"
+    },
+    {
+     "shop": "asda",
+     "name": "Mini Babybel Original Cheese Snacks 10 x 20g",
+     "size": 10,
+     "price": 2.94,
+     "checked": "2026-09-16"
+    },
+    {
+     "shop": "sainsburys",
+     "name": "Mini Babybel Original Cheese Snacks 12x20g",
+     "size": 12,
+     "price": 3.55,
+     "checked": "2026-09-16"
+    }
+   ]
   }
  ]
 }
