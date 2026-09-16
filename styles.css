@@ -354,3 +354,8 @@ details.pantry-group[open] summary h2::before { content: "▾ "; }
 .line .cost.over { color: var(--bad); }
 .line .cost.muted { color: var(--muted); }
 .shophead .sub { display: block; margin-top: 4px; font-size: 13px; }
+/* the meal picker: a clear start and a clear end */
+.pickhead { background: linear-gradient(135deg, var(--sun), #ffdf7a); color: var(--sun-ink); margin-top: 22px; box-shadow: 0 10px 30px rgba(255, 197, 49, .35); }
+.pickhead h3 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+.pickhead .search { margin-top: 10px; width: 100%; background: #fff; }
+.endcard { text-align: center; background: var(--panel-2); box-shadow: none; }

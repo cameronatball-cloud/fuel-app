@@ -3,7 +3,7 @@ import { CONFIG } from './config.js';
 import { cloud, initCloud, onCloudChange, signIn, signUp, resetPassword, redeemCode, signOut, hasAccess, pullState, pushStateSoon } from './cloud.js';
 
 const KEY = 'fuel:v1';
-const APP_VERSION = 'v54';
+const APP_VERSION = 'v55';
 const DATA = { ingredients: [], recipes: [] };
 const S = load();
 if (S.tab === 'settings') S.tab = S.prevTab && S.prevTab !== 'settings' ? S.prevTab : 'plan';
@@ -298,7 +298,7 @@ function planTop(w) {
   const fm = freshMap(w);
   const cell = (v, i, s) => {
     if (!w.days[i]) return `<div class="cell off"></div>`;
-    if (isPast(i)) { const r = v && !P.isOut(v) ? recById(P.isTub(v) ? P.tubRecipe(v) : v) : null; return `<button class="cell past" data-action="cell" data-day="${i}" data-slot="${s}"><span class="cname">${r ? esc(r.name) : P.isOut(v) ? 'Ate out' : '—'}</span><span class="ctag">✓ eaten</span></button>`; }
+    if (isPast(i)) { const r = v && !P.isOut(v) ? recById(P.isTub(v) ? P.tubRecipe(v) : v) : null; return `<button class="cell past" data-action="cell" data-day="${i}" data-slot="${s}"><span class="cname">${r ? esc(r.name) : P.isOut(v) ? 'Not eaten' : '—'}</span><span class="ctag">${r ? '✓ eaten · tap if not' : ''}</span></button>`; }
     if (!v) return `<button class="cell empty" data-action="cell" data-day="${i}" data-slot="${s}"><span>+</span><span class="cadd">add</span></button>`;
     if (P.isOut(v)) return `<button class="cell out" data-action="cell" data-day="${i}" data-slot="${s}"><span class="cname">Eating out</span><span class="cmeta">or skipping</span></button>`;
     if (P.isTub(v)) { const r = recById(P.tubRecipe(v)); return `<button class="cell tubcell" style="${cellStyle(P.tubRecipe(v))}" data-action="cell" data-day="${i}" data-slot="${s}"><span class="cname">${esc(r?.name || '')}</span><span class="cmeta">${r ? metaFor(r).pp : 0}g protein</span><span class="ctag">from the freezer</span></button>`; }
@@ -319,7 +319,7 @@ function planTop(w) {
   const tubHtml = tubs.length ? `<p class="small" style="margin-top:8px"><b>In the freezer:</b> ${tubs.map(([id, n]) => `${esc(recById(id)?.name)} ×${n}`).join(', ')}. Tap an empty slot to use one.</p>` : '';
   const hasGrid = chosen.length || tubs.length || Object.keys(lockedCells(w)).length;
   const tips = (S.tips && S.tips.plan) ? '' : `<div class="card tipcard"><h3>How Fuel works</h3><ol class="tips"><li><b>Tick meals</b> in the list below. They're placed into your week for you.</li><li><b>Cook</b> shows what to batch cook on ${DAY_FULL[w.cookDay]} and how to store it.</li><li><b>Shop</b> prices it all and finds the cheapest supermarket.</li></ol><button class="btn small" data-action="tip-done" data-tip="plan">Got it</button></div>`;
-  const limitNote = st.filled < st.slots / 2 ? '' : weekFactor(w) >= 1.6 ? `Portions are as big as they go. Add snacks to get nearer ${kcalT.toLocaleString()} kcal.` : weekFactor(w) <= 0.6 ? `Portions are as small as they go. Drop a snack or a meal to get nearer ${kcalT.toLocaleString()} kcal.` : '';
+  const limitNote = st.filled < st.slots / 2 ? '' : weekFactor(w) >= 1.6 ? `These meals come to ${st.avgKcal.toLocaleString()} kcal a day even at the biggest portion size, under your ${kcalT.toLocaleString()} target. Add a snack or another meal to close the gap.` : weekFactor(w) <= 0.6 ? `These meals come to ${st.avgKcal.toLocaleString()} kcal a day even at the smallest portion size, over your ${kcalT.toLocaleString()} target. Drop a snack or a meal.` : '';
   const head = `<div class="card"><h3>${weekLabel(S.activeWeek)} <span class="muted small">Mon ${fmtDate(S.activeWeek)} – Sun ${fmtDate(addDays(S.activeWeek, 6))}</span></h3>` + (chosen.length
     ? `<div class="stat-grid"><div class="stat"><b>${st.filled}<span>/${st.slots}</span></b><span>${gone ? 'meals to go' : 'meals planned'}</span></div><div class="stat"><b>${st.avg}g</b><span>protein a day<br>target ${target}g</span></div><div class="stat"><b>${st.avgKcal.toLocaleString()}</b><span>kcal a day<br>target ${kcalT.toLocaleString()}</span></div></div>
     ${limitNote ? `<p class="small muted" style="margin-top:8px">${limitNote}</p>` : ''}
@@ -363,14 +363,13 @@ function renderPlan() {
   const upHtml = upIds.length ? `<div class="card"><h3>Use up what you've got</h3><p class="small muted">You marked ${upIds.map((u) => esc((ingById(u)?.name || u).toLowerCase())).join(', ')} to use up (Pantry). ${upList.length ? 'Tap a meal to add it to the week.' : 'No recipe uses those yet.'}</p>${upList.length ? `<div class="chip-row">${upList.map(({ r, u }) => `<button class="chip ${w.portions[r.id] ? 'on' : ''}" data-action="quick-pick" data-id="${r.id}">${w.portions[r.id] ? '✓' : '+'} ${esc(shortName(r))} <span class="muted">· ${u.map((x) => esc((ingById(x)?.name || x).toLowerCase().split(' ')[0])).join(', ')}</span></button>`).join('')}</div>` : ''}</div>` : '';
   const sugHtml = sug.length ? `<div class="card"><h3>Quick picks</h3><p class="small muted">The most protein for your money. Tap one to add it to the week.</p><div class="chip-row">${sug.map((r) => `<button class="chip" data-action="quick-pick" data-id="${r.id}">+ ${esc(shortName(r))} · ${metaFor(r).pp}g protein · £${metaFor(r).c.cost.toFixed(2)}</button>`).join('')}</div></div>` : '';
   return `<h1>Plan</h1>${weekSwitch()}<div id="plan-top">${planTop(w)}</div>
-  <h2 id="pick-head" style="margin-top:26px">Tick the meals you want</h2>
-  <p class="small muted" style="margin:0 0 8px">Tick a meal to add it. Use − and + for how many portions this week.</p>
-  <input class="search" placeholder="Search meals" value="${esc(S.planSearch || '')}" data-plan-search>
+  <div class="card pickhead" id="pick-head"><h3>Choose your meals</h3><p class="small">Tick a meal to put it in the week. − and + set how many portions.${Object.keys(w.portions).length ? ` <b>${Object.values(w.portions).reduce((a, b) => a + b, 0)} portions picked.</b>` : ''}</p>
+  <input class="search" placeholder="Search your meals" value="${esc(S.planSearch || '')}" data-plan-search></div>
   ${upHtml}${sugHtml}
   <div id="plan-pick">${nothing}${group('breakfast', 'Breakfasts')}${group('mains', 'Mains (lunch or dinner)')}
   ${snackHtml}
   ${hidden ? `<p class="small muted">${hidden} recipe${hidden > 1 ? 's' : ''} hidden because of what you don't eat (see Settings).</p>` : ''}
-  <p class="small muted">Missing something? Recipes → <b>Find more meal ideas</b>.</p></div>`;
+  <div class="card endcard"><b>That's everything in your list.</b><p class="small muted" style="margin:4px 0 10px">${REC().filter((r) => !inLibrary(r.id) && !r.slots.includes('snack')).length} more recipes are waiting under meal ideas.</p><button class="btn small" data-action="go-ideas">Find more meal ideas</button></div></div>`;
 }
 // Just the inside of #plan-pick, for the search box to refresh without redrawing the page.
 function planPickHtml() { const tmp = document.createElement('div'); tmp.innerHTML = renderPlan(); return tmp.querySelector('#plan-pick').innerHTML; }
@@ -583,6 +582,22 @@ function renderShop() {
   ${unpricedAll.length ? `<div class="card" style="margin-top:10px"><h3>No price anywhere yet</h3><p class="small muted">${unpricedAll.map(esc).join(', ')}. Left out of the totals until priced.</p></div>` : ''}
   ${haveRows ? `<h2>Already in your pantry</h2><div class="card"><p class="small muted">Left off the list because it's ticked in Pantry. Tap "Need it" to put it back. Buying everything would be ${P.gbp(fullWeek.total)} at ${P.SHOP_NAMES[fullWeek.shop]}.</p>${haveRows}</div>` : ''}
   <p class="small muted">${esc(DATA.priceNote || '')}</p>`;
+}
+// A day that has gone: was the meal eaten? If not, it goes in the freezer as a tub and straight into next week's first free slot.
+async function pastCell(w, day, slot) {
+  const cur = w.grid[day][slot]; const rid = P.isTub(cur) ? P.tubRecipe(cur) : cur; const r = rid && !P.isOut(rid) ? recById(rid) : null;
+  if (!r) { toast('Nothing was planned there'); return; }
+  const v = await askChoice(`${P.DAYS[day]} ${slot}: ${r.name}`, [{ value: 'eaten', label: 'Eaten', sub: 'Leave it as it is' }, { value: 'freeze', label: "Didn't eat it — freeze it", sub: 'Goes in the freezer and into next week', ghost: true }, { value: 'skip', label: "Didn't eat it — bin the slot", sub: 'Just mark it as not eaten', ghost: true }]);
+  if (!v || v === 'eaten') return;
+  w.grid[day][slot] = 'out';
+  if (v === 'freeze') {
+    S.tubs[r.id] = (S.tubs[r.id] || 0) + 1;
+    const nxt = S.weeks[S.nextMon]; if (nxt && !nxt.grid) relayout(nxt);
+    let placed = null;
+    if (nxt?.grid) for (let d = 0; d < 7 && !placed; d++) { if (!nxt.days[d]) continue; for (const sl of P.SLOTS) if (r.slots.includes(sl) && !nxt.grid[d][sl]) { nxt.grid[d][sl] = `tub:${r.id}`; S.tubs[r.id] -= 1; placed = `${P.DAYS[d]} ${sl}`; break; } }
+    toast(placed ? `Frozen and put into next week: ${placed}` : 'Frozen. Tap an empty slot next week to use it');
+  } else toast('Marked as not eaten');
+  save(); render();
 }
 // Every line at the chosen shop ticked? Then the shop is done: the total is logged for Settings → Money (and unlogged if a line is unticked).
 function shopDone(w) {
@@ -1083,6 +1098,7 @@ function onAction(e) {
     resetPassword(email).then(() => show('ok', `Reset link sent to ${email}. It can take a few minutes; check spam.`)).catch((err) => show('bad', `Couldn't send a reset link: ${err.message}`));
   }
   else if (a === 'gate-retry') { location.reload(); }
+  else if (a === 'go-ideas') { S.tab = 'recipes'; S.ideasOpen = true; save(); render({ top: true }); }
   else if (a === 'ideas-toggle') { S.ideasOpen = !S.ideasOpen; save(); render(); }
   else if (a === 'idea-tag') { S.ideaTag = el.dataset.tag; save(); render(); }
   else if (a === 'lib-add') { if (!S.library.includes(id)) S.library.push(id); save(); closeSheet(); render(); toast('Added to your recipes'); }
@@ -1091,6 +1107,7 @@ function onAction(e) {
   else if (a === 'clear-week') { ask(`Clear every meal from ${weekLabel(S.activeWeek).toLowerCase()}?`, 'Clear week', true).then((ok) => { if (ok) { w.portions = {}; w.ticks = {}; relayout(); render(); } }); }
   else if (a === 'close-sheet') closeSheet();
   else if (a === 'cell' && picked) { dropPicked(el); }
+  else if (a === 'cell' && isPast(+el.dataset.day)) { pastCell(w, +el.dataset.day, el.dataset.slot); }
   else if (a === 'cell') {
     const day = +el.dataset.day, slot = el.dataset.slot;
     const cur = w.grid[day][slot];
